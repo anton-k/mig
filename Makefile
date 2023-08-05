@@ -4,4 +4,4 @@ build:
 	stack build
 
 run:
-	stack runhaskell examples/Html.hs
+	stack runhaskell examples/HelloWorld.hs

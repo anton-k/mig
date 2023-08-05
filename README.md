@@ -7,7 +7,8 @@ With it we can build type-safe servers from small parts.
 The main strength is ability to build servers from parts
 and flexible DSL which features only small amount of functions.
 
-I like scotty for being very simple and servant for being composable, type-safe 
+I like [scotty](https://hackage.haskell.org/package/scotty) for being very 
+simple and [servant](https://hackage.haskell.org/package/servant-server) for being composable, type-safe 
 and how functions are used as handlers which provides decoupling of Web-handlers
 from application logic.
 But sometimes scotty feels too imperative and lacks servant's composability.
@@ -327,7 +328,7 @@ So we have studied how we can use custom Reader-based monads.
 The trick is to derive `HasServer` on newtype wrapper and 
 use method `renderServer` to convert to `IO`-based server.
 
-PS: this is an open question. Is it possible to create function:
+PS: this is an open question. Is it possible to create a function:
 
 ```haskell
 hoistServer :: (Monad m, Monad n) => (forall a . m a -> n a) -> Server m -> Server n
@@ -335,7 +336,7 @@ hoistServer :: (Monad m, Monad n) => (forall a . m a -> n a) -> Server m -> Serv
 
 As it is defined in the servant. With it we would be able to use any monad.
 But I'm not sure how to achieve that. Help is appreciated, as it will make library even better!
-I guess it can be done with `MonadBaseControl` and if we turn to WAI function to:
+I guess it can be done with `MonadBaseControl` and if we turn the WAI function to:
 
 ```haskell
 toApplication :: MonadBaseControl m => Server m -> m Wai.Application
@@ -343,16 +344,25 @@ toApplication :: MonadBaseControl m => Server m -> m Wai.Application
 
 ## Conclusion
 
-we have walked throught the whole library. As summary of it's functions we can compose with path
-operator (/.) and monoid instance and we have various input and output newtype-wrappers
-to describe handler functions. 
+We have walked through the whole library. As a summary of it's functions: we can 
+
+* compose servers with path operator `(/.)` and monoid instance. 
+* define handlers as functions with various input and output newtype-wrappers
 
 I hope that you will enjoy the library. See the directory [`examples`](https://github.com/anton-k/mig/tree/main/examples) for more examples.
+We can run the examples with stack by runing:
+
+```
+> make run
+```
+in this repo. Change the Makefile to try different examples.
+
+
 Also there are repos that show how to use library with most common
 Haskell patterns to create web-servers:
 
-* [Handle patter](https://github.com/anton-k/handle-pattern-mig-app).
-* [Reader patten](https://github.com/anton-k/reader-pattern-mig-app).
+* [Handle pattern](https://github.com/anton-k/handle-pattern-mig-app)
+* [Reader patten](https://github.com/anton-k/reader-pattern-mig-app)
 
 This is a very first sketch of the library. I guess it can become even better. 
 The feedback is appreciated.
