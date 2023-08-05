@@ -347,7 +347,7 @@ we have walked throught the whole library. As summary of it's functions we can c
 operator (/.) and monoid instance and we have various input and output newtype-wrappers
 to describe handler functions. 
 
-I hope that you will enjoy the library. See the directory `examples` for more examples.
+I hope that you will enjoy the library. See the directory [`examples`](https://github.com/anton-k/mig/tree/main/examples) for more examples.
 Also there are repos that show how to use library with most common
 Haskell patterns to create web-servers:
 
