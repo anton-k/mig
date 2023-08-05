@@ -35,9 +35,9 @@ main = runServer 8080 server
 
 server :: Server IO
 server =
-  "api" /. "v1" /. "hello" /. Get @Text hello
+  "api" /. "v1" /. "hello" /. hello
 
-hello :: IO Text
+hello :: Get Text IO Text
 hello = pure "Hello World"
 ```
 
@@ -92,8 +92,8 @@ server :: Server IO
 server =
   "api" /. "v1" /.
      mconcat
-       [ "hello" /. (handle "hello")
-       , "bye" /. (handle "bye")
+       [ "hello" /. handle "hello"
+       , "bye" /. handle "bye"
        ]
 
 handle :: Text -> Get Text IO Text
@@ -122,6 +122,7 @@ handle prefix (Query name) = Get $ pure $ prefix <> " " <> name
 
 By changing the signature of the function we have requested required query
 parameter called `"who"`. We use type-level string literals to encode name of the parameter.
+It is provided with url: `api/v1/hello?who=john`.
 
 If we use `Optional` instead of `Query` parameter becomes optional and value
 is wrapped in `Maybe`.
@@ -340,7 +341,11 @@ toApplication :: MonadBaseControl m => Server m -> m Wai.Application
 
 ## Conclusion
 
-I hope you enjoy the lib. See the directory `examples` for more examples.
+we have walked throught the whole library. As summary of it's functions we can compose with path
+operator (/.) and monoid instance and we have various input and output newtype-wrappers
+to describe handler functions. 
+
+I hope that you will enjoy the library. See the directory `examples` for more examples.
 Also there are repos that show how to use library with most common
 Haskell patterns to create web-servers:
 
