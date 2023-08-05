@@ -1,0 +1,66 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           mig
+version:        0.1.0.0
+synopsis:       Build lightweight and composable servers
+description:    Please see the README on GitHub at <https://github.com/anton-k/mig#readme>
+category:       Web
+homepage:       https://github.com/anton-k/mig#readme
+bug-reports:    https://github.com/anton-k/mig/issues
+author:         Anton Kholomiov
+maintainer:     anton.kholomiov@gmail.com
+copyright:      2023 Anton Kholomiov
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/anton-k/mig
+
+library
+  exposed-modules:
+      Mig
+      Mig.Common
+      Mig.Html
+      Mig.Html.IO
+      Mig.Internal.Types
+      Mig.Json
+      Mig.Json.IO
+  other-modules:
+      Paths_mig
+  hs-source-dirs:
+      src
+  default-extensions:
+      ImportQualifiedPost
+      OverloadedStrings
+      TypeFamilies
+      OverloadedRecordDot
+      DuplicateRecordFields
+      LambdaCase
+      DerivingStrategies
+      DataKinds
+      StrictData
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , blaze-html
+    , blaze-markup
+    , bytestring
+    , containers
+    , exceptions
+    , http-types
+    , mtl
+    , random
+    , text
+    , wai
+    , warp
+  default-language: GHC2021

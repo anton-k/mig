@@ -1,0 +1,63 @@
+name:                mig
+version:             0.1.0.0
+github:              "anton-k/mig"
+license:             BSD3
+author:              "Anton Kholomiov"
+maintainer:          "anton.kholomiov@gmail.com"
+copyright:           "2023 Anton Kholomiov"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+synopsis:            Build lightweight and composable servers
+category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/anton-k/mig#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- aeson
+- text
+- random
+- wai
+- warp
+- http-types
+- blaze-html
+- bytestring
+- blaze-markup
+- containers
+- mtl
+- exceptions
+
+default-extensions:
+  - ImportQualifiedPost
+  - OverloadedStrings
+  - TypeFamilies
+  - OverloadedRecordDot
+  - DuplicateRecordFields
+  - LambdaCase
+  - DerivingStrategies
+  - DataKinds
+  - StrictData
+
+language: GHC2021
+
+ghc-options:
+- -Werror
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
