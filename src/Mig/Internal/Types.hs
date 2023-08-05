@@ -6,7 +6,7 @@ module Mig.Internal.Types
   , Resp (..)
   , RespBody (..)
   , QueryMap
-  , ToLazyText (..)
+  , ToText (..)
   , Error (..)
   -- * constructors
   , toConst
@@ -56,7 +56,7 @@ import Network.HTTP.Types.Header (ResponseHeaders, RequestHeaders, HeaderName)
 import Network.HTTP.Types.Status (Status, ok200, status500, status413)
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
-import Data.Text.Lazy.Encoding qualified as TL
+import Data.Text.Encoding qualified as Text
 import Data.List qualified as List
 import Network.Wai
 import Text.Blaze.Renderer.Utf8 qualified as Html
@@ -84,7 +84,7 @@ instance IsString Resp where
 
 -- | Http response body
 data RespBody
-  = TextResp TL.Text
+  = TextResp Text
   | HtmlResp Html
   | JsonResp Json.Value
   | FileResp FilePath
@@ -128,7 +128,7 @@ instance (Typeable a, Show a) => Exception (Error a) where
 type QueryMap = Map ByteString ByteString
 
 -- | Bad request response
-badRequest :: TL.Text -> Resp
+badRequest :: Text -> Resp
 badRequest message =
   Resp
     { status = status500
@@ -274,23 +274,23 @@ instance Monad m => Monoid (Server m) where
   mempty = Server (const $ pure Nothing)
 
 -- | Values convertible to lazy text
-class ToLazyText a where
-  toLazyText :: a -> TL.Text
+class ToText a where
+  toText :: a -> Text
 
-instance ToLazyText TL.Text where
-  toLazyText = id
+instance ToText TL.Text where
+  toText = TL.toStrict
 
-instance ToLazyText Text where
-  toLazyText = TL.fromStrict
+instance ToText Text where
+  toText = id
 
-instance ToLazyText Int where
-  toLazyText = TL.pack . show
+instance ToText Int where
+  toText = Text.pack . show
 
-instance ToLazyText Float where
-  toLazyText = TL.pack . show
+instance ToText Float where
+  toText = Text.pack . show
 
-instance ToLazyText String where
-  toLazyText = fromString
+instance ToText String where
+  toText = fromString
 
 {-# INLINE setContent #-}
 -- | Headers to set content type
@@ -306,8 +306,8 @@ json :: (ToJSON resp) => resp -> Resp
 json = (ok (setContent "text/json") . JsonResp . Json.toJSON)
 
 -- | Text response constructor
-text :: ToLazyText a => a -> Resp
-text = ok (setContent "text/plain") . TextResp . toLazyText
+text :: ToText a => a -> Resp
+text = ok (setContent "text/plain") . TextResp . toText
 
 -- | Html response constructor
 html :: (ToMarkup a) => a -> Resp
@@ -343,13 +343,13 @@ toApplication config server req processResponse = do
     noResult = badRequest "Server produces nothing"
 
     onErr :: SomeException -> Server IO
-    onErr err = toConst $ pure $ badRequest $ "Error: Exception has happened: " <> toLazyText (show err)
+    onErr err = toConst $ pure $ badRequest $ "Error: Exception has happened: " <> toText (show err)
 
 -- | Convert response to low-level WAI-response
 toResponse :: Resp -> Response
 toResponse resp =
   case resp.body of
-    TextResp textResp -> lbs (TL.encodeUtf8 textResp)
+    TextResp textResp -> lbs $ BL.fromStrict (Text.encodeUtf8 textResp)
     HtmlResp htmlResp -> lbs (Html.renderMarkup htmlResp)
     JsonResp jsonResp -> lbs (Json.encode jsonResp)
     FileResp file -> responseFile resp.status resp.headers file Nothing
