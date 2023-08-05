@@ -290,7 +290,7 @@ instance ToMarkup ListPosts where
           H.text $ post.title
 
 -------------------------------------------------------------------------------------
--- implementation of the site logic.
+-- implementation of the site interfaces.
 -- It defines how to read blog posts and quotes and how to create new posts
 -- note how we use IO-actions. We can also read from DB or do all sorts of things here.
 
