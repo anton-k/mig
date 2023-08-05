@@ -157,6 +157,8 @@ We have newtypes for:
 * `Capture type` - capture part of the URI between slashes `/`.
 * `Body type` - input JSON body
 * `RawBody` - input body as raw lazy bytestring
+* `RawFormData` - input of the html-form
+* `FormJson` - input f html-form as Json (see examples/Html.hs)
 * `Header "name"` - access header by name
 * `PathInfo` - access path info relative to the server
 
