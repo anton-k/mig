@@ -70,11 +70,11 @@ module Mig
   , fromReader
 
   -- * Convertes
-  , ToLazyText (..)
   , ToTextResp (..)
   , ToJsonResp (..)
   , ToHtmlResp (..)
   , FromText (..)
+  , ToText (..)
 
   -- * utils
   , badRequest
@@ -188,7 +188,7 @@ withQuery (QueryName name) act = toWithQuery (Text.encodeUtf8 name) $ \mVal ->
   in
     case mArg of
       Just arg -> act arg
-      Nothing -> toConst (pure $ badRequest $ "Failed to parse arg: " <> TL.fromStrict name)
+      Nothing -> toConst (pure $ badRequest $ "Failed to parse arg: " <> name)
 
 -- | Class contains types which can be converted to IO-based server to run as with WAI-interface.
 --
@@ -333,7 +333,7 @@ instance ToTextResp a => ToTextResp (SetStatus a) where
   toTextResp (SetStatus st content) =
     setRespStatus st (toTextResp content)
 
-instance (ToLazyText err, ToTextResp a) => ToTextResp (Either (Error err) a) where
+instance (ToText err, ToTextResp a) => ToTextResp (Either (Error err) a) where
   toTextResp = either fromError toTextResp
     where
       fromError err = setRespStatus err.status (text err.body)
@@ -553,7 +553,7 @@ instance (MonadIO (ServerMonad b), FromJSON a, ToServer b) => ToServer (Body a -
   toServer act = toWithBody $ \val ->
     case Json.eitherDecode val of
       Right v -> toServer $ act $ Body v
-      Left err -> toConst $ pure $ badRequest $ "Failed to parse JSON body: " <> TL.pack err
+      Left err -> toConst $ pure $ badRequest $ "Failed to parse JSON body: " <> Text.pack err
 
 -- | Reads raw body as lazy bytestring. We can limit the body size with server config. Example:
 --
@@ -595,7 +595,7 @@ instance (ToServer b, MonadIO (ServerMonad b), FromJSON a) => ToServer (FormJson
     case formDataToJson formBody.params of
       Right v -> toServer $ act $ FormJson v
       Left err -> toConst $
-        pure $ badRequest $ "Failed to parse form data as JSON body: " <> TL.fromStrict err
+        pure $ badRequest $ "Failed to parse form data as JSON body: " <> err
 
 formDataToJson :: FromJSON a => [(ByteString, ByteString)] -> Either Text a
 formDataToJson rawPairs = do

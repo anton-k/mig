@@ -3,7 +3,7 @@ module Mig.Common
   ( -- * types
     Server (..)
   -- * DSL
-  , ToLazyText (..)
+  , ToText (..)
   , ToHtmlResp (..)
   , FromText (..)
   , ToServer (..)
@@ -45,7 +45,7 @@ module Mig.Common
   ) where
 
 import Mig
-  ( Server (..), ToServer (..), ToLazyText (..), ToHtmlResp (..), FromText (..), handleError, PathInfo (..)
+  ( Server (..), ToServer (..), ToText (..), ToHtmlResp (..), FromText (..), handleError, PathInfo (..)
   , (/.), Capture (..), Query (..), Optional (..), Body (..), RawBody (..), Header (..), RawFormData (..), FormBody (..), FormJson (..), AddHeaders (..), SetStatus (..)
   , setStatus, addHeaders, HasServer (..), fromReader, Config (..), toApplication, runServer, badRequest, Error (..), withServerAction)
 
