@@ -37,7 +37,7 @@ server :: Server IO
 server =
   "api" /. "v1" /. "hello" /. hello
 
-hello :: Get Text IO Text
+hello :: Get Json IO Text
 hello = pure "Hello World"
 ```
 
