@@ -15,6 +15,9 @@ module Mig.Internal.Types
   , toWithCapture
   , toWithPath
   , toWithHeader
+  , toWithFormData
+  , toWithPathInfo
+  , FormBody (..)
   -- * responses
   , text
   , json
@@ -35,6 +38,7 @@ module Mig.Internal.Types
   , pathHead
   ) where
 
+import Data.Bifunctor
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
@@ -63,6 +67,7 @@ import Data.Foldable
 import Control.Monad.IO.Class
 import Control.Monad.Catch
 import Data.Typeable
+import Network.Wai.Parse qualified as Parse
 
 -- | Http response
 data Resp = Resp
@@ -98,6 +103,12 @@ data Req = Req
     -- ^ request method
   , readBody :: IO (Either (Error Text) BL.ByteString)
     -- ^ lazy body reader. Error can happen if size is too big (configured on running the server)
+  , readFormBody :: IO (Either (Error Text) FormBody)
+  }
+
+data FormBody = FormBody
+  { params :: [(ByteString, ByteString)]
+  , files :: [(ByteString, Parse.FileInfo BL.ByteString)]
   }
 
 -- Errors
@@ -178,8 +189,8 @@ toMethod method act = Server $ checkMethod method act
 
 checkMethod :: Monad m => Method -> m Resp -> Req -> m (Maybe Resp)
 checkMethod method act req
-  | req.method == method && null req.path = Just <$> act
-  | otherwise = pure (Just $ badRequest $ "Bad method, expected" <> TL.decodeUtf8 (BL.fromStrict method))
+  | null req.path && req.method == method = Just <$> act
+  | otherwise = pure Nothing
 
 toWithBody :: MonadIO m => (BL.ByteString -> Server m) -> Server m
 toWithBody act = Server $ \req -> do
@@ -187,6 +198,15 @@ toWithBody act = Server $ \req -> do
   case eBody of
     Right body -> unServer (act body) req
     Left err -> pure $ Just $ setRespStatus err.status (text err.body)
+
+-- TODO: make it size limited by HTTP-body size
+toWithFormData :: MonadIO m => (FormBody -> Server m) -> Server m
+toWithFormData act = Server $ \req -> do
+  eFormBody <- liftIO req.readFormBody
+  case eFormBody of
+    Right formBody -> unServer (act formBody) req
+    Left err -> pure $ Just $ setRespStatus err.status (text err.body)
+
 
 -- | Size of the input body
 type Kilobytes = Int
@@ -240,6 +260,10 @@ pathHead req =
 toWithHeader :: HeaderName -> (Maybe ByteString -> Server m) -> Server m
 toWithHeader name act = Server $ \req ->
   unServer (act (fmap snd $ List.find ((== name) . fst) req.headers)) req
+
+toWithPathInfo :: ([Text] -> Server m) -> Server m
+toWithPathInfo act = Server $ \req ->
+  unServer (act req.path) req
 
 instance Monad m => Semigroup (Server m) where
   (<>) (Server serverA) (Server serverB) = Server $ \req -> do
@@ -344,4 +368,16 @@ fromRequest maxSize req =
     , headers = requestHeaders req
     , method = requestMethod req
     , readBody = fmap (fmap BL.fromChunks) $ readRequestBody (getRequestBodyChunk req) maxSize
+    , readFormBody = getReadFormBody req
     }
+
+getReadFormBody :: Request -> IO (Either (Error Text) FormBody)
+getReadFormBody req = do
+  case Parse.getRequestBodyType req of
+    Nothing -> pure $ Right (FormBody [] [])
+    Just reqBodyType -> do
+      eResult <- try @IO @SomeException (Parse.sinkRequestBody Parse.lbsBackEnd reqBodyType (getRequestBodyChunk req))
+      pure $ bimap (const toError) (uncurry FormBody) eResult
+  where
+    toError = Error status413 (Text.pack $ "Request is too big!")
+

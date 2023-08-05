@@ -41,6 +41,10 @@ module Mig
   , Body (..)
   , RawBody (..)
   , Header (..)
+  , RawFormData (..)
+  , FormBody (..)
+  , FormJson (..)
+  , PathInfo (..)
 
   -- ** response
   -- | How to modify response and attach specific info to it
@@ -75,6 +79,7 @@ module Mig
   -- * utils
   , badRequest
   , ToServer (..)
+  , withServerAction
 
   , module X
   ) where
@@ -82,6 +87,8 @@ module Mig
 import Mig.Internal.Types
 import Mig.Internal.Types qualified as Resp (Resp (..))
 
+
+import Data.Bifunctor
 import Data.Kind
 import Data.String
 import Data.Text (Text)
@@ -106,6 +113,7 @@ import Network.HTTP.Types.Header (ResponseHeaders)
 import Network.Wai.Handler.Warp qualified as Warp
 import Control.Exception (throw)
 import Data.Typeable
+import Data.Aeson.Key qualified as Json
 
 -- | Path constructor (right associative). Example:
 --
@@ -119,7 +127,7 @@ import Data.Typeable
 -- >
 -- > handleFoo, handleBar :: IO Text
 (/.) :: ToServer a => Text -> a -> Server (ServerMonad a)
-(/.) path act = toWithPath path (onParam act)
+(/.) path act = toWithPath path (toServer act)
 infixr 4 /.
 
 -- | Map internal monad of the server
@@ -255,11 +263,11 @@ data Json
 -- and standard Error type lets us pass status to response and some details.
 class Monad (ServerMonad a) => ToServer a where
   type ServerMonad a :: (Type -> Type)
-  onParam :: a -> Server (ServerMonad a)
+  toServer :: a -> Server (ServerMonad a)
 
 instance Monad m => ToServer (Server m) where
   type ServerMonad (Server m) = m
-  onParam = id
+  toServer = id
 
 -- Status
 
@@ -386,23 +394,23 @@ newtype Get ty m a = Get (m a)
 
 instance (Monad m, ToTextResp a) => ToServer (Get Text m a) where
   type ServerMonad (Get Text m a) = m
-  onParam (Get act) = toMethod methodGet (toTextResp <$> act)
+  toServer (Get act) = toMethod methodGet (toTextResp <$> act)
 
 instance (Monad m, ToJSON a) => ToServer (Get Json m a) where
   type ServerMonad (Get Json m a) = m
-  onParam (Get act) = toMethod methodGet (json <$> act)
+  toServer (Get act) = toMethod methodGet (json <$> act)
 
 instance (Monad m, ToHtmlResp a) => ToServer (Get Html m a) where
   type ServerMonad (Get Html m a) = m
-  onParam (Get act) = toMethod methodGet (toHtmlResp <$> act)
+  toServer (Get act) = toMethod methodGet (toHtmlResp <$> act)
 
 instance (Monad m) => ToServer (Get BL.ByteString m BL.ByteString) where
   type ServerMonad (Get BL.ByteString m BL.ByteString) = m
-  onParam (Get act) = toMethod methodGet (raw <$> act)
+  toServer (Get act) = toMethod methodGet (raw <$> act)
 
 instance (Monad m) => ToServer (Get ByteString m ByteString) where
   type ServerMonad (Get ByteString m ByteString) = m
-  onParam (Get act) = toMethod methodGet (raw . BL.fromStrict <$> act)
+  toServer (Get act) = toMethod methodGet (raw . BL.fromStrict <$> act)
 
 -- Post
 
@@ -411,15 +419,15 @@ newtype Post ty m a = Post (m a)
 
 instance (Monad m, ToTextResp a) => ToServer (Post Text m a) where
   type ServerMonad (Post Text m a) = m
-  onParam (Post act) = toMethod methodPost $ toTextResp <$> act
+  toServer (Post act) = toMethod methodPost $ toTextResp <$> act
 
 instance (Monad m, ToJSON a) => ToServer (Post Json m a) where
   type ServerMonad (Post Json m a) = m
-  onParam (Post act) = toMethod methodPost $ json <$> act
+  toServer (Post act) = toMethod methodPost $ json <$> act
 
 instance (Monad m, ToHtmlResp a) => ToServer (Post Html m a) where
   type ServerMonad (Post Html m a) = m
-  onParam (Post act) = toMethod methodPost (toHtmlResp <$> act)
+  toServer (Post act) = toMethod methodPost (toHtmlResp <$> act)
 
 -- Put
 
@@ -428,15 +436,15 @@ newtype Put ty m a = Put (m a)
 
 instance (Monad m, ToTextResp a) => ToServer (Put Text m a) where
   type ServerMonad (Put Text m a) = m
-  onParam (Put act) = toMethod methodPut $ toTextResp <$> act
+  toServer (Put act) = toMethod methodPut $ toTextResp <$> act
 
 instance (Monad m, ToJSON a) => ToServer (Put Json m a) where
   type ServerMonad (Put Json m a) = m
-  onParam (Put act) = toMethod methodPut $ json <$> act
+  toServer (Put act) = toMethod methodPut $ json <$> act
 
 instance (Monad m, ToHtmlResp a) => ToServer (Put Html m a) where
   type ServerMonad (Put Html m a) = m
-  onParam (Put act) = toMethod methodPut (toHtmlResp <$> act)
+  toServer (Put act) = toMethod methodPut (toHtmlResp <$> act)
 
 -- Delete
 
@@ -445,15 +453,15 @@ newtype Delete ty m a = Delete (m a)
 
 instance (Monad m, ToTextResp a) => ToServer (Delete Text m a) where
   type ServerMonad (Delete Text m a) = m
-  onParam (Delete act) = toMethod methodDelete $ toTextResp <$> act
+  toServer (Delete act) = toMethod methodDelete $ toTextResp <$> act
 
 instance (Monad m, ToJSON a) => ToServer (Delete Json m a) where
   type ServerMonad (Delete Json m a) = m
-  onParam (Delete act) = toMethod methodDelete $ json <$> act
+  toServer (Delete act) = toMethod methodDelete $ json <$> act
 
 instance (Monad m, ToHtmlResp a) => ToServer (Delete Html m a) where
   type ServerMonad (Delete Html m a) = m
-  onParam (Delete act) = toMethod methodDelete (toHtmlResp <$> act)
+  toServer (Delete act) = toMethod methodDelete (toHtmlResp <$> act)
 
 -- Patch
 
@@ -462,15 +470,15 @@ newtype Patch ty m a = Patch (m a)
 
 instance (Monad m, ToTextResp a) => ToServer (Patch Text m a) where
   type ServerMonad (Patch Text m a) = m
-  onParam (Patch act) = toMethod methodPatch $ toTextResp <$> act
+  toServer (Patch act) = toMethod methodPatch $ toTextResp <$> act
 
 instance (Monad m, ToJSON a) => ToServer (Patch Json m a) where
   type ServerMonad (Patch Json m a) = m
-  onParam (Patch act) = toMethod methodPatch $ json <$> act
+  toServer (Patch act) = toMethod methodPatch $ json <$> act
 
 instance (Monad m, ToHtmlResp a) => ToServer (Patch Html m a) where
   type ServerMonad (Patch Html m a) = m
-  onParam (Patch act) = toMethod methodPatch (toHtmlResp <$> act)
+  toServer (Patch act) = toMethod methodPatch (toHtmlResp <$> act)
 
 -- Options
 
@@ -479,15 +487,15 @@ newtype Options ty m a = Options (m a)
 
 instance (Monad m, ToTextResp a) => ToServer (Options Text m a) where
   type ServerMonad (Options Text m a) = m
-  onParam (Options act) = toMethod methodOptions $ toTextResp <$> act
+  toServer (Options act) = toMethod methodOptions $ toTextResp <$> act
 
 instance (Monad m, ToJSON a) => ToServer (Options Json m a) where
   type ServerMonad (Options Json m a) = m
-  onParam (Options act) = toMethod methodOptions $ json <$> act
+  toServer (Options act) = toMethod methodOptions $ json <$> act
 
 instance (Monad m, ToHtmlResp a) => ToServer (Options Html m a) where
   type ServerMonad (Options Html m a) = m
-  onParam (Options act) = toMethod methodOptions (toHtmlResp <$> act)
+  toServer (Options act) = toMethod methodOptions (toHtmlResp <$> act)
 
 -- Query
 
@@ -501,7 +509,7 @@ newtype Query (sym :: Symbol) a = Query a
 
 instance (FromText a, ToServer b, KnownSymbol sym) => ToServer (Query sym a -> b) where
   type ServerMonad (Query sym a -> b) = ServerMonad b
-  onParam act = withQuery (QueryName (Text.pack $ symbolVal (Proxy @sym))) (onParam . act . Query)
+  toServer act = withQuery (QueryName (Text.pack $ symbolVal (Proxy @sym))) (toServer . act . Query)
 
 -- Optional query
 
@@ -515,7 +523,7 @@ newtype Optional (sym :: Symbol) a = Optional (Maybe a)
 
 instance (FromText a, ToServer b, KnownSymbol sym) => ToServer (Optional sym a -> b) where
   type ServerMonad (Optional sym a -> b) = ServerMonad b
-  onParam act = withQuery' (QueryName (fromString $ symbolVal (Proxy @sym))) (onParam . act . Optional)
+  toServer act = withQuery' (QueryName (fromString $ symbolVal (Proxy @sym))) (toServer . act . Optional)
 
 -- Capture
 
@@ -528,9 +536,9 @@ newtype Capture a = Capture a
 
 instance (FromText a, ToServer b) => ToServer (Capture a -> b) where
   type ServerMonad (Capture a -> b) = ServerMonad b
-  onParam act = toWithCapture $ \txt ->
+  toServer act = toWithCapture $ \txt ->
     case fromText txt of
-      Just val -> onParam $ act $ Capture val
+      Just val -> toServer $ act $ Capture val
       Nothing -> toConst $ pure $ badRequest "Failed to parse capture"
 
 -- Read Body input
@@ -542,9 +550,9 @@ newtype Body a = Body a
 
 instance (MonadIO (ServerMonad b), FromJSON a, ToServer b) => ToServer (Body a -> b) where
   type ServerMonad (Body a -> b) = ServerMonad b
-  onParam act = toWithBody $ \val ->
+  toServer act = toWithBody $ \val ->
     case Json.eitherDecode val of
-      Right v -> onParam $ act $ Body v
+      Right v -> toServer $ act $ Body v
       Left err -> toConst $ pure $ badRequest $ "Failed to parse JSON body: " <> TL.pack err
 
 -- | Reads raw body as lazy bytestring. We can limit the body size with server config. Example:
@@ -554,7 +562,51 @@ newtype RawBody = RawBody BL.ByteString
 
 instance (MonadIO (ServerMonad b), ToServer b) => ToServer (RawBody -> b) where
   type ServerMonad (RawBody -> b) = ServerMonad b
-  onParam act = toWithBody $ onParam . act . RawBody
+  toServer act = toWithBody $ toServer . act . RawBody
+
+-- | Parse raw form body. It includes named form arguments and file info.
+-- Note that we can not use FormBody and JSON-body at the same time.
+-- They occupy the same field in the HTTP-request.
+newtype RawFormData = RawFormData FormBody
+
+instance (ToServer b, MonadIO (ServerMonad b)) => ToServer (RawFormData -> b) where
+  type ServerMonad (RawFormData -> b) = ServerMonad b
+  toServer act = toWithFormData $ toServer . act . RawFormData
+
+-- | It reads form as plain JSON-object where name of the form's field becomes
+-- a field of JSON-object and every value is Text.
+--
+-- For example if submit a form with fields: name, password, date.
+-- We can read it in the data type:
+--
+-- > data User = User
+-- >  { name :: Text
+-- >  , passord :: Text
+-- >  , date :: Text
+-- >  }
+--
+-- Note that we can not use FormBody and JSON-body at the same time.
+-- They occupy the same field in the HTTP-request.
+newtype FormJson a = FormJson a
+
+instance (ToServer b, MonadIO (ServerMonad b), FromJSON a) => ToServer (FormJson a -> b) where
+  type ServerMonad (FormJson a -> b) = ServerMonad b
+  toServer act = toWithFormData $ \formBody -> do
+    case formDataToJson formBody.params of
+      Right v -> toServer $ act $ FormJson v
+      Left err -> toConst $
+        pure $ badRequest $ "Failed to parse form data as JSON body: " <> TL.fromStrict err
+
+formDataToJson :: FromJSON a => [(ByteString, ByteString)] -> Either Text a
+formDataToJson rawPairs = do
+  jsonVal <- Json.object <$> mapM toPair rawPairs
+  case Json.fromJSON jsonVal of
+    Json.Success result -> Right result
+    Json.Error err -> Left (Text.pack $ show err)
+  where
+    toPair (key, val) =
+      first (Text.pack . show) $
+        (\k v -> (Json.fromText k, Json.String v)) <$> Text.decodeUtf8' key <*> Text.decodeUtf8' val
 
 -- Request Headers
 
@@ -567,7 +619,20 @@ newtype Header (sym :: Symbol) = Header (Maybe ByteString)
 
 instance (ToServer b, KnownSymbol sym) => ToServer (Header sym -> b) where
   type ServerMonad (Header sym -> b) = ServerMonad b
-  onParam act = toWithHeader (fromString $ symbolVal (Proxy @sym)) (onParam . act . Header)
+  toServer act = toWithHeader (fromString $ symbolVal (Proxy @sym)) (toServer . act . Header)
+
+-- | Reads current path info
+newtype PathInfo = PathInfo [Text]
+
+instance (ToServer b) => ToServer (PathInfo -> b) where
+  type ServerMonad (PathInfo -> b) = ServerMonad b
+  toServer act = toWithPathInfo (toServer . act . PathInfo)
+
+-- | Appends action to the server
+withServerAction :: Monad m => Server m -> m () -> Server m
+withServerAction srv act = Server $ \req -> do
+  act
+  unServer srv req
 
 -------------------------------------------------------------------------------------
 -- WAI

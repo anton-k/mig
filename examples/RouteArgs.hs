@@ -3,8 +3,6 @@
 --
 -- We can get input arguments with function that takes in
 -- typed argument wrpapped in specific newtype which encodes the type of the input
---
---
 module Example.RouteArgs
   ( main
   ) where
