@@ -1,28 +1,28 @@
 # Mig - library to write composable and lightweight servers
 
-Mig (spelled meeg) is a library to build lightweight composable servers.
+The Mig is a library to build lightweight composable servers.
 There are only couple of combinators and Monoid instance.
-With it we canbuild type-safe servers from small parts.
+With it we can build type-safe servers from small parts.
 
-The main strenght is ability to build servers from parts
+The main strength is ability to build servers from parts
 and flexible DSL which features only small amount of functions.
 
 I like scotty for being very simple and servant for being composable, type-safe 
-and how functions are used as handlers which rpovides decoupling of Web-handlers
+and how functions are used as handlers which provides decoupling of Web-handlers
 from application logic.
 But sometimes scotty feels too imperative and lacks servant's composability.
 And servant with type-level magic and huge errors can feel to complicated.
 So I wanted to create something in the middle. Something composable and simple 
 at the same time.
-The name mig (spelled as meeg) is a russian word for "instant moment".
+The name `mig` (pronounced as meeg) is a russian word for "instant moment".
 
 ## Quick start guide
 
-Let's create something cool with the lobrary.
+Let's create something cool with the library.
 
-### Hello wrold server
+### Hello world server
 
-as a starting point let's look at hello-world server:
+As a starting point let's look at hello-world server:
 
 ```haskell
 module Main where
@@ -75,7 +75,7 @@ The HTTP-method is specified with newtype wrapper `Get`:
 newtype Get ty m a = Get (m a)
 ```
 
-It has phantom-argument for type of the response. In this example we return @Text@
+It has phantom-argument for type of the response. In this example we return `Text`
 as response body with 200 ok status. It seems that we need two typed to specify result `ty` and `a`.
 
 Beside `Text` we also can return `Json`, `Html`, raw `ByteString` as response. But we have
@@ -101,7 +101,7 @@ handle prefix = Get $ pure $ prefix <> " world"
 ```
 
 Note how branching by path is done with `Monoid` method `mconcat`.
-Inthis example we use `Get` inside the function `handle`.
+We use `Get` inside the function `handle`.
 
 ### Query parameters 
 
@@ -130,7 +130,7 @@ is wrapped in `Maybe`.
 
 In the example we can note the duplication of path name `"hello/bye"` and that we
 pass the same constants to our function `handle`.
-we can capture that part of URI as argument with `Capture` argument:
+We can capture that part of URI as argument with `Capture` argument:
 
 ```haskell
 server :: Server IO
@@ -147,7 +147,7 @@ the URI as text and use it in the message. Also with capture we can append all s
 ### Route arguments
 
 The cool part of it is that handle function can have any amount of input arguments
-wrapped in psecial newtypes and it will be decoded to proper server route.
+wrapped in special newtypes and it will be decoded to proper server route.
 
 We have newtypes for:
 
@@ -157,10 +157,11 @@ We have newtypes for:
 * `Body type` - input JSON body
 * `RawBody` - input body as raw lazy bytestring
 * `Header "name"` - access header by name
+* `PathInfo` - access path info relative to the server
 
 We can change the number of arguments because the function `(/.)` is overloaded
 by second argument and it can accept anything convertible to `Server` or an
-instance of the clas `ToServer`.
+instance of the class `ToServer`.
 
 ### Route outputs
 
@@ -200,7 +201,7 @@ handle (Query code) = Post $ do
 
 ### Errors
 
-Erros can be returned from route with `(Either (Error ty))` output wrapper.
+The errors can be returned from route with `(Either (Error ty))` output wrapper.
 We signify to the user that our route returns errors.
 The `Error` type contains status and details for the error:
 
@@ -219,7 +220,7 @@ value to the same response type as the main happy route branch.
 ## Specific servers
 
 If we write server of specific type. For example if we write JSON API with IO-based server
-we can import specific route newtype-wrapeprs:
+we can import specific route newtype-wrappers:
 
 ```haskell
 import Mig.Json.IO
@@ -245,11 +246,11 @@ Use import of `Mig.Json`.
 
 ## Reader based servers
 
-There is very popular pattern iof writing servers with monad `ReaderT ServerContext IO`.
+There is very popular pattern of writing servers with monad `ReaderT ServerContext IO`.
 The server context can contain shared context of the server and mutable stated wrapped in `TVar`'s
-or IO-based interfaces. We can acces the context inside handler and shared for all routes.
+or IO-based interfaces. We can access the context inside handler and shared for all routes.
 
-The mig has support for Reader-pattern like monads.
+The `mig` has support for Reader-pattern like monads.
 Let's build a simple counter server as example. User can see current value with `get` and add 
 to the internal counter with method `put`.
 
@@ -331,3 +332,21 @@ hoistServer :: (Monad m, Monad n) => (forall a . m a -> n a) -> Server m -> Serv
 
 As it is defined in the servant. With it we would be able to use any monad.
 But I'm not sure how to achieve that. Help is appreciated, as it will make library even better!
+I guess it can be done with `MonadBaseControl` and if we turn to WAI function to:
+
+```haskell
+toApplication :: MonadBaseControl m => Server m -> m Wai.Application
+```
+
+## Conclusion
+
+I hope you enjoy the lib. See the directory `examples` for more examples.
+Also there are repos that show how to use library with most common
+Haskell patterns to create web-servers:
+
+* [Handle patter](https://github.com/anton-k/handle-pattern-mig-app).
+* [Reader patten](https://github.com/anton-k/reader-pattern-mig-app).
+
+This is a very first sketch of the library. I guess it can become even better. 
+The feedback is appreciated.
+

@@ -62,5 +62,6 @@ library
     , random
     , text
     , wai
+    , wai-extra
     , warp
   default-language: GHC2021

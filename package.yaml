@@ -25,6 +25,7 @@ dependencies:
 - text
 - random
 - wai
+- wai-extra
 - warp
 - http-types
 - blaze-html

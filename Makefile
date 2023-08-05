@@ -4,4 +4,4 @@ build:
 	stack build
 
 run:
-	stack runhaskell examples/Counter.hs
+	stack runhaskell examples/Html.hs
