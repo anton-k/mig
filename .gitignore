@@ -1,4 +1,6 @@
 .stack-work/
 stack.yaml.lock
 build/
+dist-newstyle/
+dist/
 *~
