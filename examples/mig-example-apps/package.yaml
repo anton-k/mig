@@ -60,7 +60,7 @@ dependencies:
 executables:
   hello-world-mig-example-app:
     main:                Main.hs
-    source-dirs:         app/HelloWorld
+    source-dirs:         HelloWorld
     ghc-options:
     - -threaded
     - -rtsopts
@@ -68,7 +68,7 @@ executables:
 
   route-args-mig-example-app:
     main:                Main.hs
-    source-dirs:         app/RouteArgs
+    source-dirs:         RouteArgs
     ghc-options:
     - -threaded
     - -rtsopts
@@ -76,7 +76,7 @@ executables:
 
   json-api-mig-example-app:
     main:                Main.hs
-    source-dirs:         app/JsonApi
+    source-dirs:         JsonApi
     ghc-options:
     - -threaded
     - -rtsopts
@@ -86,7 +86,7 @@ executables:
 
   counter-mig-example-app:
     main:                Main.hs
-    source-dirs:         app/Counter
+    source-dirs:         Counter
     ghc-options:
     - -threaded
     - -rtsopts
@@ -96,7 +96,7 @@ executables:
 
   html-mig-example-app:
     main:                Main.hs
-    source-dirs:         app/Html
+    source-dirs:         Html
     ghc-options:
     - -threaded
     - -rtsopts
