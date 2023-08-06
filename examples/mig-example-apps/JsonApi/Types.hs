@@ -16,10 +16,8 @@ module Types
 import Data.Aeson (ToJSON, FromJSON)
 import Data.Time as X (Day)
 import Data.Text as X (Text)
-import Data.Text qualified as Text
-import Mig.Json.IO (FromText (..))
+import Mig.Json.IO (FromHttpApiData (..))
 import GHC.Generics
-import Data.Time.Format.ISO8601
 
 -- auth domain
 
@@ -30,12 +28,12 @@ data User = User
   deriving (Generic, ToJSON, FromJSON)
 
 newtype AuthToken = AuthToken Text
-  deriving newtype (ToJSON, FromJSON, FromText, Eq, Ord, Show)
+  deriving newtype (ToJSON, FromJSON, FromHttpApiData, Eq, Ord, Show)
 
 -- weather domain
 
 newtype DayInterval = DayInterval Int
-  deriving newtype (ToJSON, FromJSON, FromText)
+  deriving newtype (ToJSON, FromJSON, FromHttpApiData)
 
 data Timed a = Timed
   { from :: Day
@@ -44,7 +42,7 @@ data Timed a = Timed
   deriving (Generic, ToJSON, FromJSON)
 
 newtype Location = Location Text
-  deriving newtype (ToJSON, FromJSON, FromText, Eq, Ord, Show)
+  deriving newtype (ToJSON, FromJSON, FromHttpApiData, Eq, Ord, Show)
 
 data WeatherData = WeatherData
   { temperature :: Int
@@ -61,8 +59,3 @@ data UpdateData = UpdateData
   , content :: WeatherData
   }
   deriving (Generic, ToJSON, FromJSON)
-
-instance FromText Day where
-  fromText = iso8601ParseM . Text.unpack
-
-

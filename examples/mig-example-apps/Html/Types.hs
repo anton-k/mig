@@ -14,7 +14,7 @@ import Data.Aeson (FromJSON)
 import Data.Text (Text)
 import Data.Time
 import GHC.Generics
-import Mig (FromText)
+import Mig (FromHttpApiData, FromForm)
 
 -- | Web-page for our site
 data Page a
@@ -34,7 +34,7 @@ newtype ListPosts = ListPosts [BlogPost]
 
 -- | Blog post id
 newtype BlogPostId = BlogPostId { unBlogPostId :: Text }
-  deriving newtype  (FromText, Eq, Show, FromJSON)
+  deriving newtype  (FromHttpApiData, Eq, Show, FromJSON)
 
 -- | Blog post
 data BlogPost = BlogPost
@@ -54,4 +54,4 @@ data SubmitBlogPost = SubmitBlogPost
   { title :: Text
   , content :: Text
   }
-  deriving (Generic, FromJSON)
+  deriving (Generic, FromForm)

@@ -523,7 +523,7 @@ instance (FromHttpApiData a, ToServer b, KnownSymbol sym) => ToServer (Optional 
   type ServerMonad (Optional sym a -> b) = ServerMonad b
   toServer act = withQuery' (QueryName (fromString $ symbolVal (Proxy @sym))) (toServer . act . Optional)
 
--- Capture
+-- | Capture
 
 -- Captures part of the path. Example
 --
@@ -576,10 +576,10 @@ instance (ToServer b, MonadIO (ServerMonad b), FromForm a) => ToServer (FormBody
 -- > "api" /. (\(Header @"Trace-Id" traceId) -> Post @Json (handleFoo traceId))
 -- >
 -- > handleFoo :: Maybe ByteString -> IO FooResponse
-newtype Header (sym :: Symbol) = Header (Maybe ByteString)
+newtype Header (sym :: Symbol) a = Header (Maybe a)
 
-instance (ToServer b, KnownSymbol sym) => ToServer (Header sym -> b) where
-  type ServerMonad (Header sym -> b) = ServerMonad b
+instance (FromHttpApiData a, ToServer b, KnownSymbol sym) => ToServer (Header sym a -> b) where
+  type ServerMonad (Header sym a -> b) = ServerMonad b
   toServer act = toWithHeader (fromString $ symbolVal (Proxy @sym)) (toServer . act . Header)
 
 -- | Reads current path info

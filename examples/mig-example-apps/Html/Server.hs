@@ -82,8 +82,8 @@ handleWriteForm _site = Get $
   pure $ Page WritePost
 
 -- | Submit form with data provided by the user
-handleWriteSubmit :: Site -> FormJson SubmitBlogPost -> Post (Page BlogPost)
-handleWriteSubmit site (FormJson (SubmitBlogPost title content)) = Post $ do
+handleWriteSubmit :: Site -> FormBody SubmitBlogPost -> Post (Page BlogPost)
+handleWriteSubmit site (FormBody (SubmitBlogPost title content)) = Post $ do
   pid <- site.writeBlogPost title content
   maybe (PostNotFound pid) Page <$> site.readBlogPost pid
 

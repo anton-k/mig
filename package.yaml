@@ -84,6 +84,7 @@ dependencies:
 - mtl
 - exceptions
 - http-api-data
+- case-insensitive
 
 default-extensions:
   - ImportQualifiedPost

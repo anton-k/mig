@@ -164,16 +164,17 @@ wrapped in special newtypes and it will be decoded to proper server route.
 
 We have newtypes for:
 
-* `Query "name" type` - required query parameter
-* `Optional "name" type` - optional query parameter
-* `Capture type` - capture part of the URI between slashes `/`.
-* `Body type` - input JSON body
-* `RawBody` - input body as raw lazy bytestring
-* `RawFormData` - input of the html-form
-* `FormJson` - input f html-form as Json (see examples/Html.hs)
-* `Header "name"` - access header by name
-* `PathInfo` - access path info relative to the server
+* `Query "name" type` - required query parameter (`FromHttpApiData`)
+* `Optional "name" type` - optional query parameter (`FromHttpApiData`)
+* `Capture type` - capture part of the URI between slashes `/`. (`FromHttpApiData`)
+* `Body type` - input JSON body (`FromJSON`)
+* `RawBody` - input body as raw lazy bytestring (is `ByteString`)
+* `FormBody` - input URL-encoded form (it often comes from HTML-forms) (`FromForm`)
+* `Header "name" ty` - access header by name (`FromHttpApiData`)
+* `PathInfo` - access path info relative to the server (is `[Text]`)
 
+Class at in the parens is which class is used for convertion.
+Often we can derive the instance of that class with newtype-deriving or with Generic-deriving.
 We can change the number of arguments because the function `(/.)` is overloaded
 by second argument and it can accept anything convertible to `Server` or an
 instance of the class `ToServer`.

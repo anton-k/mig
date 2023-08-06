@@ -105,6 +105,7 @@ library
     , blaze-html
     , blaze-markup
     , bytestring
+    , case-insensitive
     , containers
     , exceptions
     , http-api-data
