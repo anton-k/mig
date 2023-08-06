@@ -61,7 +61,7 @@ module Mig
   -- * Run
   -- | Run server application
   , runServer
-  , Config (..)
+  , ServerConfig (..)
   , toApplication
 
   -- ** Render
@@ -642,4 +642,4 @@ runServer :: Int -> Server IO -> IO ()
 runServer port server =
   Warp.run port (toApplication config server)
   where
-    config = Config { maxBodySize = Nothing }
+    config = ServerConfig { maxBodySize = Nothing }

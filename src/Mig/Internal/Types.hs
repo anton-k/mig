@@ -27,7 +27,7 @@ module Mig.Internal.Types
   , badRequest
   , setContent
   -- * WAI
-  , Config (..)
+  , ServerConfig (..)
   , Kilobytes
   , toApplication
   -- * utils
@@ -155,12 +155,12 @@ badRequest message =
 -- Note that server is monoid and it can be constructed with Monoid functions and
 -- path constructor @(/.)@. To pass inputs for handler we can use special newtype wrappers:
 --
--- * Query - for required query parameters
--- * Optional - for optional query parameters
--- * Capture - for parsing elements of URI
--- * Body - fot JSON-body input
--- * RawBody - for raw ByteString input
--- * Header - for headers
+-- * @Query@ - for required query parameters
+-- * @Optional@ - for optional query parameters
+-- * @Capture@ - for parsing elements of URI
+-- * @Body@ - fot JSON-body input
+-- * @RawBody@ - for raw ByteString input
+-- * @Header@ - for headers
 --
 -- To distinguish by HTTP-method we use corresponding constructors: Get, Post, Put, etc.
 -- Let's discuss the structure of the constructor. Let's take Get for example:
@@ -330,12 +330,12 @@ handleError handler (Server act) = Server $ \req ->
 -- render to WAI
 
 -- | Server config
-data Config = Config
+data ServerConfig = ServerConfig
   { maxBodySize :: Maybe Kilobytes
   }
 
 -- | Convert server to WAI-application
-toApplication :: Config -> Server IO -> Application
+toApplication :: ServerConfig -> Server IO -> Application
 toApplication config server req processResponse = do
   mResp <- unServer (handleError onErr server) =<< fromRequest config.maxBodySize req
   processResponse $ toResponse $ fromMaybe noResult mResp

@@ -67,7 +67,7 @@ runServer :: Int -> Server IO -> IO ()
 runServer port server = ...
 
 -- | Convert to WAI application
-toApplication :: Config -> Server IO -> Wai.Application
+toApplication :: ServerConfig -> Server IO -> Wai.Application
 ```
 
 The HTTP-method is specified with newtype wrapper `Get`:
