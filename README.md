@@ -1,9 +1,6 @@
 # Mig - library to write composable and lightweight servers
 
 The Mig is a library to build lightweight composable servers.
-There are only couple of combinators and Monoid instance.
-With it we can build type-safe servers from small parts.
-
 The main strength is ability to build servers from parts
 and flexible DSL which features only small amount of functions.
 
