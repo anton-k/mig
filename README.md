@@ -17,6 +17,17 @@ So I wanted to create something in the middle. Something composable and simple
 at the same time.
 The name `mig` (pronounced as meeg) is a russian word for "instant moment".
 
+## How to install
+
+We can install from [hackage](https://hackage.haskell.org/package/mig) to use with cabal or use this snippet
+to depend on latest source in stack. Put it in `stack.yaml` file:
+
+```yaml
+extra-deps:
+- git: https://github.com/anton-k/mig
+  commit: be9269b83bb944d8dede4d36a51fb1aa6fb26516
+```
+
 ## Quick start guide
 
 Let's create something cool with the library.
