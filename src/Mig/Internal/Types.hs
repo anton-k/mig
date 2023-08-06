@@ -17,7 +17,6 @@ module Mig.Internal.Types
   , toWithHeader
   , toWithFormData
   , toWithPathInfo
-  , FormBody (..)
   -- * responses
   , text
   , json
@@ -67,7 +66,7 @@ import Data.Foldable
 import Control.Monad.IO.Class
 import Control.Monad.Catch
 import Data.Typeable
-import Network.Wai.Parse qualified as Parse
+import Web.FormUrlEncoded
 
 -- | Http response
 data Resp = Resp
@@ -103,12 +102,6 @@ data Req = Req
     -- ^ request method
   , readBody :: IO (Either (Error Text) BL.ByteString)
     -- ^ lazy body reader. Error can happen if size is too big (configured on running the server)
-  , readFormBody :: IO (Either (Error Text) FormBody)
-  }
-
-data FormBody = FormBody
-  { params :: [(ByteString, ByteString)]
-  , files :: [(ByteString, Parse.FileInfo BL.ByteString)]
   }
 
 -- Errors
@@ -200,13 +193,12 @@ toWithBody act = Server $ \req -> do
     Left err -> pure $ Just $ setRespStatus err.status (text err.body)
 
 -- TODO: make it size limited by HTTP-body size
-toWithFormData :: MonadIO m => (FormBody -> Server m) -> Server m
+toWithFormData :: (FromForm a, MonadIO m) => (a -> Server m) -> Server m
 toWithFormData act = Server $ \req -> do
-  eFormBody <- liftIO req.readFormBody
-  case eFormBody of
-    Right formBody -> unServer (act formBody) req
-    Left err -> pure $ Just $ setRespStatus err.status (text err.body)
-
+  eBody <- first (\(Error _ details) -> details) <$> liftIO req.readBody
+  case eBody >>= urlDecodeForm >>= fromForm of
+    Right a -> unServer (act a) req
+    Left err -> pure $ Just $ setRespStatus status413 $ badRequest err
 
 -- | Size of the input body
 type Kilobytes = Int
@@ -368,16 +360,5 @@ fromRequest maxSize req =
     , headers = requestHeaders req
     , method = requestMethod req
     , readBody = fmap (fmap BL.fromChunks) $ readRequestBody (getRequestBodyChunk req) maxSize
-    , readFormBody = getReadFormBody req
     }
-
-getReadFormBody :: Request -> IO (Either (Error Text) FormBody)
-getReadFormBody req = do
-  case Parse.getRequestBodyType req of
-    Nothing -> pure $ Right (FormBody [] [])
-    Just reqBodyType -> do
-      eResult <- try @IO @SomeException (Parse.sinkRequestBody Parse.lbsBackEnd reqBodyType (getRequestBodyChunk req))
-      pure $ bimap (const toError) (uncurry FormBody) eResult
-  where
-    toError = Error status413 (Text.pack $ "Request is too big!")
 

@@ -41,9 +41,7 @@ module Mig
   , Body (..)
   , RawBody (..)
   , Header (..)
-  , RawFormData (..)
   , FormBody (..)
-  , FormJson (..)
   , PathInfo (..)
 
   -- ** response
@@ -87,7 +85,8 @@ module Mig
 import Mig.Internal.Types
 import Mig.Internal.Types qualified as Resp (Resp (..))
 
-
+import Web.HttpApiData as X
+import Web.FormUrlEncoded as X
 import Data.Bifunctor
 import Data.Kind
 import Data.String
@@ -113,7 +112,6 @@ import Network.HTTP.Types.Header (ResponseHeaders)
 import Network.Wai.Handler.Warp qualified as Warp
 import Control.Exception (throw)
 import Data.Typeable
-import Data.Aeson.Key qualified as Json
 
 -- | Path constructor (right associative). Example:
 --
@@ -172,19 +170,19 @@ toWithQuery :: ByteString -> (Maybe ByteString -> Server m) -> Server m
 toWithQuery name act = Server $ \req ->
   unServer (act (Map.lookup name req.query)) req
 
-withQuery' :: FromText a => QueryName a -> (Maybe a -> Server m) -> Server m
+withQuery' :: FromHttpApiData a => QueryName a -> (Maybe a -> Server m) -> Server m
 withQuery' (QueryName name) act = toWithQuery (Text.encodeUtf8 name) $ \mVal ->
   let
     -- TODO: do not ignore parse failure
-    mArg = fromText =<< either (const Nothing) Just . Text.decodeUtf8' =<< mVal
+    mArg = either (const Nothing) Just . (parseQueryParam <=< first (Text.pack . show) . Text.decodeUtf8') =<< mVal
   in
     act mArg
 
-withQuery :: (Applicative m, FromText a) => QueryName a -> (a -> Server m) -> Server m
+withQuery :: (Applicative m, FromHttpApiData a) => QueryName a -> (a -> Server m) -> Server m
 withQuery (QueryName name) act = toWithQuery (Text.encodeUtf8 name) $ \mVal ->
   let
     -- TODO: do not ignore parse failure
-    mArg = fromText =<< either (const Nothing) Just . Text.decodeUtf8' =<< mVal
+    mArg = either (const Nothing) Just . (parseQueryParam <=< first (Text.pack . show) . Text.decodeUtf8') =<< mVal
   in
     case mArg of
       Just arg -> act arg
@@ -507,7 +505,7 @@ instance (Monad m, ToHtmlResp a) => ToServer (Options Html m a) where
 -- > handleFoo (Query arg) = ...
 newtype Query (sym :: Symbol) a = Query a
 
-instance (FromText a, ToServer b, KnownSymbol sym) => ToServer (Query sym a -> b) where
+instance (FromHttpApiData a, ToServer b, KnownSymbol sym) => ToServer (Query sym a -> b) where
   type ServerMonad (Query sym a -> b) = ServerMonad b
   toServer act = withQuery (QueryName (Text.pack $ symbolVal (Proxy @sym))) (toServer . act . Query)
 
@@ -521,7 +519,7 @@ instance (FromText a, ToServer b, KnownSymbol sym) => ToServer (Query sym a -> b
 -- > handleFoo (Optional maybeArg) = ...
 newtype Optional (sym :: Symbol) a = Optional (Maybe a)
 
-instance (FromText a, ToServer b, KnownSymbol sym) => ToServer (Optional sym a -> b) where
+instance (FromHttpApiData a, ToServer b, KnownSymbol sym) => ToServer (Optional sym a -> b) where
   type ServerMonad (Optional sym a -> b) = ServerMonad b
   toServer act = withQuery' (QueryName (fromString $ symbolVal (Proxy @sym))) (toServer . act . Optional)
 
@@ -534,12 +532,12 @@ instance (FromText a, ToServer b, KnownSymbol sym) => ToServer (Optional sym a -
 -- It will parse the paths: "api/foo/358" and pass 358 to @handleFoo@.
 newtype Capture a = Capture a
 
-instance (FromText a, ToServer b) => ToServer (Capture a -> b) where
+instance (FromHttpApiData a, ToServer b) => ToServer (Capture a -> b) where
   type ServerMonad (Capture a -> b) = ServerMonad b
   toServer act = toWithCapture $ \txt ->
-    case fromText txt of
-      Just val -> toServer $ act $ Capture val
-      Nothing -> toConst $ pure $ badRequest "Failed to parse capture"
+    case parseUrlPiece txt of
+      Right val -> toServer $ act $ Capture val
+      Left err -> toConst $ pure $ badRequest ("Failed to parse capture: " <> err)
 
 -- Read Body input
 
@@ -564,49 +562,12 @@ instance (MonadIO (ServerMonad b), ToServer b) => ToServer (RawBody -> b) where
   type ServerMonad (RawBody -> b) = ServerMonad b
   toServer act = toWithBody $ toServer . act . RawBody
 
--- | Parse raw form body. It includes named form arguments and file info.
--- Note that we can not use FormBody and JSON-body at the same time.
--- They occupy the same field in the HTTP-request.
-newtype RawFormData = RawFormData FormBody
+-- | Reads the URL encoded Form input
+newtype FormBody a = FormBody a
 
-instance (ToServer b, MonadIO (ServerMonad b)) => ToServer (RawFormData -> b) where
-  type ServerMonad (RawFormData -> b) = ServerMonad b
-  toServer act = toWithFormData $ toServer . act . RawFormData
-
--- | It reads form as plain JSON-object where name of the form's field becomes
--- a field of JSON-object and every value is Text.
---
--- For example if submit a form with fields: name, password, date.
--- We can read it in the data type:
---
--- > data User = User
--- >  { name :: Text
--- >  , passord :: Text
--- >  , date :: Text
--- >  }
---
--- Note that we can not use FormBody and JSON-body at the same time.
--- They occupy the same field in the HTTP-request.
-newtype FormJson a = FormJson a
-
-instance (ToServer b, MonadIO (ServerMonad b), FromJSON a) => ToServer (FormJson a -> b) where
-  type ServerMonad (FormJson a -> b) = ServerMonad b
-  toServer act = toWithFormData $ \formBody -> do
-    case formDataToJson formBody.params of
-      Right v -> toServer $ act $ FormJson v
-      Left err -> toConst $
-        pure $ badRequest $ "Failed to parse form data as JSON body: " <> err
-
-formDataToJson :: FromJSON a => [(ByteString, ByteString)] -> Either Text a
-formDataToJson rawPairs = do
-  jsonVal <- Json.object <$> mapM toPair rawPairs
-  case Json.fromJSON jsonVal of
-    Json.Success result -> Right result
-    Json.Error err -> Left (Text.pack $ show err)
-  where
-    toPair (key, val) =
-      first (Text.pack . show) $
-        (\k v -> (Json.fromText k, Json.String v)) <$> Text.decodeUtf8' key <*> Text.decodeUtf8' val
+instance (ToServer b, MonadIO (ServerMonad b), FromForm a) => ToServer (FormBody a -> b) where
+  type ServerMonad (FormBody a -> b) = ServerMonad b
+  toServer act = toWithFormData (toServer . act . FormBody)
 
 -- Request Headers
 
