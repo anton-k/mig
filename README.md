@@ -22,7 +22,7 @@ to depend on latest source in stack. Put it in `stack.yaml` file:
 ```yaml
 extra-deps:
 - git: https://github.com/anton-k/mig
-  commit: be9269b83bb944d8dede4d36a51fb1aa6fb26516
+  commit: <latest-commit>
 ```
 
 ## Quick start guide
