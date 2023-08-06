@@ -10,7 +10,6 @@ module Main
 -- import Text and IO based server
 import Mig.Json.IO
 import Data.Text (Text)
-import Data.Text qualified as Text
 import Data.Text.IO qualified as Text
 
 main :: IO ()
@@ -45,12 +44,15 @@ helloWorld = Get $ do
   logDebug "hello world route call"
   pure "Hello world!"
 
+newtype TraceId = TraceId Text
+  deriving newtype (FromHttpApiData, ToText)
+
 -- | Using several inputs: header argument and required query
 -- and using conditional output status
-handleSucc :: Header "Trace-Id" -> Query "value" Int -> Get (SetStatus Int)
+handleSucc :: Header "Trace-Id" TraceId -> Query "value" Int -> Get (SetStatus Int)
 handleSucc (Header mTraceId) (Query n) = Get $ do
   logDebug "succ route call"
-  mapM_ (logDebug . mappend "traceId: " . Text.pack . show) mTraceId
+  mapM_ (logDebug . mappend "traceId: " . toText) mTraceId
   pure $ SetStatus st (succ n)
   where
     st
