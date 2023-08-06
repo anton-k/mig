@@ -1,0 +1,157 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           mig-example-apps
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/mig-example-apps#readme>
+homepage:       https://github.com/githubuser/mig-example-apps#readme
+bug-reports:    https://github.com/githubuser/mig-example-apps/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2023 Author name here
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/mig-example-apps
+
+executable counter-mig-example-app
+  main-is: Main.hs
+  other-modules:
+      Paths_mig_example_apps
+  hs-source-dirs:
+      app/Counter
+  default-extensions:
+      ImportQualifiedPost
+      OverloadedStrings
+      TypeFamilies
+      OverloadedRecordDot
+      DuplicateRecordFields
+      LambdaCase
+      DerivingStrategies
+      DataKinds
+      StrictData
+  ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base
+    , mig
+    , mtl
+    , random
+    , text
+    , time
+  default-language: GHC2021
+
+executable hello-world-mig-example-app
+  main-is: Main.hs
+  other-modules:
+      Paths_mig_example_apps
+  hs-source-dirs:
+      app/HelloWorld
+  default-extensions:
+      ImportQualifiedPost
+      OverloadedStrings
+      TypeFamilies
+      OverloadedRecordDot
+      DuplicateRecordFields
+      LambdaCase
+      DerivingStrategies
+      DataKinds
+      StrictData
+  ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base
+    , mig
+    , random
+    , text
+    , time
+  default-language: GHC2021
+
+executable html-mig-example-app
+  main-is: Main.hs
+  other-modules:
+      Paths_mig_example_apps
+  hs-source-dirs:
+      app/Html
+  default-extensions:
+      ImportQualifiedPost
+      OverloadedStrings
+      TypeFamilies
+      OverloadedRecordDot
+      DuplicateRecordFields
+      LambdaCase
+      DerivingStrategies
+      DataKinds
+      StrictData
+  ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base
+    , blaze-html
+    , mig
+    , random
+    , text
+    , time
+  default-language: GHC2021
+
+executable json-api-mig-example-app
+  main-is: Main.hs
+  other-modules:
+      Paths_mig_example_apps
+  hs-source-dirs:
+      app/JsonApi
+  default-extensions:
+      ImportQualifiedPost
+      OverloadedStrings
+      TypeFamilies
+      OverloadedRecordDot
+      DuplicateRecordFields
+      LambdaCase
+      DerivingStrategies
+      DataKinds
+      StrictData
+  ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base
+    , containers
+    , mig
+    , random
+    , text
+    , time
+  default-language: GHC2021
+
+executable route-args-mig-example-app
+  main-is: Main.hs
+  other-modules:
+      Paths_mig_example_apps
+  hs-source-dirs:
+      app/RouteArgs
+  default-extensions:
+      ImportQualifiedPost
+      OverloadedStrings
+      TypeFamilies
+      OverloadedRecordDot
+      DuplicateRecordFields
+      LambdaCase
+      DerivingStrategies
+      DataKinds
+      StrictData
+  ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base
+    , mig
+    , random
+    , text
+    , time
+  default-language: GHC2021

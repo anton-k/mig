@@ -1,0 +1,102 @@
+name:                mig-example-apps
+version:             0.1.0.0
+github:              "githubuser/mig-example-apps"
+license:             BSD3
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2023 Author name here"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/githubuser/mig-example-apps#readme>
+
+ghc-options:
+- -Wall
+- -Werror
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+default-extensions:
+  - ImportQualifiedPost
+  - OverloadedStrings
+  - TypeFamilies
+  - OverloadedRecordDot
+  - DuplicateRecordFields
+  - LambdaCase
+  - DerivingStrategies
+  - DataKinds
+  - StrictData
+
+language: GHC2021
+
+dependencies:
+  - base >= 4.7 && < 5
+  - base
+  - mig
+  - text
+  - aeson
+  - random
+  - time
+
+executables:
+  hello-world-mig-example-app:
+    main:                Main.hs
+    source-dirs:         app/HelloWorld
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+
+  route-args-mig-example-app:
+    main:                Main.hs
+    source-dirs:         app/RouteArgs
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+
+  json-api-mig-example-app:
+    main:                Main.hs
+    source-dirs:         app/JsonApi
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+      - containers
+
+  counter-mig-example-app:
+    main:                Main.hs
+    source-dirs:         app/Counter
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - mtl
+
+  html-mig-example-app:
+    main:                Main.hs
+    source-dirs:         app/Html
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - blaze-html
+

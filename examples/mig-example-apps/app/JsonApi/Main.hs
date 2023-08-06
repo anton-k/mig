@@ -8,11 +8,12 @@
       DataKinds,
       RecordWildCards
 #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 -- | Let's build a weather forecast API
 --
 -- We can query weather info. And also we can update the data.
 -- User should get auth token that expires prior to making queries.
-module Example.JsonApi
+module Main
   ( main
   ) where
 
@@ -37,7 +38,10 @@ import Data.List qualified as List
 main :: IO ()
 main = do
   env <- initEnv
-  runServer 8085 (server env)
+  putStrLn ("The weather forecast JSON API server listens on port: " <> show port)
+  runServer port (server env)
+  where
+    port = 8085
 
 -------------------------------------------------------------------------------------
 -- server and handlers
@@ -61,7 +65,7 @@ handleAuthToken env (Body user) = Post $ do
   if isValid
     then do
       token <- env.auth.newToken user
-      forkIO $ setExpireTimer token
+      void $ forkIO $ setExpireTimer token
       pure $ Right token
     else do
       env.logger.error "User does not have access to service"
@@ -75,10 +79,10 @@ handleGetWeather ::
   Env ->
   Query "auth" AuthToken -> Capture Location -> Capture Day -> Capture DayInterval ->
   Get (Either (Error Text) (Timed WeatherData))
-handleGetWeather env (Query token) (Capture location) (Capture from) (Capture interval) = Get $ do
+handleGetWeather env (Query token) (Capture location) (Capture fromDay) (Capture interval) = Get $ do
   env.logger.info "get the weather forecast"
   fmap join $ whenAuth env token $ do
-    mResult <- env.weather.get location from interval
+    mResult <- env.weather.get location fromDay interval
     case mResult of
       Just result -> pure $ Right result
       Nothing -> pure $ Left $ Error status400 "No data"
@@ -149,8 +153,6 @@ newtype AuthToken = AuthToken Text
 
 -- weather domain
 
-type Hour = Int
-
 newtype DayInterval = DayInterval Int
   deriving newtype (ToJSON, FromJSON, FromText)
 
@@ -216,7 +218,7 @@ initEnv = do
 initAuth :: St -> Auth
 initAuth st =
   Auth
-    { newToken = \user -> do
+    { newToken = \_user -> do
         token <- AuthToken . toText <$> randomRIO @Int (0, 1_000_000)
         atomicModify st.tokens $ Set.insert token
         pure token

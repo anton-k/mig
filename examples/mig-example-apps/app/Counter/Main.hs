@@ -8,7 +8,7 @@
 -- extension as our monad is a newtype wrapper over ReaderT-IO and for that monad server can be derived.
 --
 -- Also we can derive instance for the newtypes over @ReaderT env (ExceptT err IO)@
-module Example.Counter
+module Main
   ( main
   ) where
 
@@ -18,7 +18,11 @@ import Control.Monad.Reader
 import Data.IORef
 
 main :: IO ()
-main = runServer 8085 =<< counter
+main = do
+  putStrLn ("The counter server listens on port: " <> show port)
+  runServer port =<< counter
+  where
+    port = 8085
 
 -- | render server to IO-based one. We can run only IO-based servers
 counter :: IO (Server IO)

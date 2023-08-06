@@ -15,7 +15,7 @@
 --
 -- We can choose between the two. Also we can create new blog posts and list them.
 -- all posts are stored in memory.
-module Example.Html
+module Main
   ( main
   ) where
 
@@ -39,8 +39,11 @@ import Data.Aeson (FromJSON)
 -- run blog post server
 main :: IO ()
 main = do
+  putStrLn ("The blog post server listens on port: " <> show port)
   site <- initSite
-  runServer 8085 $ server site
+  runServer port $ server site
+  where
+    port = 8085
 
 -------------------------------------------------------------------------------------
 -- server
@@ -109,7 +112,7 @@ handleQuote site = Get $ Page <$> site.readQuote
 
 -- | Show form to the user to fill new post data
 handleWriteForm :: Site -> Get (Page WritePost)
-handleWriteForm site = Get $
+handleWriteForm _site = Get $
   pure $ Page WritePost
 
 -- | Submit form with data provided by the user
@@ -329,9 +332,6 @@ oneOf as = (as !! ) . (`mod` len) <$> randomIO
 
 -------------------------------------------------------------------------------------
 -- random content for blog posts
-
-randomPoem :: IO Text
-randomPoem = oneOf poems
 
 poems :: [Text]
 poems = [lukomorye, tweedle, dream, pie, toSeeAWorld]
