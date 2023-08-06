@@ -6,7 +6,7 @@ cabal-version: 1.12
 
 name:           mig-example-apps
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/mig-example-apps#readme>
+description:    Please see the README on GitHub at <https://github.com/anton-k/mig-example-apps#readme>
 homepage:       https://github.com/githubuser/mig-example-apps#readme
 bug-reports:    https://github.com/githubuser/mig-example-apps/issues
 author:         Author name here

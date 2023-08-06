@@ -35,7 +35,7 @@ module Mig.Common
   , HasServer (..)
   , fromReader
   -- * Run
-  , Config (..)
+  , ServerConfig (..)
   , toApplication
   , runServer
   -- * utils
@@ -47,6 +47,6 @@ module Mig.Common
 import Mig
   ( Server (..), ToServer (..), ToText (..), ToHtmlResp (..), FromText (..), handleError, PathInfo (..)
   , (/.), Capture (..), Query (..), Optional (..), Body (..), RawBody (..), Header (..), RawFormData (..), FormBody (..), FormJson (..), AddHeaders (..), SetStatus (..)
-  , setStatus, addHeaders, HasServer (..), fromReader, Config (..), toApplication, runServer, badRequest, Error (..), withServerAction)
+  , setStatus, addHeaders, HasServer (..), fromReader, ServerConfig (..), toApplication, runServer, badRequest, Error (..), withServerAction)
 
 import Network.HTTP.Types.Status as X
