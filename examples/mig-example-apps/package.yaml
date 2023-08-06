@@ -42,6 +42,7 @@ default-extensions:
   - DataKinds
   - StrictData
   - DeriveAnyClass
+  - RecordWildCards
 
 language: GHC2021
 
