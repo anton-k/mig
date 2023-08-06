@@ -41,6 +41,7 @@ default-extensions:
   - DerivingStrategies
   - DataKinds
   - StrictData
+  - DeriveAnyClass
 
 language: GHC2021
 

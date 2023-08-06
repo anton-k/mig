@@ -39,6 +39,7 @@ executable counter-mig-example-app
       DerivingStrategies
       DataKinds
       StrictData
+      DeriveAnyClass
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -66,6 +67,7 @@ executable hello-world-mig-example-app
       DerivingStrategies
       DataKinds
       StrictData
+      DeriveAnyClass
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -79,6 +81,11 @@ executable hello-world-mig-example-app
 executable html-mig-example-app
   main-is: Main.hs
   other-modules:
+      Content
+      Interface
+      Server
+      Types
+      View
       Paths_mig_example_apps
   hs-source-dirs:
       app/Html
@@ -92,6 +99,7 @@ executable html-mig-example-app
       DerivingStrategies
       DataKinds
       StrictData
+      DeriveAnyClass
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -119,6 +127,7 @@ executable json-api-mig-example-app
       DerivingStrategies
       DataKinds
       StrictData
+      DeriveAnyClass
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -146,6 +155,7 @@ executable route-args-mig-example-app
       DerivingStrategies
       DataKinds
       StrictData
+      DeriveAnyClass
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
