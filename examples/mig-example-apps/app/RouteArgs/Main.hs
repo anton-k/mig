@@ -3,7 +3,7 @@
 --
 -- We can get input arguments with function that takes in
 -- typed argument wrpapped in specific newtype which encodes the type of the input
-module Example.RouteArgs
+module Main
   ( main
   ) where
 
@@ -14,7 +14,11 @@ import Data.Text qualified as Text
 import Data.Text.IO qualified as Text
 
 main :: IO ()
-main = runServer 8085 routeArgs
+main = do
+  putStrLn ("The route args server listens on port: " <> show port)
+  runServer port routeArgs
+  where
+    port = 8085
 
 -- | Let's define a server
 routeArgs :: Server IO

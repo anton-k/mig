@@ -3,5 +3,8 @@
 build:
 	stack build
 
+test:
+	stack test
+
 run:
-	stack runhaskell examples/JsonApi.hs
+	stack run
