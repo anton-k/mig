@@ -28,7 +28,7 @@ executable counter-mig-example-app
   other-modules:
       Paths_mig_example_apps
   hs-source-dirs:
-      app/Counter
+      Counter
   default-extensions:
       ImportQualifiedPost
       OverloadedStrings
@@ -57,7 +57,7 @@ executable hello-world-mig-example-app
   other-modules:
       Paths_mig_example_apps
   hs-source-dirs:
-      app/HelloWorld
+      HelloWorld
   default-extensions:
       ImportQualifiedPost
       OverloadedStrings
@@ -92,7 +92,7 @@ executable html-mig-example-app
       View
       Paths_mig_example_apps
   hs-source-dirs:
-      app/Html
+      Html
   default-extensions:
       ImportQualifiedPost
       OverloadedStrings
@@ -126,7 +126,7 @@ executable json-api-mig-example-app
       Types
       Paths_mig_example_apps
   hs-source-dirs:
-      app/JsonApi
+      JsonApi
   default-extensions:
       ImportQualifiedPost
       OverloadedStrings
@@ -155,7 +155,7 @@ executable route-args-mig-example-app
   other-modules:
       Paths_mig_example_apps
   hs-source-dirs:
-      app/RouteArgs
+      RouteArgs
   default-extensions:
       ImportQualifiedPost
       OverloadedStrings
