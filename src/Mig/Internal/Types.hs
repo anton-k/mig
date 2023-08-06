@@ -67,6 +67,9 @@ import Control.Monad.IO.Class
 import Control.Monad.Catch
 import Data.Typeable
 import Web.FormUrlEncoded
+import Web.HttpApiData
+import Data.Either (fromRight)
+import Data.CaseInsensitive qualified as CI
 
 -- | Http response
 data Resp = Resp
@@ -174,9 +177,11 @@ badRequest message =
 -- * @Either (Error err)@ - to response with errors
 newtype Server m = Server { unServer :: Req -> m (Maybe Resp) }
 
+-- | Replies to any http-method
 toConst :: Functor m => m Resp -> Server m
 toConst act = Server $ const $ Just <$> act
 
+-- | Specify which method to reply
 toMethod :: Monad m => Method -> m Resp -> Server m
 toMethod method act = Server $ checkMethod method act
 
@@ -185,6 +190,7 @@ checkMethod method act req
   | null req.path && req.method == method = Just <$> act
   | otherwise = pure Nothing
 
+-- | Reads full body as lazy bytestring
 toWithBody :: MonadIO m => (BL.ByteString -> Server m) -> Server m
 toWithBody act = Server $ \req -> do
   eBody <- liftIO req.readBody
@@ -192,7 +198,7 @@ toWithBody act = Server $ \req -> do
     Right body -> unServer (act body) req
     Left err -> pure $ Just $ setRespStatus err.status (text err.body)
 
--- TODO: make it size limited by HTTP-body size
+-- | Reads URL-encoded form data
 toWithFormData :: (FromForm a, MonadIO m) => (a -> Server m) -> Server m
 toWithFormData act = Server $ \req -> do
   eBody <- first (\(Error _ details) -> details) <$> liftIO req.readBody
@@ -223,6 +229,7 @@ readRequestBody readChunk maxSize = loop 0 Seq.empty
       Just size -> \current -> current > size
       Nothing -> const False
 
+-- | Match path prefix
 toWithPath :: Monad m => Text -> Server m -> Server m
 toWithPath route act = Server $ \req ->
   case hasPath route req.path of
@@ -237,22 +244,34 @@ hasPath route (path:restPath)
   | otherwise = Nothing
 hasPath _ _ = Nothing
 
+-- | Reads capture URL-piece element
 toWithCapture :: Monad m => (Text -> Server m) -> Server m
 toWithCapture act = Server $ \req ->
   case pathHead req of
     Just (arg, nextReq) -> unServer (act arg) nextReq
     Nothing -> pure Nothing
 
+-- | Match on path prefix
 pathHead :: Req -> Maybe (Text, Req)
 pathHead req =
   case req.path of
     hd : tl -> Just (hd, req { path = tl })
     _ -> Nothing
 
-toWithHeader :: HeaderName -> (Maybe ByteString -> Server m) -> Server m
+-- | Read info from header
+toWithHeader :: (Monad m, FromHttpApiData a) => HeaderName -> (Maybe a -> Server m) -> Server m
 toWithHeader name act = Server $ \req ->
-  unServer (act (fmap snd $ List.find ((== name) . fst) req.headers)) req
+  case fmap snd $ List.find ((== name) . fst) req.headers of
+    Just bs ->
+      case parseHeader bs of
+        Right val -> unServer (act (Just val)) req
+        Left err -> pure $ Just $ badRequest (errMessage err)
+    Nothing -> unServer (act Nothing) req
+  where
+    errMessage :: Text -> Text
+    errMessage err = "Failed to parse header " <> (fromRight "" $ Text.decodeUtf8' $ CI.original name) <> ": " <> err
 
+-- | reads path info
 toWithPathInfo :: ([Text] -> Server m) -> Server m
 toWithPathInfo act = Server $ \req ->
   unServer (act req.path) req
@@ -290,6 +309,7 @@ setContent :: ByteString -> ResponseHeaders
 setContent contentType =
   [("Content-Type", contentType <>"; charset=utf-8")]
 
+-- | Sets response status
 setRespStatus :: Status -> Resp -> Resp
 setRespStatus status (Resp _ headers body) = Resp status headers body
 
