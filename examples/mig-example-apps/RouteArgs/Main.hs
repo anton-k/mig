@@ -1,4 +1,3 @@
-{-# Language OverloadedStrings, DataKinds #-}
 -- | This example shows how to use input arguments for the server.
 --
 -- We can get input arguments with function that takes in

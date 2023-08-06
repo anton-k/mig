@@ -1,4 +1,3 @@
-{-# Language OverloadedStrings #-}
 -- | Most basic Hello world server.
 -- It has only one route which outputs the greeting to the user
 module Main

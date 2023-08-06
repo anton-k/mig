@@ -1,4 +1,4 @@
-{-# Language UndecidableInstances, OverloadedStrings, DerivingStrategies, OverloadedRecordDot #-}
+{-# Language UndecidableInstances #-}
 --  | Example shows how to use custom monad with server.
 -- We use Json response server with our Monad App which is a newtype over ReaderT-IO.
 -- As we can run only @Server IO@ we need to convert the @Server App@ to IO-based server.
