@@ -40,6 +40,7 @@ executable counter-mig-example-app
       DataKinds
       StrictData
       DeriveAnyClass
+      RecordWildCards
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -68,6 +69,7 @@ executable hello-world-mig-example-app
       DataKinds
       StrictData
       DeriveAnyClass
+      RecordWildCards
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -82,7 +84,9 @@ executable html-mig-example-app
   main-is: Main.hs
   other-modules:
       Content
+      Init
       Interface
+      Internal.State
       Server
       Types
       View
@@ -100,6 +104,7 @@ executable html-mig-example-app
       DataKinds
       StrictData
       DeriveAnyClass
+      RecordWildCards
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -114,6 +119,11 @@ executable html-mig-example-app
 executable json-api-mig-example-app
   main-is: Main.hs
   other-modules:
+      Init
+      Interface
+      Internal.State
+      Server
+      Types
       Paths_mig_example_apps
   hs-source-dirs:
       app/JsonApi
@@ -128,6 +138,7 @@ executable json-api-mig-example-app
       DataKinds
       StrictData
       DeriveAnyClass
+      RecordWildCards
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -156,6 +167,7 @@ executable route-args-mig-example-app
       DataKinds
       StrictData
       DeriveAnyClass
+      RecordWildCards
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson

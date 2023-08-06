@@ -19,9 +19,9 @@ module Main
   ( main
   ) where
 
-import Mig.Html.IO
-import Interface
-import Server
+import Mig.Html.IO (runServer)
+import Server (server)
+import Init (initSite)
 
 -- run blog post server
 main :: IO ()
