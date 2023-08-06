@@ -349,8 +349,8 @@ We have walked through the whole library. As a summary of it's functions: we can
 * compose servers with path operator `(/.)` and monoid instance. 
 * define handlers as functions with various input and output newtype-wrappers
 
-I hope that you will enjoy the library. See the directory [`examples`](https://github.com/anton-k/mig/tree/main/examples) for more examples.
-We can run the examples with stack by runing:
+I hope that you like the concept and will enjoy the library. See the directory [`examples`](https://github.com/anton-k/mig/tree/main/examples) for more examples.
+We can run the examples with stack by running:
 
 ```
 > make run

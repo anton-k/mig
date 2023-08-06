@@ -4,4 +4,4 @@ build:
 	stack build
 
 run:
-	stack runhaskell examples/HelloWorld.hs
+	stack runhaskell examples/JsonApi.hs
