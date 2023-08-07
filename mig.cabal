@@ -81,6 +81,10 @@ library
       Mig.Common
       Mig.Html
       Mig.Html.IO
+      Mig.Internal.Api
+      Mig.Internal.Info
+      Mig.Internal.Route
+      Mig.Internal.ServerFun
       Mig.Internal.Types
       Mig.Json
       Mig.Json.IO
@@ -98,6 +102,7 @@ library
       DerivingStrategies
       DataKinds
       StrictData
+      AllowAmbiguousTypes
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       aeson

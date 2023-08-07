@@ -96,6 +96,7 @@ default-extensions:
   - DerivingStrategies
   - DataKinds
   - StrictData
+  - AllowAmbiguousTypes
 
 language: GHC2021
 

@@ -308,19 +308,6 @@ mapResp f (Server act) = Server $ \req ->
 
 -- text response
 
--- | Values convertible to Text (lazy)
-class ToTextResp a where
-  toTextResp :: a -> Resp
-
-instance ToTextResp Text where
-  toTextResp = text
-
-instance ToTextResp TL.Text where
-  toTextResp = text
-
-instance ToTextResp Int where
-  toTextResp = text
-
 instance ToTextResp a => ToTextResp (AddHeaders a) where
   toTextResp (AddHeaders headers content) =
     resp { Resp.headers = resp.headers <> headers }
@@ -331,19 +318,7 @@ instance ToTextResp a => ToTextResp (SetStatus a) where
   toTextResp (SetStatus st content) =
     setRespStatus st (toTextResp content)
 
-instance (ToText err, ToTextResp a) => ToTextResp (Either (Error err) a) where
-  toTextResp = either fromError toTextResp
-    where
-      fromError err = setRespStatus err.status (text err.body)
-
 -- json response
-
--- | Values convertible to Json
-class ToJsonResp a where
-  toJsonResp :: a -> Resp
-
-instance {-# OVERLAPPABLE #-} ToJSON a => ToJsonResp a where
-  toJsonResp = json
 
 instance ToJsonResp a => ToJsonResp (AddHeaders a) where
   toJsonResp (AddHeaders headers content) =
@@ -355,19 +330,7 @@ instance ToJsonResp a => ToJsonResp (SetStatus a) where
   toJsonResp (SetStatus st content) =
     setRespStatus st (toJsonResp content)
 
-instance (ToJSON err, ToJsonResp a) => ToJsonResp (Either (Error err) a) where
-  toJsonResp = either fromError toJsonResp
-    where
-      fromError err = setRespStatus err.status (json err.body)
-
 -- html response
-
--- | Values convertible to Html
-class ToHtmlResp a where
-  toHtmlResp :: a -> Resp
-
-instance ToMarkup a => ToHtmlResp a where
-  toHtmlResp = html
 
 instance ToHtmlResp a => ToHtmlResp (AddHeaders a) where
   toHtmlResp (AddHeaders headers content) =
@@ -378,11 +341,6 @@ instance ToHtmlResp a => ToHtmlResp (AddHeaders a) where
 instance ToHtmlResp a => ToHtmlResp (SetStatus a) where
   toHtmlResp (SetStatus st content) =
     setRespStatus st (toHtmlResp content)
-
-instance (ToJSON err, ToHtmlResp a) => ToHtmlResp (Either (Error err) a) where
-  toHtmlResp = either fromError toHtmlResp
-    where
-      fromError err = setRespStatus err.status (json err.body)
 
 -- Get
 

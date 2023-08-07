@@ -1,3 +1,4 @@
+{-# Language UndecidableInstances #-}
 -- | Internal types and functions
 module Mig.Internal.Types
   ( -- * types
@@ -8,6 +9,10 @@ module Mig.Internal.Types
   , QueryMap
   , ToText (..)
   , Error (..)
+  -- * classes
+  , ToTextResp (..)
+  , ToJsonResp (..)
+  , ToHtmlResp (..)
   -- * constructors
   , toConst
   , toMethod
@@ -83,6 +88,48 @@ data Resp = Resp
 
 instance IsString Resp where
   fromString = text . TL.pack
+
+-- | Values convertible to Text (lazy)
+class ToTextResp a where
+  toTextResp :: a -> Resp
+
+instance ToTextResp Text where
+  toTextResp = text
+
+instance ToTextResp TL.Text where
+  toTextResp = text
+
+instance ToTextResp Int where
+  toTextResp = text
+
+instance (ToText err, ToTextResp a) => ToTextResp (Either (Error err) a) where
+  toTextResp = either fromError toTextResp
+    where
+      fromError err = setRespStatus err.status (text err.body)
+
+-- | Values convertible to Json
+class ToJsonResp a where
+  toJsonResp :: a -> Resp
+
+instance {-# OVERLAPPABLE #-} ToJSON a => ToJsonResp a where
+  toJsonResp = json
+
+instance (ToJSON err, ToJsonResp a) => ToJsonResp (Either (Error err) a) where
+  toJsonResp = either fromError toJsonResp
+    where
+      fromError err = setRespStatus err.status (json err.body)
+
+-- | Values convertible to Html
+class ToHtmlResp a where
+  toHtmlResp :: a -> Resp
+
+instance ToMarkup a => ToHtmlResp a where
+  toHtmlResp = html
+
+instance (ToJSON err, ToHtmlResp a) => ToHtmlResp (Either (Error err) a) where
+  toHtmlResp = either fromError toHtmlResp
+    where
+      fromError err = setRespStatus err.status (json err.body)
 
 -- | Http response body
 data RespBody
