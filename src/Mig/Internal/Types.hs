@@ -146,6 +146,8 @@ data Req = Req
     -- ^ URI path
   , query :: QueryMap
     -- ^ query parameters
+  , capture :: CaptureMap
+    -- ^ capture from path
   , headers :: RequestHeaders
     -- ^ request headers
   , method :: Method
@@ -153,6 +155,8 @@ data Req = Req
   , readBody :: IO (Either (Error Text) BL.ByteString)
     -- ^ lazy body reader. Error can happen if size is too big (configured on running the server)
   }
+
+type CaptureMap = Map Text Text
 
 -- Errors
 
@@ -427,5 +431,6 @@ fromRequest maxSize req =
     , headers = requestHeaders req
     , method = requestMethod req
     , readBody = fmap (fmap BL.fromChunks) $ readRequestBody (getRequestBodyChunk req) maxSize
+    , capture = error "No capture map"
     }
 

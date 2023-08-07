@@ -1,3 +1,4 @@
+{-# Language UndecidableInstances #-}
 -- | Creation of routes from functions
 module Mig.Internal.Route
   ( Route (..)
@@ -42,8 +43,9 @@ import Network.HTTP.Types.Header (ResponseHeaders)
 import Network.HTTP.Types.Method
 import Text.Blaze.Html (Html)
 import Mig.Internal.Types qualified as Resp (Resp (..))
+import Control.Monad.IO.Class
 
-class ToRouteInfo a => ToRoute a where
+class (MonadIO (RouteMonad a), ToRouteInfo a) => ToRoute a where
   -- | Underyling server monad
   type  RouteMonad a :: Type -> Type
 
@@ -71,12 +73,12 @@ toRoute a = Route
 instance ToRouteInfo (Route m) where
   toRouteInfo = id
 
-instance Monad m => ToRoute (Route m) where
+instance MonadIO m => ToRoute (Route m) where
   type RouteMonad (Route m) = m
   toRouteFun = (.run)
   emptyRoute = Route emptyRouteInfo emptyRoute
 
-instance Monad m => ToRoute (ServerFun m) where
+instance MonadIO m => ToRoute (ServerFun m) where
   type RouteMonad (ServerFun m) = m
   toRouteFun = id
   emptyRoute = ServerFun $ const $ pure Nothing
@@ -156,7 +158,7 @@ instance (FromHttpApiData a, ToPrimType a, ToRoute b, KnownSymbol sym) => ToRout
 
   emptyRoute = const emptyRoute
 
-newtype Header (sym :: Symbol) a = Header a
+newtype Header (sym :: Symbol) a = Header (Maybe a)
 
 instance (KnownSymbol sym, ToPrimType a, ToRouteInfo b) => ToRouteInfo (Header sym a -> b) where
   toRouteInfo = addRouteInput (HeaderInput name (toPrimType @a)) . toRouteInfo @b
@@ -207,22 +209,22 @@ newtype Get ty m a = Get (m a)
 instance (ToMediaType ty) => ToRouteInfo (Get ty m a) where
   toRouteInfo = setMethod methodGet (toMediaType @ty)
 
-instance (Monad m, ToTextResp a) => ToRoute (Get Text m a) where
+instance (MonadIO m, ToTextResp a) => ToRoute (Get Text m a) where
   type RouteMonad (Get Text m a) = m
   toRouteFun (Get a) = sendText a
   emptyRoute = Get (pure undefined)
 
-instance (Monad m, ToJsonResp a) => ToRoute (Get Json m a) where
+instance (MonadIO m, ToJsonResp a) => ToRoute (Get Json m a) where
   type RouteMonad (Get Json m a) = m
   toRouteFun (Get a) = sendJson a
   emptyRoute = Get (pure undefined)
 
-instance (Monad m, ToHtmlResp a) => ToRoute (Get Html m a) where
+instance (MonadIO m, ToHtmlResp a) => ToRoute (Get Html m a) where
   type RouteMonad (Get Html m a) = m
   toRouteFun (Get a) = sendHtml a
   emptyRoute = Get (pure undefined)
 
-instance (Monad m) => ToRoute (Get BL.ByteString m BL.ByteString) where
+instance (MonadIO m) => ToRoute (Get BL.ByteString m BL.ByteString) where
   type RouteMonad (Get BL.ByteString m BL.ByteString) = m
   toRouteFun (Get a) = sendRaw a
   emptyRoute = Get (pure undefined)
@@ -236,22 +238,22 @@ newtype Post ty m a = Post (m a)
 instance (ToMediaType ty) => ToRouteInfo (Post ty m a) where
   toRouteInfo = setMethod methodPost (toMediaType @ty)
 
-instance (Monad m, ToTextResp a) => ToRoute (Post Text m a) where
+instance (MonadIO m, ToTextResp a) => ToRoute (Post Text m a) where
   type RouteMonad (Post Text m a) = m
   toRouteFun (Post a) = sendText a
   emptyRoute = Post (pure undefined)
 
-instance (Monad m, ToJsonResp a) => ToRoute (Post Json m a) where
+instance (MonadIO m, ToJsonResp a) => ToRoute (Post Json m a) where
   type RouteMonad (Post Json m a) = m
   toRouteFun (Post a) = sendJson a
   emptyRoute = Post (pure undefined)
 
-instance (Monad m, ToHtmlResp a) => ToRoute (Post Html m a) where
+instance (MonadIO m, ToHtmlResp a) => ToRoute (Post Html m a) where
   type RouteMonad (Post Html m a) = m
   toRouteFun (Post a) = sendHtml a
   emptyRoute = Post (pure undefined)
 
-instance (Monad m) => ToRoute (Post BL.ByteString m BL.ByteString) where
+instance (MonadIO m) => ToRoute (Post BL.ByteString m BL.ByteString) where
   type RouteMonad (Post BL.ByteString m BL.ByteString) = m
   toRouteFun (Post a) = sendRaw a
   emptyRoute = Post (pure undefined)
@@ -265,22 +267,22 @@ newtype Put ty m a = Put (m a)
 instance (ToMediaType ty) => ToRouteInfo (Put ty m a) where
   toRouteInfo = setMethod methodPost (toMediaType @ty)
 
-instance (Monad m, ToTextResp a) => ToRoute (Put Text m a) where
+instance (MonadIO m, ToTextResp a) => ToRoute (Put Text m a) where
   type RouteMonad (Put Text m a) = m
   toRouteFun (Put a) = sendText a
   emptyRoute = Put (pure undefined)
 
-instance (Monad m, ToJsonResp a) => ToRoute (Put Json m a) where
+instance (MonadIO m, ToJsonResp a) => ToRoute (Put Json m a) where
   type RouteMonad (Put Json m a) = m
   toRouteFun (Put a) = sendJson a
   emptyRoute = Put (pure undefined)
 
-instance (Monad m, ToHtmlResp a) => ToRoute (Put Html m a) where
+instance (MonadIO m, ToHtmlResp a) => ToRoute (Put Html m a) where
   type RouteMonad (Put Html m a) = m
   toRouteFun (Put a) = sendHtml a
   emptyRoute = Put (pure undefined)
 
-instance (Monad m) => ToRoute (Put BL.ByteString m BL.ByteString) where
+instance (MonadIO m) => ToRoute (Put BL.ByteString m BL.ByteString) where
   type RouteMonad (Put BL.ByteString m BL.ByteString) = m
   toRouteFun (Put a) = sendRaw a
   emptyRoute = Put (pure undefined)

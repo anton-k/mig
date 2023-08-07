@@ -45,7 +45,6 @@ type CaptureMap = Map Text Text
 getPath :: Api a -> Path -> (a, CaptureMap)
 getPath = undefined
 
-
 {-
 example :: Server IO
 example =
