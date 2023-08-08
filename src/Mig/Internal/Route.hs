@@ -89,7 +89,7 @@ instance MonadIO m => ToRoute (ServerFun m) where
 newtype Body a = Body a
 
 instance (ToJsonSpec a, ToRouteInfo b) => ToRouteInfo (Body a -> b) where
-  toRouteInfo = addRouteInput (BodyJsonInput (toJsonSpec @a)) . toRouteInfo @b
+  toRouteInfo = setMediaInputType JsonInputType . addRouteInput (BodyJsonInput (toJsonSpec @a)) . toRouteInfo @b
 
 instance (ToJsonSpec a, FromJSON a, ToRoute b) => ToRoute (Body a -> b) where
   type RouteMonad (Body a -> b) = RouteMonad b
@@ -177,7 +177,7 @@ instance (FromHttpApiData a, ToPrimType a, ToRoute b, KnownSymbol sym) => ToRout
 newtype FormBody a = FormBody a
 
 instance (ToFormType a, ToRouteInfo b) => ToRouteInfo (FormBody a -> b) where
-  toRouteInfo = addRouteInput (FormBodyInput (toFormType @a)) . toRouteInfo @b
+  toRouteInfo = setMediaInputType FormInputType . addRouteInput (FormBodyInput (toFormType @a)) . toRouteInfo @b
 
 instance (ToFormType a, FromForm a, ToRoute b) => ToRoute (FormBody a -> b) where
   type RouteMonad (FormBody a -> b) = RouteMonad b
@@ -212,22 +212,22 @@ instance (ToMediaType ty) => ToRouteInfo (Get ty m a) where
 instance (MonadIO m, ToTextResp a) => ToRoute (Get Text m a) where
   type RouteMonad (Get Text m a) = m
   toRouteFun (Get a) = sendText a
-  emptyRoute = Get (pure undefined)
+  emptyRoute = Get (pure (error "No implementation"))
 
 instance (MonadIO m, ToJsonResp a) => ToRoute (Get Json m a) where
   type RouteMonad (Get Json m a) = m
   toRouteFun (Get a) = sendJson a
-  emptyRoute = Get (pure undefined)
+  emptyRoute = Get (pure (error "No implementation"))
 
 instance (MonadIO m, ToHtmlResp a) => ToRoute (Get Html m a) where
   type RouteMonad (Get Html m a) = m
   toRouteFun (Get a) = sendHtml a
-  emptyRoute = Get (pure undefined)
+  emptyRoute = Get (pure (error "No implementation"))
 
 instance (MonadIO m) => ToRoute (Get BL.ByteString m BL.ByteString) where
   type RouteMonad (Get BL.ByteString m BL.ByteString) = m
   toRouteFun (Get a) = sendRaw a
-  emptyRoute = Get (pure undefined)
+  emptyRoute = Get (pure (error "No implementation"))
 
 -- Post method
 
@@ -241,22 +241,22 @@ instance (ToMediaType ty) => ToRouteInfo (Post ty m a) where
 instance (MonadIO m, ToTextResp a) => ToRoute (Post Text m a) where
   type RouteMonad (Post Text m a) = m
   toRouteFun (Post a) = sendText a
-  emptyRoute = Post (pure undefined)
+  emptyRoute = Post (pure (error "No implementation"))
 
 instance (MonadIO m, ToJsonResp a) => ToRoute (Post Json m a) where
   type RouteMonad (Post Json m a) = m
   toRouteFun (Post a) = sendJson a
-  emptyRoute = Post (pure undefined)
+  emptyRoute = Post (pure (error "No implementation"))
 
 instance (MonadIO m, ToHtmlResp a) => ToRoute (Post Html m a) where
   type RouteMonad (Post Html m a) = m
   toRouteFun (Post a) = sendHtml a
-  emptyRoute = Post (pure undefined)
+  emptyRoute = Post (pure (error "No implementation"))
 
 instance (MonadIO m) => ToRoute (Post BL.ByteString m BL.ByteString) where
   type RouteMonad (Post BL.ByteString m BL.ByteString) = m
   toRouteFun (Post a) = sendRaw a
-  emptyRoute = Post (pure undefined)
+  emptyRoute = Post (pure (error "No implementation"))
 
 -- Put method
 
@@ -270,22 +270,22 @@ instance (ToMediaType ty) => ToRouteInfo (Put ty m a) where
 instance (MonadIO m, ToTextResp a) => ToRoute (Put Text m a) where
   type RouteMonad (Put Text m a) = m
   toRouteFun (Put a) = sendText a
-  emptyRoute = Put (pure undefined)
+  emptyRoute = Put (pure (error "No implementation"))
 
 instance (MonadIO m, ToJsonResp a) => ToRoute (Put Json m a) where
   type RouteMonad (Put Json m a) = m
   toRouteFun (Put a) = sendJson a
-  emptyRoute = Put (pure undefined)
+  emptyRoute = Put (pure (error "No implementation"))
 
 instance (MonadIO m, ToHtmlResp a) => ToRoute (Put Html m a) where
   type RouteMonad (Put Html m a) = m
   toRouteFun (Put a) = sendHtml a
-  emptyRoute = Put (pure undefined)
+  emptyRoute = Put (pure (error "No implementation"))
 
 instance (MonadIO m) => ToRoute (Put BL.ByteString m BL.ByteString) where
   type RouteMonad (Put BL.ByteString m BL.ByteString) = m
   toRouteFun (Put a) = sendRaw a
-  emptyRoute = Put (pure undefined)
+  emptyRoute = Put (pure (error "No implementation"))
 
 -- set status
 
