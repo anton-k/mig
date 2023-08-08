@@ -84,10 +84,13 @@ library
       Mig.Internal.Api
       Mig.Internal.Info
       Mig.Internal.Route
+      Mig.Internal.Server
       Mig.Internal.ServerFun
       Mig.Internal.Types
+      Mig.Internal.Wai
       Mig.Json
       Mig.Json.IO
+      Mig.Server
   other-modules:
       Paths_mig
   hs-source-dirs:

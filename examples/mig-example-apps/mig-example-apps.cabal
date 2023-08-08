@@ -47,6 +47,7 @@ executable counter-mig-example-app
     , base
     , mig
     , mtl
+    , pretty-show
     , random
     , text
     , time
@@ -75,6 +76,7 @@ executable hello-world-mig-example-app
       aeson
     , base
     , mig
+    , pretty-show
     , random
     , text
     , time
@@ -111,6 +113,7 @@ executable html-mig-example-app
     , base
     , blaze-html
     , mig
+    , pretty-show
     , random
     , text
     , time
@@ -145,6 +148,7 @@ executable json-api-mig-example-app
     , base
     , containers
     , mig
+    , pretty-show
     , random
     , text
     , time
@@ -173,6 +177,7 @@ executable route-args-mig-example-app
       aeson
     , base
     , mig
+    , pretty-show
     , random
     , text
     , time

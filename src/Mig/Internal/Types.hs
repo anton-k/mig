@@ -148,13 +148,15 @@ data Req = Req
     -- ^ query parameters
   , capture :: CaptureMap
     -- ^ capture from path
-  , headers :: RequestHeaders
+  , headers :: HeaderMap
     -- ^ request headers
   , method :: Method
     -- ^ request method
   , readBody :: IO (Either (Error Text) BL.ByteString)
     -- ^ lazy body reader. Error can happen if size is too big (configured on running the server)
   }
+
+type HeaderMap = Map HeaderName ByteString
 
 type CaptureMap = Map Text Text
 
@@ -312,7 +314,7 @@ pathHead req =
 -- | Read info from header
 toWithHeader :: (Monad m, FromHttpApiData a) => HeaderName -> (Maybe a -> Server m) -> Server m
 toWithHeader name act = Server $ \req ->
-  case fmap snd $ List.find ((== name) . fst) req.headers of
+  case Map.lookup name req.headers of
     Just bs ->
       case parseHeader bs of
         Right val -> unServer (act (Just val)) req
@@ -366,7 +368,7 @@ setRespStatus status (Resp _ headers body) = Resp status headers body
 
 -- | Json response constructor
 json :: (ToJSON resp) => resp -> Resp
-json = (ok (setContent "text/json") . JsonResp . Json.toJSON)
+json = (ok (setContent "application/json") . JsonResp . Json.toJSON)
 
 -- | Text response constructor
 text :: ToText a => a -> Resp
@@ -428,9 +430,9 @@ fromRequest maxSize req =
   pure $ Req
     { path = pathInfo req
     , query = Map.fromList $ mapMaybe (\(key, mVal) -> (key, ) <$> mVal) (queryString req)
-    , headers = requestHeaders req
+    , headers = Map.fromList $ requestHeaders req
     , method = requestMethod req
     , readBody = fmap (fmap BL.fromChunks) $ readRequestBody (getRequestBodyChunk req) maxSize
-    , capture = error "No capture map"
+    , capture = mempty
     }
 
