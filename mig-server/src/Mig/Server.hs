@@ -1,0 +1,2 @@
+module Mig.Server (
+  ) where
