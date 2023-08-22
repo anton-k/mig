@@ -200,36 +200,3 @@ httpJson path =
 
 setRoute :: CaptureMap -> Path -> Request -> Request
 setRoute captureValues path req = req{path = pathToString captureValues path}
-
-{-
--------------------------------------------------------------------------------------
--- client lib
-
-data (:|) a b = a :| b
-
-instance (ToClient a, ToClient b) => ToClient (a :| b) where
-  toClient api = a :| b
-    where
-      (a, b) = toClient api
-
-instance (ToClient a, ToClient b) => ToClient (a, b) where
-  toClient api = (toClient (fromFlatApi apiA), toClient (fromFlatApi apiB))
-    where
-      (apiA, apiB) = splitAt (clientArity (Proxy @a)) (flatApi api)
-
-instance (ToClient a, ToClient b, ToClient c) => ToClient (a, b, c) where
-  toClient api =
-    case toClient api of
-      (a, (b, c)) -> (a, b, c)
-
-instance (ToClient a, ToClient b, ToClient c, ToClient d) => ToClient (a, b, c, d) where
-  toClient api =
-    case toClient api of
-      (a, (b, c, d)) -> (a, b, c, d)
-
-fromFlatApi :: [(Path, a)] -> Api a
-fromFlatApi = undefined
-
-atApi :: Api a -> Path -> Api a
-atApi = undefined
--}

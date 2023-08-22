@@ -36,6 +36,7 @@ library
     DuplicateRecordFields
     OverloadedRecordDot
     OverloadedStrings
+    StrictData
 
   ghc-options:
     -Wall -Wcompat -Widentities -Wincomplete-record-updates
