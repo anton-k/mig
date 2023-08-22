@@ -1,112 +1,110 @@
-cabal-version: 1.12
+cabal-version:      1.12
 
 -- This file has been generated from package.yaml by hpack version 0.35.2.
 --
 -- see: https://github.com/sol/hpack
 
-name:           mig
-version:        0.1.0.3
-synopsis:       Build lightweight and composable servers
-description:    With library mig we can build lightweight and composable servers.
-                There are only couple of combinators to assemble servers from parts.
-                It supports generic handler functions as servant does. But strives to use more
-                simple model for API. It does not go to describing Server API at type level which
-                leads to simpler error messages.
-                .
-                The main features are:
-                .
-                * lightweight library
-                .
-                * expressive DSL to compose servers
-                .
-                * type-safe handlers
-                .
-                * handlers are encoded with generic haskell functions
-                .
-                * built on top of WAI and warp server libraries.
-                .
-                Example of hello world server:
-                .
-                > import Mig.Json.IO
-                >
-                > -- | We can render the server and run it on port 8085.
-                > -- It uses wai and warp.
-                > main :: IO ()
-                > main = runServer 8085 server
-                >
-                > -- | Init simple hello world server which
-                > -- replies on a single route
-                > server :: Server IO
-                > server =
-                >   "api" /. "v1" /.
-                >     mconcat
-                >       [ "hello" /. hello
-                >       , "bye" /. bye
-                >       ]
-                >
-                > -- | Handler takes no inputs and marked as Get HTTP-request that returns Text.
-                > hello :: Get Text
-                > hello = Get $ pure "Hello World"
-                >
-                > -- | Handle with URL-param query and json body input as Post HTTP-request that returns Text.
-                > bye :: Query "name" Text -> Body ByeRequest -> Post Text
-                > bye (Query name) (Body req) = Post $
-                >   pure $ "Bye to " <> name <> " " <> req.greeting
-                .
-                Please see:
-                .
-                * quick start guide at <https://github.com/anton-k/mig#readme>
-                .
-                * examples directory for more fun servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
-category:       Web
-homepage:       https://github.com/anton-k/mig#readme
-bug-reports:    https://github.com/anton-k/mig/issues
-author:         Anton Kholomiov
-maintainer:     anton.kholomiov@gmail.com
-copyright:      2023 Anton Kholomiov
-license:        BSD3
-build-type:     Simple
+name:               mig
+version:            0.1.0.3
+synopsis:           Build lightweight and composable servers
+description:
+  With library mig we can build lightweight and composable servers.
+  There are only couple of combinators to assemble servers from parts.
+  It supports generic handler functions as servant does. But strives to use more
+  simple model for API. It does not go to describing Server API at type level which
+  leads to simpler error messages.
+  .
+  The main features are:
+  .
+  * lightweight library
+  .
+  * expressive DSL to compose servers
+  .
+  * type-safe handlers
+  .
+  * handlers are encoded with generic haskell functions
+  .
+  * built on top of WAI and warp server libraries.
+  .
+  Example of hello world server:
+  .
+  > import Mig.Json.IO
+  >
+  > -- | We can render the server and run it on port 8085.
+  > -- It uses wai and warp.
+  > main :: IO ()
+  > main = runServer 8085 server
+  >
+  > -- | Init simple hello world server which
+  > -- replies on a single route
+  > server :: Server IO
+  > server =
+  >   "api" /. "v1" /.
+  >     mconcat
+  >       [ "hello" /. hello
+  >       , "bye" /. bye
+  >       ]
+  >
+  > -- | Handler takes no inputs and marked as Get HTTP-request that returns Text.
+  > hello :: Get Text
+  > hello = Get $ pure "Hello World"
+  >
+  > -- | Handle with URL-param query and json body input as Post HTTP-request that returns Text.
+  > bye :: Query "name" Text -> Body ByeRequest -> Post Text
+  > bye (Query name) (Body req) = Post $
+  >   pure $ "Bye to " <> name <> " " <> req.greeting
+  .
+  Please see:
+  .
+  * quick start guide at <https://github.com/anton-k/mig#readme>
+  .
+  * examples directory for more fun servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
+
+category:           Web
+homepage:           https://github.com/anton-k/mig#readme
+bug-reports:        https://github.com/anton-k/mig/issues
+author:             Anton Kholomiov
+maintainer:         anton.kholomiov@gmail.com
+copyright:          2023 Anton Kholomiov
+license:            BSD3
+build-type:         Simple
 extra-source-files:
-    README.md
-    CHANGELOG.md
+  CHANGELOG.md
+  README.md
 
 source-repository head
-  type: git
+  type:     git
   location: https://github.com/anton-k/mig
 
 library
   exposed-modules:
-      Mig
-      Mig.Common
-      Mig.Html
-      Mig.Html.IO
-      Mig.Internal.Api
-      Mig.Internal.Api.NormalForm
-      Mig.Internal.Info
-      Mig.Internal.Route
-      Mig.Internal.Server
-      Mig.Internal.ServerFun
-      Mig.Internal.Types
-      Mig.Internal.Wai
-      Mig.Json
-      Mig.Json.IO
-      Mig.Server
-  other-modules:
-      Paths_mig
-  hs-source-dirs:
-      src
+    Mig.Internal.Api
+    Mig.Internal.Api.NormalForm
+    Mig.Internal.Info
+    Mig.Internal.Route
+    Mig.Internal.Server
+    Mig.Internal.ServerFun
+    Mig.Internal.Types
+
+  other-modules:      Paths_mig
+  hs-source-dirs:     src
   default-extensions:
-      ImportQualifiedPost
-      OverloadedStrings
-      TypeFamilies
-      OverloadedRecordDot
-      DuplicateRecordFields
-      LambdaCase
-      DerivingStrategies
-      DataKinds
-      StrictData
-      AllowAmbiguousTypes
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+    AllowAmbiguousTypes
+    DataKinds
+    DerivingStrategies
+    DuplicateRecordFields
+    ImportQualifiedPost
+    LambdaCase
+    OverloadedRecordDot
+    OverloadedStrings
+    StrictData
+    TypeFamilies
+
+  ghc-options:
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wmissing-export-lists
+    -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+
   build-depends:
       aeson
     , base >=4.7 && <5
@@ -124,6 +122,5 @@ library
     , openapi3
     , safe
     , text
-    , wai
-    , warp
-  default-language: GHC2021
+
+  default-language:   GHC2021

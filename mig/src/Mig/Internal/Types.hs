@@ -37,16 +37,12 @@ module Mig.Internal.Types (
   setContent,
 
   -- * WAI
-  ServerConfig (..),
   Kilobytes,
-  toApplication,
 
   -- * utils
   setRespStatus,
   addRespHeaders,
   handleError,
-  toResponse,
-  fromRequest,
   pathHead,
 ) where
 
@@ -76,7 +72,6 @@ import Data.Typeable
 import Network.HTTP.Types.Header (HeaderName, RequestHeaders, ResponseHeaders)
 import Network.HTTP.Types.Method (Method)
 import Network.HTTP.Types.Status (Status, ok200, status413, status500)
-import Network.Wai
 import Text.Blaze.Html (Html, ToMarkup)
 import Text.Blaze.Html qualified as Html
 import Text.Blaze.Renderer.Utf8 qualified as Html
@@ -414,50 +409,3 @@ ok headers body = Resp ok200 headers body
 handleError :: (Exception a, MonadCatch m) => (a -> Server m) -> Server m -> Server m
 handleError handler (Server act) = Server $ \req ->
   (act req) `catch` (\err -> unServer (handler err) req)
-
--------------------------------------------------------------------------------------
--- render to WAI
-
--- | Server config
-data ServerConfig = ServerConfig
-  { maxBodySize :: Maybe Kilobytes
-  }
-
--- | Convert server to WAI-application
-toApplication :: ServerConfig -> Server IO -> Application
-toApplication config server req processResponse = do
-  mResp <- unServer (handleError onErr server) =<< fromRequest config.maxBodySize req
-  processResponse $ toResponse $ fromMaybe noResult mResp
-  where
-    noResult = badRequest "Server produces nothing"
-
-    onErr :: SomeException -> Server IO
-    onErr err = toConst $ pure $ badRequest $ "Error: Exception has happened: " <> toText (show err)
-
--- | Convert response to low-level WAI-response
-toResponse :: Resp -> Response
-toResponse resp =
-  case resp.body of
-    TextResp textResp -> lbs $ BL.fromStrict (Text.encodeUtf8 textResp)
-    HtmlResp htmlResp -> lbs (Html.renderMarkup htmlResp)
-    JsonResp jsonResp -> lbs (Json.encode jsonResp)
-    FileResp file -> responseFile resp.status resp.headers file Nothing
-    RawResp str -> lbs str
-    StreamResp -> undefined
-  where
-    lbs = responseLBS resp.status resp.headers
-
-{-| Read request from low-level WAI-request
-First argument limits the size of input body. The body is read in chunks.
--}
-fromRequest :: Maybe Kilobytes -> Request -> IO Req
-fromRequest maxSize req =
-  pure $
-    Req
-      { path = pathInfo req
-      , query = Map.fromList $ mapMaybe (\(key, mVal) -> (key,) <$> mVal) (queryString req)
-      , headers = Map.fromList $ requestHeaders req
-      , method = requestMethod req
-      , readBody = fmap (fmap BL.fromChunks) $ readRequestBody (getRequestBodyChunk req) maxSize
-      , capture = mempty
-      }
