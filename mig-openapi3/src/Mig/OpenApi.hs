@@ -10,11 +10,11 @@ import Data.OpenApi
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Mig.Internal.Api (Api)
-import Mig.Internal.Api qualified as Api
-import Mig.Internal.Info qualified as Info
-import Mig.Internal.Route (Route (..))
-import Mig.Internal.Server (fillCaptures)
+import Mig.Core.Api (Api)
+import Mig.Core.Api qualified as Api
+import Mig.Core.Info qualified as Info
+import Mig.Core.Route (Route (..))
+import Mig.Core.Server (fillCaptures)
 import Network.HTTP.Media.MediaType (MediaType)
 import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status (Status (..))

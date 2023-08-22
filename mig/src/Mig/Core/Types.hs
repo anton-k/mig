@@ -1,7 +1,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 
--- | Internal types and functions
-module Mig.Internal.Types (
+-- | Core types and functions
+module Mig.Core.Types (
   -- * types
   Req (..),
   Resp (..),

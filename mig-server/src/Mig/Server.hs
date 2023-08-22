@@ -5,16 +5,16 @@ module Mig.Server (
   module X,
 ) where
 
-import Mig.Internal.Server
+import Mig.Core.Server
 import Mig.Internal.Wai (ServerConfig (..))
 import Mig.Internal.Wai qualified as Wai
 import Network.Wai qualified as Wai
 import Network.Wai.Handler.Warp qualified as Warp
 
-import Mig.Internal.Api as X (Api, Path (..), PathItem, (/.))
-import Mig.Internal.Info as X
-import Mig.Internal.Route as X
-import Mig.Internal.Server as X
+import Mig.Core.Api as X (Api, Path (..), PathItem, (/.))
+import Mig.Core.Info as X
+import Mig.Core.Route as X
+import Mig.Core.Server as X
 
 toApplication :: ServerConfig -> Server IO -> Wai.Application
 toApplication config server = Wai.toApplication config (fromServer server)

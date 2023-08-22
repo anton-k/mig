@@ -1,7 +1,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Creation of routes from functions
-module Mig.Internal.Route (
+module Mig.Core.Route (
   Route (..),
   ToRoute (..),
   toRoute,
@@ -45,9 +45,9 @@ import Data.Proxy
 import Data.String
 import Data.Text (Text)
 import GHC.TypeLits
-import Mig.Internal.Info
-import Mig.Internal.ServerFun
-import Mig.Internal.Types (ToByteStringResp (..), ToHtmlResp (..), ToJsonResp (..), ToTextResp (..), addRespHeaders, setRespStatus)
+import Mig.Core.Info
+import Mig.Core.ServerFun
+import Mig.Core.Types (ToByteStringResp (..), ToHtmlResp (..), ToJsonResp (..), ToTextResp (..), addRespHeaders, setRespStatus)
 import Network.HTTP.Types.Header (ResponseHeaders)
 import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status

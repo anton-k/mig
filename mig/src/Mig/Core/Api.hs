@@ -1,5 +1,5 @@
--- | Internal API description
-module Mig.Internal.Api (
+-- | Core API description
+module Mig.Core.Api (
   Api (..),
   (/.),
   Path (..),
@@ -20,8 +20,8 @@ import Data.Map.Strict qualified as Map
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Mig.Internal.Info (MediaType (..), RouteInfo (..), RouteOutput (..))
-import Mig.Internal.Route qualified as Route
+import Mig.Core.Info (MediaType (..), RouteInfo (..), RouteOutput (..))
+import Mig.Core.Route qualified as Route
 import Network.HTTP.Types.Method
 import System.FilePath
 import Web.HttpApiData

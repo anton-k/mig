@@ -78,13 +78,13 @@ source-repository head
 
 library
   exposed-modules:
-    Mig.Internal.Api
-    Mig.Internal.Api.NormalForm
-    Mig.Internal.Info
-    Mig.Internal.Route
-    Mig.Internal.Server
-    Mig.Internal.ServerFun
-    Mig.Internal.Types
+    Mig.Core.Api
+    Mig.Core.Api.NormalForm
+    Mig.Core.Info
+    Mig.Core.Route
+    Mig.Core.Server
+    Mig.Core.ServerFun
+    Mig.Core.Types
 
   other-modules:      Paths_mig
   hs-source-dirs:     src
