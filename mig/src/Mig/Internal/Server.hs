@@ -37,6 +37,50 @@ import Text.Read (readMaybe)
 
 -- import Debug.Trace
 
+{-| Server type. It is a function fron request to response.
+Some servers does not return valid value. We use it to find right path.
+
+Example:
+
+> server :: Server IO
+> server =
+>   "api" /. "v1" /.
+>      mconcat
+>        [ "foo" /. (\(Query @"name" arg) -> Get  @Json (handleFoo arg)
+>        , "bar" /. Post @Json handleBar
+>        ]
+>
+> handleFoo :: Int -> IO Text
+> handleBar :: IO Text
+
+Note that server is monoid and it can be constructed with Monoid functions and
+path constructor @(/.)@. To pass inputs for handler we can use special newtype wrappers:
+
+* @Query@ - for required query parameters
+* @Optional@ - for optional query parameters
+* @Capture@ - for parsing elements of URI
+* @Body@ - fot JSON-body input
+* @RawBody@ - for raw ByteString input
+* @Header@ - for headers
+
+To distinguish by HTTP-method we use corresponding constructors: Get, Post, Put, etc.
+Let's discuss the structure of the constructor. Let's take Get for example:
+
+> newtype Get ty m a = Get (m a)
+
+ Let's look at the arguments of he type
+
+* @ty@ - type of the response. it can be: Text, Html, Json, ByteString
+* @m@ - underlying server monad
+* @a@ - result type. It should be convertible to the type of the response.
+
+also result can be wrapped to special data types to modify Http-response.
+we have wrappers:
+
+* @SetStatus@ - to set status
+* @AddHeaders@ - to append headers
+* @Either (Error err)@ - to response with errors
+-}
 type Server m = Api (Route m)
 
 route :: (ToRoute a) => a -> Server (RouteMonad a)
@@ -155,6 +199,13 @@ staticFiles files root =
     withRoot path
       | null root = path
       | otherwise = root </> path
+
+{-
+-- | Handle errors
+handleError :: (Exception a, MonadCatch m) => (a -> Server m) -> Server m -> Server m
+handleError handler (Server act) = Server $ \req ->
+  (act req) `catch` (\err -> unServer (handler err) req)
+-}
 
 extToMimeMap :: Map String ByteString
 extToMimeMap =

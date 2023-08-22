@@ -1,5 +1,6 @@
 module Mig.Internal.Wai (
   ServerConfig (..),
+  Kilobytes,
   toApplication,
 ) where
 
@@ -16,10 +17,13 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Mig.Internal.ServerFun
-import Mig.Internal.Types (Error (..), Kilobytes, Req (..), Resp (..), RespBody (..), ToText (..), badRequest)
+import Mig.Internal.Types (Error (..), Req (..), Resp (..), RespBody (..), ToText (..), badRequest)
 import Network.HTTP.Types.Status (status413)
 import Network.Wai
 import Text.Blaze.Renderer.Utf8 qualified as Html
+
+-- | Size of the input body
+type Kilobytes = Int
 
 -- | Server config
 data ServerConfig = ServerConfig

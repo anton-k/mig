@@ -101,7 +101,7 @@ library
     TypeFamilies
 
   ghc-options:
-    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wmissing-export-lists
     -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
 
