@@ -4,8 +4,6 @@ module Mig.Internal.Server (
   Server,
   route,
   fromServer,
-  toApplication,
-  runServer,
   fillCaptures,
   addTag,
   setDescription,
@@ -32,11 +30,7 @@ import Mig.Internal.Api qualified as Api
 import Mig.Internal.Info (MediaType (..), RouteInfo (..), RouteInput (..))
 import Mig.Internal.Route
 import Mig.Internal.Types (Req (..))
-import Mig.Internal.Wai (ServerConfig (..))
-import Mig.Internal.Wai qualified as Wai
 import Network.HTTP.Types.Header (ResponseHeaders)
-import Network.Wai qualified as Wai
-import Network.Wai.Handler.Warp qualified as Warp
 import Safe (atMay)
 import System.FilePath (takeExtension, (</>))
 import Text.Read (readMaybe)
@@ -124,14 +118,6 @@ getOutputMediaType req =
         parseWeight weightTxt
           | Text.isPrefixOf "q=" weightTxt = readMaybe $ Text.unpack $ Text.drop 2 weightTxt
           | otherwise = Nothing
-
-runServer :: Int -> Server IO -> IO ()
-runServer port server = Warp.run port (toApplication config server)
-  where
-    config = ServerConfig{maxBodySize = Nothing}
-
-toApplication :: ServerConfig -> Server IO -> Wai.Application
-toApplication config server = Wai.toApplication config (fromServer server)
 
 addTag :: Text -> Server m -> Server m
 addTag tag = mapRouteInfo (insertTag tag)

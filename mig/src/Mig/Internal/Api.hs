@@ -59,20 +59,6 @@ filterApi check = \case
 toNormalApi :: forall m. Api (Route.Route m) -> ApiNormal (Route.Route m)
 toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (toMethodMap api)
   where
-    {-
-    fmap toMethodApi $ InputMediaMap $ case medias of
-      [] -> MultiMedia mempty
-      m : [] -> SingleMedia m api
-      other -> MultiMedia $ filterEmpty $ Map.fromList $ fmap toMediaApi other
-      -}
-
-    {-
-    toMultiMedia m
-      | Map.size m == 1 = case Map.toList m of
-                            [(key, val)] -> SingleMedia key val
-                            _ -> MultiMedia m
-      | otherwise = MultiMedia m
-    -}
     filterEmpty :: Map key (Api val) -> Map key (Api val)
     filterEmpty = Map.filter $ \case
       Empty -> False

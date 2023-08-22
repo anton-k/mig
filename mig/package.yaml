@@ -74,8 +74,6 @@ dependencies:
 - base >= 4.7 && < 5
 - aeson
 - text
-- wai
-- warp
 - http-types
 - blaze-html
 - bytestring
