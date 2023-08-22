@@ -9,6 +9,7 @@ module Mig.Core.Server (
   setDescription,
   setSummary,
   mapRouteInfo,
+  mapServerFun,
   staticFiles,
 ) where
 
@@ -82,6 +83,9 @@ we have wrappers:
 * @Either (Error err)@ - to response with errors
 -}
 type Server m = Api (Route m)
+
+mapServerFun :: (ServerFun m -> ServerFun n) -> Server m -> Server n
+mapServerFun f = fmap $ \x -> Route x.api (f x.run)
 
 route :: (ToRoute a) => a -> Server (RouteMonad a)
 route a = Api.Route (toRoute a)
@@ -200,13 +204,6 @@ staticFiles files root =
       | null root = path
       | otherwise = root </> path
 
-{-
--- | Handle errors
-handleError :: (Exception a, MonadCatch m) => (a -> Server m) -> Server m -> Server m
-handleError handler (Server act) = Server $ \req ->
-  (act req) `catch` (\err -> unServer (handler err) req)
--}
-
 extToMimeMap :: Map String ByteString
 extToMimeMap =
   Map.fromList
@@ -286,3 +283,10 @@ extToMimeMap =
     , (".3g2", "video/3gpp2") -- 	3GPP2 audio/video container	; audio/3gpp2 if it doesn't contain video
     , (".7z", "application/x-7z-compressed") -- 	7-zip archive
     ]
+
+{- i wonder what is analog of this function?
+-- | Handle errors
+handleError ::(Exception a, MonadCatch m) => (a -> Server m) -> Server m -> Server m
+handleError handler (Server act) = Server $ \req ->
+  (act req) `catch` (\err -> unServer (handler err) req)
+-}

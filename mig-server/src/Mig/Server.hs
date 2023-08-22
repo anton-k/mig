@@ -22,6 +22,7 @@ import Data.Sequence qualified as Seq
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
+import Mig.Core.ServerFun (handleError)
 import Mig.Core.Types (Error (..), Req (..), Resp (..), RespBody (..), ToText (..), badRequest)
 import Network.HTTP.Types.Status (status413)
 import Network.Wai
@@ -64,11 +65,6 @@ toResponse resp =
     StreamResp -> undefined -- TODO
   where
     lbs = responseLBS resp.status resp.headers
-
--- | Handle errors
-handleError :: (Exception a, MonadCatch m) => (a -> ServerFun m) -> ServerFun m -> ServerFun m
-handleError handler (ServerFun act) = ServerFun $ \req ->
-  (act req) `catch` (\err -> unServerFun (handler err) req)
 
 {-| Read request from low-level WAI-request
 First argument limits the size of input body. The body is read in chunks.

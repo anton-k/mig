@@ -26,6 +26,8 @@ default-extensions:
   - DuplicateRecordFields
   - OverloadedStrings
   - StrictData
+  - TypeFamilies
+  - LambdaCase
 
 dependencies:
 - aeson
@@ -39,6 +41,7 @@ dependencies:
 - containers
 - bytestring
 - exceptions
+- mtl
 
 ghc-options:
 - -Wall

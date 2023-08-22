@@ -14,8 +14,10 @@ module Mig.Core.ServerFun (
   sendHtml,
   sendRaw,
   sendRawMedia,
+  handleError,
 ) where
 
+import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Data.Aeson (FromJSON)
 import Data.Aeson qualified as Json
@@ -140,3 +142,8 @@ sendRaw act = ServerFun $ const $ fmap (Just . toByteStringResp) act
 sendRawMedia :: (Monad m, ToByteStringResp a) => MediaType -> m a -> ServerFun m
 sendRawMedia (MediaType mediaType) act =
   ServerFun $ const $ fmap (Just . addRespHeaders [("Content-Type", Text.encodeUtf8 mediaType)] . toByteStringResp) act
+
+-- | Handle errors
+handleError :: (Exception a, MonadCatch m) => (a -> ServerFun m) -> ServerFun m -> ServerFun m
+handleError handler (ServerFun act) = ServerFun $ \req ->
+  (act req) `catch` (\err -> unServerFun (handler err) req)
