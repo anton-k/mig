@@ -25,6 +25,7 @@ default-extensions:
   - OverloadedRecordDot
   - DuplicateRecordFields
   - OverloadedStrings
+  - StrictData
 
 dependencies:
 - aeson

@@ -91,10 +91,8 @@ library
   hs-source-dirs:     src
   default-extensions:
     AllowAmbiguousTypes
-    DataKinds
     DerivingStrategies
     DuplicateRecordFields
-    ImportQualifiedPost
     LambdaCase
     OverloadedRecordDot
     OverloadedStrings
@@ -102,7 +100,7 @@ library
     TypeFamilies
 
   ghc-options:
-    -Werror -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wmissing-export-lists
     -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
 

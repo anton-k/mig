@@ -83,14 +83,12 @@ dependencies:
 - http-client
 
 default-extensions:
-  - ImportQualifiedPost
   - OverloadedStrings
   - TypeFamilies
   - OverloadedRecordDot
   - DuplicateRecordFields
   - LambdaCase
   - DerivingStrategies
-  - DataKinds
   - StrictData
   - AllowAmbiguousTypes
 
