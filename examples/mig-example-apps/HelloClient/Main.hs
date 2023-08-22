@@ -1,10 +1,10 @@
-module Main
-  ( main
-  ) where
+module Main (
+  main,
+) where
 
+import Data.Text (Text)
 import Mig.Client
 import Mig.Server
-import Data.Text (Text)
 import Network.HTTP.Client
 
 type Hello m = Capture "who" Text -> Capture "suffix" Text -> Get Json m Text
@@ -18,14 +18,13 @@ main = do
 
 hello :: Hello Client
 bye :: Bye Client
-
 (hello, bye) = toClient server
 
 server :: Server Client
 server =
-  "api" /. "v1" /. mconcat
-    [ "hello" /. "*" /. "*" /. route hello
-    , "bye" /. route bye
-    ]
-
-
+  "api"
+    /. "v1"
+    /. mconcat
+      [ "hello" /. "*" /. "*" /. route hello
+      , "bye" /. route bye
+      ]

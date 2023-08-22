@@ -1,28 +1,29 @@
 -- | Module for HTML-based servers
-module Mig.Json.IO
-  (
+module Mig.Json.IO (
   -- * methods
-    Get (..)
-  , Post (..)
-  , Put (..)
-  , Delete (..)
-  , Patch (..)
-  , Options (..)
+  Get (..),
+  Post (..),
+  Put (..),
+  Delete (..),
+  Patch (..),
+  Options (..),
 
   -- * common
-  -- | Common re-exports
-  , module X
-  ) where
 
-import Mig.Common as X
+  -- | Common re-exports
+  module X,
+) where
+
 import Mig (ToJsonResp (..))
+import Mig.Common as X
 import Mig.Internal.Types (toMethod)
 import Network.HTTP.Types.Method
 
 -- Get
 
--- | Get method. Note that we can not use body input with Get-method, use Post for that.
--- So with Get we can use only URI inputs (Query, Optional, Capture)
+{-| Get method. Note that we can not use body input with Get-method, use Post for that.
+So with Get we can use only URI inputs (Query, Optional, Capture)
+-}
 newtype Get a = Get (IO a)
 
 instance (ToJsonResp a) => ToServer (Get a) where

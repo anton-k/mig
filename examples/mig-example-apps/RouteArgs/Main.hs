@@ -1,15 +1,17 @@
--- | This example shows how to use input arguments for the server.
---
--- We can get input arguments with function that takes in
--- typed argument wrpapped in specific newtype which encodes the type of the input
-module Main
-  ( main
-  ) where
+{-| This example shows how to use input arguments for the server.
+
+We can get input arguments with function that takes in
+typed argument wrpapped in specific newtype which encodes the type of the input
+-}
+module Main (
+  main,
+) where
 
 -- import Text and IO based server
-import Mig.Json.IO
+
 import Data.Text (Text)
 import Data.Text.IO qualified as Text
+import Mig.Json.IO
 
 main :: IO ()
 main = do
@@ -21,20 +23,21 @@ main = do
 -- | Let's define a server
 routeArgs :: Server IO
 routeArgs =
-  "hello" /. "api" /.
-    mconcat
+  "hello"
+    /. "api"
+    /. mconcat
       -- no args, constnat output
       [ "world" /. helloWorld
-      -- required query param and custom header
-      , "succ" /. handleSucc
-      -- optional query param
-      , "succ-opt" /. handleSuccOpt
-      -- several query params
-      , "add" /. handleAdd
-      -- capture
-      , "mul" /. handleMul
-      -- json body as input
-      , "add-json" /. handleAddJson
+      , -- required query param and custom header
+        "succ" /. handleSucc
+      , -- optional query param
+        "succ-opt" /. handleSuccOpt
+      , -- several query params
+        "add" /. handleAdd
+      , -- capture
+        "mul" /. handleMul
+      , -- json body as input
+        "add-json" /. handleAddJson
       ]
 
 -- | Simple getter
@@ -46,8 +49,9 @@ helloWorld = Get $ do
 newtype TraceId = TraceId Text
   deriving newtype (FromHttpApiData, ToText)
 
--- | Using several inputs: header argument and required query
--- and using conditional output status
+{-| Using several inputs: header argument and required query
+and using conditional output status
+-}
 handleSucc :: Header "Trace-Id" TraceId -> Query "value" Int -> Get (SetStatus Int)
 handleSucc (Header mTraceId) (Query n) = Get $ do
   logDebug "succ route call"
@@ -64,9 +68,10 @@ handleSuccOpt (Optional n) = Get $ do
   logDebug "succ optional route call"
   pure $ maybe (Left $ Error status400 "error") Right (succ <$> n)
 
--- | Using custom headers in response and several input query parameters.
--- Note that function can have any number of arguments.
--- We encode the input type with proper type-wrapper.
+{-| Using custom headers in response and several input query parameters.
+Note that function can have any number of arguments.
+We encode the input type with proper type-wrapper.
+-}
 handleAdd :: Query "a" Int -> Query "b" Int -> Get (AddHeaders Int)
 handleAdd (Query a) (Query b) = Get $ do
   logDebug "add route call"
@@ -74,10 +79,11 @@ handleAdd (Query a) (Query b) = Get $ do
   where
     headers = [("args", "a, b")]
 
--- | Using capture as arguments. This route expects two arguments
--- captured in URL. For example:
---
--- > http://localhost:8085/hello/api/mul/3/100
+{-| Using capture as arguments. This route expects two arguments
+captured in URL. For example:
+
+> http://localhost:8085/hello/api/mul/3/100
+-}
 handleMul :: Capture Int -> Capture Int -> Get Int
 handleMul (Capture a) (Capture b) = Get $ do
   logDebug "mul route call"
@@ -94,4 +100,3 @@ handleAddJson (Body (a, b)) = Post $ do
 logDebug :: Text -> IO ()
 logDebug message =
   Text.putStrLn ("[DEBUG]: " <> message)
-

@@ -1,20 +1,20 @@
 -- Implements interfaces
-module Init
-  ( initEnv
-  ) where
+module Init (
+  initEnv,
+) where
 
 import Control.Monad
-import Data.Text qualified as Text
-import Data.Text.IO qualified as Text
+import Data.IORef
 import Data.List qualified as List
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
-import Data.IORef
+import Data.Text qualified as Text
+import Data.Text.IO qualified as Text
 import System.Random
 
 import Interface
-import Types
 import Internal.State
+import Types
 
 atomicModify :: IORef a -> (a -> a) -> IO ()
 atomicModify ref f = atomicModifyIORef' ref (\st -> (f st, ()))
@@ -23,11 +23,12 @@ atomicModify ref f = atomicModifyIORef' ref (\st -> (f st, ()))
 initEnv :: IO Env
 initEnv = do
   st <- initSt
-  pure $ Env
-    { weather = initWeather st
-    , auth = initAuth st
-    , logger = initLogger st
-    }
+  pure $
+    Env
+      { weather = initWeather st
+      , auth = initAuth st
+      , logger = initLogger st
+      }
 
 initAuth :: St -> Auth
 initAuth st =
@@ -36,11 +37,8 @@ initAuth st =
         token <- AuthToken . Text.pack . show <$> randomRIO @Int (0, 1_000_000)
         atomicModify st.tokens $ Set.insert token
         pure token
-
     , validUser = \user -> ((== Just user.pass) . Map.lookup user.name) <$> readIORef st.users
-
     , validToken = \token -> Set.member token <$> readIORef st.tokens
-
     , expireToken = \token -> atomicModify st.tokens $ Set.delete token
     }
 
@@ -53,7 +51,6 @@ initWeather st =
           let
             mWeatherByDays = mapM (flip Map.lookup weatherMap) $ toDaySpan day interval
           pure $ Timed day <$> mWeatherByDays
-
     , update = \(UpdateData day location content) -> atomicModify st.weatherData (Map.adjust (Map.insert day content) location)
     }
 
@@ -73,4 +70,3 @@ initLogger _st =
     }
   where
     logBy level msg = Text.putStrLn $ mconcat ["[", level, "]: ", msg]
-

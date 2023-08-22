@@ -1,49 +1,54 @@
 -- | input implementation
-module Mig.Internal.ServerFun
-  ( ServerFun (..)
-  , withBody
-  , withRawBody
-  , withQuery
-  , withOptional
-  , withCapture
-  , withHeader
-  , withFormBody
-  , withPathInfo
-  , sendText
-  , sendJson
-  , sendHtml
-  , sendRaw
-  , sendRawMedia
-  ) where
+module Mig.Internal.ServerFun (
+  ServerFun (..),
+  withBody,
+  withRawBody,
+  withQuery,
+  withOptional,
+  withCapture,
+  withHeader,
+  withFormBody,
+  withPathInfo,
+  sendText,
+  sendJson,
+  sendHtml,
+  sendRaw,
+  sendRawMedia,
+) where
 
-import Data.Text (Text)
+import Control.Monad.IO.Class
 import Data.Aeson (FromJSON)
 import Data.Aeson qualified as Json
-import Web.HttpApiData
-import Web.FormUrlEncoded
 import Data.ByteString.Lazy qualified as BL
-import Mig.Internal.Types
-  ( Req (..), Resp (..),
-   ToTextResp (..), ToJsonResp (..), ToHtmlResp (..), ToByteStringResp (..),
-   Error (..), badRequest,
-   addRespHeaders,
-   setRespStatus,
-   text,
-  )
-import Mig.Internal.Info
-import Network.HTTP.Types.Status (status413)
-import Control.Monad.IO.Class
 import Data.CaseInsensitive qualified as CI
-import Data.Text.Encoding qualified as Text
 import Data.Either (fromRight)
-import Network.HTTP.Types.Header (HeaderName)
-import Data.Text qualified as Text
 import Data.Map.Strict qualified as Map
+import Data.Text (Text)
+import Data.Text qualified as Text
+import Data.Text.Encoding qualified as Text
+import Mig.Internal.Info
+import Mig.Internal.Types (
+  Error (..),
+  Req (..),
+  Resp (..),
+  ToByteStringResp (..),
+  ToHtmlResp (..),
+  ToJsonResp (..),
+  ToTextResp (..),
+  addRespHeaders,
+  badRequest,
+  setRespStatus,
+  text,
+ )
+import Network.HTTP.Types.Header (HeaderName)
+import Network.HTTP.Types.Status (status413)
+import Web.FormUrlEncoded
+import Web.HttpApiData
 
 instance ToRouteInfo (ServerFun m) where
   toRouteInfo = id
 
-newtype ServerFun m = ServerFun { unServerFun :: Req -> m (Maybe Resp) }
+newtype ServerFun m = ServerFun {unServerFun :: Req -> m (Maybe Resp)}
 
 withBody :: (MonadIO m, FromJSON a) => (a -> ServerFun m) -> ServerFun m
 withBody f = withRawBody $ \val -> ServerFun $ \req ->
@@ -51,7 +56,7 @@ withBody f = withRawBody $ \val -> ServerFun $ \req ->
     Right v -> unServerFun (f v) req
     Left err -> pure $ Just $ badRequest $ "Failed to parse JSON body: " <> Text.pack err
 
-withRawBody :: MonadIO m => (BL.ByteString -> ServerFun m) -> ServerFun m
+withRawBody :: (MonadIO m) => (BL.ByteString -> ServerFun m) -> ServerFun m
 withRawBody act = ServerFun $ \req -> do
   eBody <- liftIO req.readBody
   case eBody of
@@ -70,7 +75,7 @@ getQuery name req = do
   bs <- Map.lookup (Text.encodeUtf8 name) req.query
   either (pure Nothing) Just $ Text.decodeUtf8' bs
 
-handleMaybeInput :: Applicative m => Text -> (a -> ServerFun m) -> (Maybe a -> ServerFun m)
+handleMaybeInput :: (Applicative m) => Text -> (a -> ServerFun m) -> (Maybe a -> ServerFun m)
 handleMaybeInput message act = \case
   Just arg -> ServerFun $ \req -> unServerFun (act arg) req
   Nothing -> ServerFun $ const $ pure $ Just $ badRequest message
@@ -78,13 +83,16 @@ handleMaybeInput message act = \case
 withOptional :: (FromHttpApiData a) => Text -> (Maybe a -> ServerFun m) -> ServerFun m
 withOptional name act = withQueryBy (getQuery name) act
 
-withQueryBy :: (FromHttpApiData a) =>
-  (Req -> Maybe Text) -> (Maybe a -> ServerFun m) -> ServerFun m
+withQueryBy ::
+  (FromHttpApiData a) =>
+  (Req -> Maybe Text) ->
+  (Maybe a -> ServerFun m) ->
+  ServerFun m
 withQueryBy getVal act = ServerFun $ \req ->
   let
     -- TODO: do not ignore parse failure
     mArg = either (const Nothing) Just . parseQueryParam =<< getVal req
-  in
+   in
     unServerFun (act mArg) req
 
 withCapture :: (Monad m, FromHttpApiData a) => Text -> (a -> ServerFun m) -> ServerFun m

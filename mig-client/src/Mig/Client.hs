@@ -1,43 +1,43 @@
-{-# Language AllowAmbiguousTypes #-}
--- | Client library
-module Mig.Client
-  ( ToClient (..)
-  , Client (..)
-  , ClientConfig (..)
-  , runClient
-  , (:|)(..)
-  ) where
+{-# LANGUAGE AllowAmbiguousTypes #-}
 
+-- | Client library
+module Mig.Client (
+  ToClient (..),
+  Client (..),
+  ClientConfig (..),
+  runClient,
+  (:|) (..),
+) where
 
 import Control.Monad
-import Web.HttpApiData
-import GHC.TypeLits
-import Data.Aeson (ToJSON, FromJSON (..))
+import Control.Monad.IO.Class
+import Data.Aeson (FromJSON (..), ToJSON)
 import Data.Aeson qualified as Json
-import Data.Map.Strict qualified as Map
-import Data.Text qualified as Text
-import Data.Text.Encoding qualified as Text
+import Data.Bifunctor
 import Data.ByteString (ByteString)
 import Data.ByteString qualified as B
 import Data.ByteString.Lazy qualified as BL
+import Data.Map.Strict qualified as Map
+import Data.Proxy
+import Data.String
 import Data.Text
+import Data.Text qualified as Text
+import Data.Text.Encoding qualified as Text
+import GHC.TypeLits
 import Mig.Internal.Api
-import Mig.Internal.Server
 import Mig.Internal.Info (Json)
 import Mig.Internal.Route
+import Mig.Internal.Server
 import Network.HTTP.Client hiding (Proxy)
 import Network.HTTP.Types.Method
-import Data.Bifunctor
-import Data.String
-import Data.Proxy
-import Control.Monad.IO.Class
+import Web.HttpApiData
 
 data (:|) a b = a :| b
 
 instance (ToClient a, ToClient b) => ToClient (a :| b) where
   toClient api = a :| b
-   where
-    (a, b) = toClient api
+    where
+      (a, b) = toClient api
 
   clientArity = clientArity @(a, b)
 
@@ -49,7 +49,7 @@ instance MapRequest (Send method Json Client a) where
   mapRequest f (Send (Client a)) = Send (Client (\conf capt -> a conf capt . f))
   mapCapture f (Send (Client a)) = Send (Client (\conf capt req -> a conf (f capt) req))
 
-instance MapRequest b => MapRequest (a -> b) where
+instance (MapRequest b) => MapRequest (a -> b) where
   mapRequest f a = mapRequest f . a
   mapCapture f a = mapCapture f . a
 
@@ -69,7 +69,7 @@ instance (MapRequest a, MapRequest b, MapRequest c, MapRequest d) => MapRequest 
   mapRequest f (a, b, c, d) = (mapRequest f a, mapRequest f b, mapRequest f c, mapRequest f d)
   mapCapture f (a, b, c, d) = (mapCapture f a, mapCapture f b, mapCapture f c, mapCapture f d)
 
-class MapRequest a => ToClient a where
+class (MapRequest a) => ToClient a where
   -- | converts to client function
   toClient :: Api (Route m) -> a
 
@@ -132,7 +132,7 @@ getHeadPath api = case flatApi api of
   _ -> error "Not enought methods. API is empty"
 
 setMethod :: Method -> Request -> Request
-setMethod m req = req { method = m }
+setMethod m req = req{method = m}
 
 instance (KnownSymbol sym, ToHttpApiData a, ToClient b) => ToClient (Query sym a -> b) where
   toClient api = \query -> mapRequest (addQuery query) $ toClient @b api
@@ -154,29 +154,30 @@ instance (ToClient b) => ToClient (RawBody -> b) where
   toClient api = \(RawBody body) -> mapRequest (addRawBody body) $ toClient @b api
   clientArity = clientArity @b
 
-addQuery :: forall sym a . (KnownSymbol sym, ToHttpApiData a) => Query sym a -> Request -> Request
-addQuery (Query a) req = req { queryString = str }
+addQuery :: forall sym a. (KnownSymbol sym, ToHttpApiData a) => Query sym a -> Request -> Request
+addQuery (Query a) req = req{queryString = str}
   where
-    str = if B.null (queryString req)
-      then param
-      else queryString req <> "&" <> param
+    str =
+      if B.null (queryString req)
+        then param
+        else queryString req <> "&" <> param
 
     param = fromString (symbolVal (Proxy @sym)) <> "=" <> Text.encodeUtf8 (toUrlPiece a)
 
-addOptional :: forall sym a . (KnownSymbol sym, ToHttpApiData a) => Optional sym a -> Request -> Request
+addOptional :: forall sym a. (KnownSymbol sym, ToHttpApiData a) => Optional sym a -> Request -> Request
 addOptional (Optional mVal) req = case mVal of
   Nothing -> req
   Just val -> addQuery @sym (Query val) req
 
-addCapture :: forall sym a . (KnownSymbol sym, ToHttpApiData a) => Capture sym a -> CaptureMap -> CaptureMap
+addCapture :: forall sym a. (KnownSymbol sym, ToHttpApiData a) => Capture sym a -> CaptureMap -> CaptureMap
 addCapture (Capture a) =
   Map.insert (fromString (symbolVal (Proxy @sym))) (toUrlPiece a)
 
 addJsonBody :: (ToJSON a) => a -> Request -> Request
-addJsonBody body req = req { requestBody = RequestBodyLBS (Json.encode body) }
+addJsonBody body req = req{requestBody = RequestBodyLBS (Json.encode body)}
 
 addRawBody :: BL.ByteString -> Request -> Request
-addRawBody body req = req { requestBody = RequestBodyLBS body }
+addRawBody body req = req{requestBody = RequestBodyLBS body}
 
 pathToString :: CaptureMap -> Path -> ByteString
 pathToString captureValues (Path path) = case path of
@@ -198,12 +199,11 @@ httpJson path =
     toJson = (first Text.pack . Json.eitherDecode) . responseBody
 
 setRoute :: CaptureMap -> Path -> Request -> Request
-setRoute captureValues path req = req { path = pathToString captureValues path }
+setRoute captureValues path req = req{path = pathToString captureValues path}
 
 {-
 -------------------------------------------------------------------------------------
 -- client lib
-
 
 data (:|) a b = a :| b
 

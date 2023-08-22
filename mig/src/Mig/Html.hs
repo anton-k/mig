@@ -1,18 +1,18 @@
 -- | Module for HTML-based servers
-module Mig.Html
-  (
+module Mig.Html (
   -- * methods
-    Get (..)
-  , Post (..)
-  , Put (..)
-  , Delete (..)
-  , Patch (..)
-  , Options (..)
+  Get (..),
+  Post (..),
+  Put (..),
+  Delete (..),
+  Patch (..),
+  Options (..),
 
   -- * common
+
   -- | Common re-exports
-  , module X
-  ) where
+  module X,
+) where
 
 import Mig.Common as X
 import Mig.Internal.Types (toMethod)
@@ -20,8 +20,9 @@ import Network.HTTP.Types.Method
 
 -- Get
 
--- | Get method. Note that we can not use body input with Get-method, use Post for that.
--- So with Get we can use only URI inputs (Query, Optional, Capture)
+{-| Get method. Note that we can not use body input with Get-method, use Post for that.
+So with Get we can use only URI inputs (Query, Optional, Capture)
+-}
 newtype Get m a = Get (m a)
 
 instance (Monad m, ToHtmlResp a) => ToServer (Get m a) where
