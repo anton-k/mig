@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           mig
+name:           mig-openapi3
 version:        0.1.0.3
 synopsis:       Build lightweight and composable servers
 description:    With library mig we can build lightweight and composable servers.
@@ -65,7 +65,6 @@ author:         Anton Kholomiov
 maintainer:     anton.kholomiov@gmail.com
 copyright:      2023 Anton Kholomiov
 license:        BSD3
-license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
@@ -77,23 +76,9 @@ source-repository head
 
 library
   exposed-modules:
-      Mig
-      Mig.Common
-      Mig.Html
-      Mig.Html.IO
-      Mig.Internal.Api
-      Mig.Internal.Api.NormalForm
-      Mig.Internal.Info
-      Mig.Internal.Route
-      Mig.Internal.Server
-      Mig.Internal.ServerFun
-      Mig.Internal.Types
-      Mig.Internal.Wai
-      Mig.Json
-      Mig.Json.IO
-      Mig.Server
+      Mig.OpenApi
   other-modules:
-      Paths_mig
+      Paths_mig_openapi3
   hs-source-dirs:
       src
   default-extensions:
@@ -117,10 +102,12 @@ library
     , case-insensitive
     , containers
     , exceptions
-    , extra
-    , filepath
     , http-api-data
+    , http-media
     , http-types
+    , insert-ordered-containers
+    , lens
+    , mig
     , mtl
     , openapi3
     , safe

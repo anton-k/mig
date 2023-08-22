@@ -1,4 +1,4 @@
-name:                mig
+name:                mig-openapi3
 version:             0.1.0.3
 github:              "anton-k/mig"
 license:             BSD3
@@ -84,11 +84,13 @@ dependencies:
 - mtl
 - exceptions
 - http-api-data
+- http-media
 - case-insensitive
 - safe
+- mig
 - openapi3
-- filepath
-- extra
+- lens
+- insert-ordered-containers
 
 default-extensions:
   - ImportQualifiedPost

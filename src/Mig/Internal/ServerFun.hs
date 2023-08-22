@@ -13,6 +13,7 @@ module Mig.Internal.ServerFun
   , sendJson
   , sendHtml
   , sendRaw
+  , sendRawMedia
   ) where
 
 import Data.Text (Text)
@@ -23,8 +24,9 @@ import Web.FormUrlEncoded
 import Data.ByteString.Lazy qualified as BL
 import Mig.Internal.Types
   ( Req (..), Resp (..),
-   ToTextResp (..), ToJsonResp (..), ToHtmlResp (..), raw,
+   ToTextResp (..), ToJsonResp (..), ToHtmlResp (..), ToByteStringResp (..),
    Error (..), badRequest,
+   addRespHeaders,
    setRespStatus,
    text,
   )
@@ -33,7 +35,6 @@ import Network.HTTP.Types.Status (status413)
 import Control.Monad.IO.Class
 import Data.CaseInsensitive qualified as CI
 import Data.Text.Encoding qualified as Text
-import Data.List qualified as List
 import Data.Either (fromRight)
 import Network.HTTP.Types.Header (HeaderName)
 import Data.Text qualified as Text
@@ -125,5 +126,9 @@ sendJson act = ServerFun $ const $ fmap (Just . toJsonResp) act
 sendHtml :: (Monad m, ToHtmlResp a) => m a -> ServerFun m
 sendHtml act = ServerFun $ const $ fmap (Just . toHtmlResp) act
 
-sendRaw :: Monad m => m BL.ByteString -> ServerFun m
-sendRaw act = ServerFun $ const $ fmap (Just . raw) act
+sendRaw :: (Monad m, ToByteStringResp a) => m a -> ServerFun m
+sendRaw act = ServerFun $ const $ fmap (Just . toByteStringResp) act
+
+sendRawMedia :: (Monad m, ToByteStringResp a) => MediaType -> m a -> ServerFun m
+sendRawMedia (MediaType mediaType) act =
+  ServerFun $ const $ fmap (Just . addRespHeaders [("Content-Type", Text.encodeUtf8 mediaType)] . toByteStringResp) act

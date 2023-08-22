@@ -1,5 +1,5 @@
-name:                mig
-version:             0.1.0.3
+name:                mig-client
+version:             0.1.0.0
 github:              "anton-k/mig"
 license:             BSD3
 author:              "Anton Kholomiov"
@@ -26,15 +26,13 @@ description: |
   .
   The main features are:
   .
-  * lightweight library
+  * lightweight library to build HTTP-clients based on mig library
   .
-  * expressive DSL to compose servers
+  * expressive DSL to compose clients
   .
   * type-safe handlers
   .
   * handlers are encoded with generic haskell functions
-  .
-  * built on top of WAI and warp server libraries.
   .
   Example of hello world server:
   .
@@ -74,21 +72,15 @@ dependencies:
 - base >= 4.7 && < 5
 - aeson
 - text
-- wai
-- warp
 - http-types
 - blaze-html
 - bytestring
 - blaze-markup
 - containers
-- mtl
-- exceptions
 - http-api-data
-- case-insensitive
 - safe
-- openapi3
-- filepath
-- extra
+- mig
+- http-client
 
 default-extensions:
   - ImportQualifiedPost

@@ -1,0 +1,67 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           mig-swagger-ui
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/mig-swagger-ui#readme>
+homepage:       https://github.com/githubuser/mig-swagger-ui#readme
+bug-reports:    https://github.com/githubuser/mig-swagger-ui/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2023 Author name here
+license:        BSD3
+build-type:     Simple
+extra-source-files:
+    index.html.tmpl
+    swagger-ui-dist-5.0.0/favicon-16x16.png
+    swagger-ui-dist-5.0.0/favicon-32x32.png
+    swagger-ui-dist-5.0.0/oauth2-redirect.html
+    swagger-ui-dist-5.0.0/swagger-ui-bundle.js
+    swagger-ui-dist-5.0.0/swagger-ui-bundle.js.map
+    swagger-ui-dist-5.0.0/swagger-ui-es-bundle-core.js
+    swagger-ui-dist-5.0.0/swagger-ui-es-bundle-core.js.map
+    swagger-ui-dist-5.0.0/swagger-ui-es-bundle.js
+    swagger-ui-dist-5.0.0/swagger-ui-es-bundle.js.map
+    swagger-ui-dist-5.0.0/swagger-ui-standalone-preset.js
+    swagger-ui-dist-5.0.0/swagger-ui-standalone-preset.js.map
+    swagger-ui-dist-5.0.0/swagger-ui.css
+    swagger-ui-dist-5.0.0/swagger-ui.css.map
+    swagger-ui-dist-5.0.0/swagger-ui.js
+    swagger-ui-dist-5.0.0/swagger-ui.js.map
+    swagger-ui-dist-5.0.0/swagger-initializer.js
+    swagger-ui-dist-5.0.0/index.css
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/mig-swagger-ui
+
+library
+  exposed-modules:
+      Mig.Swagger.Ui
+  other-modules:
+      Paths_mig_swagger_ui
+  hs-source-dirs:
+      src
+  default-extensions:
+      OverloadedStrings
+      OverloadedRecordDot
+      TemplateHaskell
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , blaze-html
+    , blaze-markup
+    , bytestring
+    , data-default
+    , file-embed-lzma
+    , http-api-data
+    , mig
+    , mig-openapi3
+    , mtl
+    , openapi3
+    , text
+  default-language: GHC2021
