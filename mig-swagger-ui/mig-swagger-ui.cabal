@@ -11,9 +11,9 @@ description:
 
 homepage:           https://github.com/githubuser/mig-swagger-ui#readme
 bug-reports:        https://github.com/githubuser/mig-swagger-ui/issues
-author:             Author name here
+author:             Anton Kholomiov
 maintainer:         example@example.com
-copyright:          2023 Author name here
+copyright:          2023 Anton Kholomiov
 license:            BSD3
 build-type:         Simple
 extra-source-files:
@@ -41,7 +41,7 @@ source-repository head
   location: https://github.com/githubuser/mig-swagger-ui
 
 library
-  exposed-modules:    Mig.Swagger.Ui
+  exposed-modules:    Mig.Swagger
   other-modules:      Paths_mig_swagger_ui
   hs-source-dirs:     src
   default-extensions:

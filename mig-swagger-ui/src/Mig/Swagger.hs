@@ -1,4 +1,4 @@
-module Mig.Swagger.Ui (
+module Mig.Swagger (
   SwaggerConfig (..),
   withSwagger,
   swagger,
