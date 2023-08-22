@@ -1,5 +1,5 @@
 -- | input implementation
-module Mig.Internal.ServerFun (
+module Mig.Core.ServerFun (
   ServerFun (..),
   withBody,
   withRawBody,
@@ -26,8 +26,8 @@ import Data.Map.Strict qualified as Map
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
-import Mig.Internal.Info
-import Mig.Internal.Types (
+import Mig.Core.Info
+import Mig.Core.Types (
   Error (..),
   Req (..),
   Resp (..),

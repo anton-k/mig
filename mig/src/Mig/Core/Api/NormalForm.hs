@@ -1,4 +1,4 @@
-module Mig.Internal.Api.NormalForm (
+module Mig.Core.Api.NormalForm (
   ApiNormal (..),
   getPath,
   toApiNormal,
@@ -7,7 +7,7 @@ module Mig.Internal.Api.NormalForm (
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Text (Text)
-import Mig.Internal.Api qualified as Api
+import Mig.Core.Api qualified as Api
 
 data ApiNormal a
   = Empty

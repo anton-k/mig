@@ -1,11 +1,10 @@
 -- | Types that describe route info
-module Mig.Internal.Info (
+module Mig.Core.Info (
   RouteInfo (..),
   RouteInput (..),
   RouteOutput (..),
   FormType (..),
   ToFormType (..),
-  MediaType (..),
   MediaType (..),
   addRouteInput,
   setMethod,
@@ -88,27 +87,29 @@ instance (KnownSymbol sym) => ToMediaType (RawMedia sym) where
   toMediaType = MediaType (fromString (symbolVal (Proxy @sym)))
 
 addRouteInput :: RouteInput -> RouteInfo -> RouteInfo
-addRouteInput inp info = info{inputs = inp : info.inputs}
+addRouteInput inp routeInfo =
+  routeInfo{inputs = inp : routeInfo.inputs}
 
 emptyRouteInfo :: RouteInfo
-emptyRouteInfo = RouteInfo Nothing (MediaType "*/*") [] (RouteOutput ok200 (MediaType "*/*") Nothing) [] "" ""
+emptyRouteInfo =
+  RouteInfo Nothing (MediaType "*/*") [] (RouteOutput ok200 (MediaType "*/*") Nothing) [] "" ""
 
 setMethod :: Method -> MediaType -> RouteInfo -> RouteInfo
-setMethod method mediaType info =
-  info
+setMethod method mediaType routeInfo =
+  routeInfo
     { method = Just method
-    , output = RouteOutput info.output.status mediaType Nothing
+    , output = RouteOutput routeInfo.output.status mediaType Nothing
     }
 
 setJsonMethod :: Method -> MediaType -> NamedSchema -> RouteInfo -> RouteInfo
-setJsonMethod method mediaType schema info =
-  info
+setJsonMethod method mediaType apiSchema routeInfo =
+  routeInfo
     { method = Just method
-    , output = RouteOutput info.output.status mediaType (Just schema)
+    , output = RouteOutput routeInfo.output.status mediaType (Just apiSchema)
     }
 
 setMediaInputType :: MediaType -> RouteInfo -> RouteInfo
-setMediaInputType ty info = info{inputType = ty}
+setMediaInputType ty routeInfo = routeInfo{inputType = ty}
 
 class ToRouteInfo a where
   toRouteInfo :: RouteInfo -> RouteInfo

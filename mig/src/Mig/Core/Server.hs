@@ -1,6 +1,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 
-module Mig.Internal.Server (
+module Mig.Core.Server (
   Server,
   route,
   fromServer,
@@ -25,11 +25,11 @@ import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding as Text
-import Mig.Internal.Api (Api, fromNormalApi, toNormalApi)
-import Mig.Internal.Api qualified as Api
-import Mig.Internal.Info (MediaType (..), RouteInfo (..), RouteInput (..))
-import Mig.Internal.Route
-import Mig.Internal.Types (Req (..))
+import Mig.Core.Api (Api, fromNormalApi, toNormalApi)
+import Mig.Core.Api qualified as Api
+import Mig.Core.Info (MediaType (..), RouteInfo (..), RouteInput (..))
+import Mig.Core.Route
+import Mig.Core.Types (Req (..))
 import Network.HTTP.Types.Header (ResponseHeaders)
 import Safe (atMay)
 import System.FilePath (takeExtension, (</>))

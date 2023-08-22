@@ -24,10 +24,10 @@ import Data.Text
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import GHC.TypeLits
-import Mig.Internal.Api
-import Mig.Internal.Info (Json)
-import Mig.Internal.Route
-import Mig.Internal.Server
+import Mig.Core.Api
+import Mig.Core.Info (Json)
+import Mig.Core.Route
+import Mig.Core.Server
 import Network.HTTP.Client hiding (Proxy)
 import Network.HTTP.Types.Method
 import Web.HttpApiData
