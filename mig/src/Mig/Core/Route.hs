@@ -27,11 +27,21 @@ module Mig.Core.Route (
   Post,
   Put,
   Delete,
+  Options,
+  Head,
+  Patch,
+  Trace,
+
+  -- ** Method tags
   IsMethod (..),
   GetMethod,
   PostMethod,
   PutMethod,
   DeleteMethod,
+  OptionsMethod,
+  HeadMethod,
+  PatchMethod,
+  TraceMethod,
 ) where
 
 import Control.Monad.IO.Class
@@ -215,11 +225,19 @@ data GetMethod
 data PostMethod
 data PutMethod
 data DeleteMethod
+data OptionsMethod
+data HeadMethod
+data PatchMethod
+data TraceMethod
 
 type Get ty m a = Send GetMethod ty m a
 type Post ty m a = Send PostMethod ty m a
 type Put ty m a = Send PutMethod ty m a
 type Delete ty m a = Send DeleteMethod ty m a
+type Options ty m a = Send OptionsMethod ty m a
+type Head ty m a = Send HeadMethod ty m a
+type Patch ty m a = Send PatchMethod ty m a
+type Trace ty m a = Send TraceMethod ty m a
 
 class IsMethod a where
   toMethod :: Method
@@ -235,6 +253,18 @@ instance IsMethod PutMethod where
 
 instance IsMethod DeleteMethod where
   toMethod = methodDelete
+
+instance IsMethod OptionsMethod where
+  toMethod = methodOptions
+
+instance IsMethod HeadMethod where
+  toMethod = methodHead
+
+instance IsMethod PatchMethod where
+  toMethod = methodPatch
+
+instance IsMethod TraceMethod where
+  toMethod = methodTrace
 
 newtype Send method ty m a = Send {unSend :: m a}
 

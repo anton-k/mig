@@ -47,6 +47,11 @@ toPathItem routeInfo =
     Just method | method == methodGet -> mempty{_pathItemGet = Just op}
     Just method | method == methodPost -> mempty{_pathItemPost = Just op}
     Just method | method == methodPut -> mempty{_pathItemPut = Just op}
+    Just method | method == methodDelete -> mempty{_pathItemDelete = Just op}
+    Just method | method == methodOptions -> mempty{_pathItemOptions = Just op}
+    Just method | method == methodHead -> mempty{_pathItemHead = Just op}
+    Just method | method == methodPatch -> mempty{_pathItemPatch = Just op}
+    Just method | method == methodTrace -> mempty{_pathItemTrace = Just op}
     _ -> mempty
   where
     op = toOperation routeInfo
