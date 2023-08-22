@@ -13,6 +13,7 @@ module Mig.Internal.Types
   , ToTextResp (..)
   , ToJsonResp (..)
   , ToHtmlResp (..)
+  , ToByteStringResp (..)
   -- * constructors
   , toConst
   , toMethod
@@ -36,6 +37,7 @@ module Mig.Internal.Types
   , toApplication
   -- * utils
   , setRespStatus
+  , addRespHeaders
   , handleError
   , toResponse
   , fromRequest
@@ -130,6 +132,18 @@ instance (ToJSON err, ToHtmlResp a) => ToHtmlResp (Either (Error err) a) where
   toHtmlResp = either fromError toHtmlResp
     where
       fromError err = setRespStatus err.status (json err.body)
+
+class ToByteStringResp a where
+  toByteStringResp :: a -> Resp
+
+instance ToByteStringResp BL.ByteString where
+  toByteStringResp = raw
+
+instance ToByteStringResp ByteString where
+  toByteStringResp = raw . BL.fromStrict
+
+instance ToByteStringResp Text where
+  toByteStringResp = raw . BL.fromStrict . Text.encodeUtf8
 
 -- | Http response body
 data RespBody
@@ -366,6 +380,9 @@ setContent contentType =
 setRespStatus :: Status -> Resp -> Resp
 setRespStatus status (Resp _ headers body) = Resp status headers body
 
+addRespHeaders :: ResponseHeaders -> Resp -> Resp
+addRespHeaders headers (Resp status hs body) = Resp status (headers <> hs) body
+
 -- | Json response constructor
 json :: (ToJSON resp) => resp -> Resp
 json = (ok (setContent "application/json") . JsonResp . Json.toJSON)
@@ -380,7 +397,7 @@ html = ok (setContent "text/html") . HtmlResp . Html.toHtml
 
 -- | Raw bytestring response constructor
 raw :: BL.ByteString -> Resp
-raw = ok (setContent "text/plain") . RawResp
+raw = ok [] . RawResp
 
 -- | Respond with ok 200-status
 ok :: ResponseHeaders -> RespBody -> Resp

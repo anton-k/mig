@@ -2,24 +2,29 @@
 module Mig.Internal.Api
   ( Api (..)
   , (/.)
-  , (/$)
-  , Path
+  , Path (..)
   , ApiNormal (..)
   , toNormalApi
   , fromNormalApi
   , PathItem (..)
   , getPath
   , CaptureMap
+  , flatApi
+  , fromFlatApi
   ) where
 
+import Data.String
 import Data.Text (Text)
+import Data.Text qualified as Text
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
-import Data.String
-import Mig.Internal.Info (MediaInputType (..), RouteInfo (..), RouteOutput (..))
+import Mig.Internal.Info (MediaType (..), RouteInfo (..), RouteOutput (..))
 import Network.HTTP.Types.Method
 import Mig.Internal.Route qualified as Route
 import Data.List qualified as List
+import System.FilePath
+import Web.HttpApiData
+import Data.Foldable (fold)
 
 data Api a
   = Append (Api a) (Api a)
@@ -51,97 +56,161 @@ filterApi check = \case
   where
     rec = filterApi check
 
-toNormalApi :: Api (Route.Route m) -> ApiNormal (Route.Route m)
-toNormalApi api = ApiNormal $ fmap toMethodApi $ case medias of
+toNormalApi :: forall m . Api (Route.Route m) -> ApiNormal (Route.Route m)
+toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (toMethodMap api )
+{-
+fmap toMethodApi $ InputMediaMap $ case medias of
   [] -> MultiMedia mempty
   m : [] -> SingleMedia m api
   other -> MultiMedia $ filterEmpty $ Map.fromList $ fmap toMediaApi other
+  -}
   where
+    {-
     toMultiMedia m
       | Map.size m == 1 = case Map.toList m of
                             [(key, val)] -> SingleMedia key val
                             _ -> MultiMedia m
       | otherwise = MultiMedia m
-
+    -}
     filterEmpty :: Map key (Api val) -> Map key (Api val)
     filterEmpty = Map.filter $ \case
       Empty -> False
       _ -> True
 
-    medias = List.nub $ foldMap (\r -> [r.api.inputType]) api
-
-    toMediaApi media = (media, filterApi (\r -> r.api.inputType == media) api)
-
-    toMethodApi a = filterEmpty $ Map.fromList $ fmap
+    toMethodMap :: Api (Route.Route m) -> MethodMap (Api (Route.Route m))
+    toMethodMap a = filterEmpty $ Map.fromList $ fmap
       (\m ->
           (m, filterApi (\r -> r.api.method == Just m) a)
       ) methods
       where
         methods = foldMap (\r -> maybe [] pure r.api.method) a
 
-fromNormalApi :: Method -> MediaInputType -> ApiNormal a -> Maybe (Api a)
-fromNormalApi method mediaType (ApiNormal mediaMap) = do
-  methodMap <- lookupMedia mediaType mediaMap
-  Map.lookup method methodMap
+    toOutputMediaMap :: Api (Route.Route m) -> OutputMediaMap (Api (Route.Route m))
+    toOutputMediaMap a =
+      OutputMediaMap $ insertAllCase $ insertCategoryCases $ splitByMediaMap
+      where
+        insertAllCase :: Map MediaType (Api (Route.Route m)) -> Map MediaType (Api (Route.Route m))
+        insertAllCase = Map.insert (MediaType "*/*") a
 
-data ApiNormal a = ApiNormal (MediaMap (MethodMap (Api a)))
+        medias :: [MediaType]
+        medias = List.nub $ foldMap (\r -> [r.api.output.media]) a
+
+        toMediaApi media = (media, filterApi (\r -> r.api.output.media == media) a)
+
+        splitByMediaMap = filterEmpty $ Map.fromList $ fmap toMediaApi medias
+
+    toInputMediaMap :: Api (Route.Route m) -> InputMediaMap (Api (Route.Route m))
+    toInputMediaMap a = InputMediaMap $
+      case medias of
+        [] -> MultiMedia mempty
+        m : [] -> SingleMedia m a
+        other -> MultiMedia $ filterEmpty $ Map.fromList $ fmap toMediaApi other
+      where
+        medias = List.nub $ foldMap (\r -> [r.api.inputType]) a
+
+        toMediaApi media = (media, filterApi (\r -> r.api.inputType == media) a)
+
+insertCategoryCases :: forall m . Map MediaType (Api (Route.Route m)) -> Map MediaType (Api (Route.Route m))
+insertCategoryCases a =
+  Map.union a (Map.fromList $ fmap toGroupApi groups)
+  where
+    groups :: [Text]
+    groups = List.nub $ getMediaPrefix <$> Map.keys a
+
+    getMediaPrefix :: MediaType -> Text
+    getMediaPrefix (MediaType name) = Text.takeWhile (/= '/') name
+
+    hasGroup :: Text -> MediaType -> Bool
+    hasGroup group (MediaType name) = Text.isPrefixOf (group <> "/") name
+
+    toGroupApi :: Text -> (MediaType, Api (Route.Route m))
+    toGroupApi group = (MediaType (group <> "/*"), filterApi (\r -> hasGroup group r.api.output.media) api)
+
+    api = fold a
+
+fromNormalApi :: Method -> MediaType -> MediaType -> ApiNormal a -> Maybe (Api a)
+fromNormalApi method outputMediaType inputMediaType (ApiNormal methodMap) = do
+  OutputMediaMap outputMediaMap <- Map.lookup method methodMap
+  InputMediaMap inputMediaMap <- Map.lookup outputMediaType outputMediaMap
+  lookupMedia inputMediaType inputMediaMap
+
+data ApiNormal a = ApiNormal (MethodMap (OutputMediaMap (InputMediaMap (Api a))))
   deriving (Show, Eq, Functor)
 
 type MethodMap a = Map Method a
 
+-- | filter by Content-Type header
+newtype InputMediaMap a = InputMediaMap (MediaMap a)
+  deriving newtype (Functor, Show, Eq)
+
+-- | filter by Accept header
+newtype OutputMediaMap a = OutputMediaMap (Map MediaType a)
+  deriving newtype (Functor, Show, Eq)
+
 data MediaMap a
-  = SingleMedia MediaInputType a
-  | MultiMedia (Map MediaInputType a)
+  = SingleMedia MediaType a
+  | MultiMedia (Map MediaType a)
   deriving (Functor, Show, Eq)
 
-lookupMedia :: MediaInputType -> MediaMap a -> Maybe a
+lookupMedia :: MediaType -> MediaMap a -> Maybe a
 lookupMedia mediaType = \case
   SingleMedia ty a -> if ty == mediaType then Just a else Nothing
   MultiMedia as -> Map.lookup mediaType as
 
-
 infixr 4 /.
-infixr 4 /$
 
-(/.) :: Text -> Api a -> Api a
+(/.) :: Path -> Api a -> Api a
 (/.) path = \case
   WithPath rest a -> go rest a
-  other -> go [] other
+  other -> go mempty other
   where
-    go rest a = WithPath (StaticPath path : rest) a
+    go rest a = WithPath (path <> rest) a
 
-(/$) :: Text -> Api a -> Api a
-(/$) path a = WithPath [CapturePath path] a
+newtype Path = Path { unPath :: [PathItem] }
+  deriving newtype (Show, Eq, Ord, Semigroup, Monoid)
 
-type Path = [PathItem]
+instance ToHttpApiData Path where
+  toUrlPiece (Path ps) = Text.intercalate "/" $ fmap toUrlPiece ps
+
+instance ToHttpApiData PathItem where
+  toUrlPiece = \case
+    StaticPath txt -> txt
+    CapturePath txt -> "{" <> txt <> "}"
+
+instance IsString Path where
+  fromString =
+    Path . fmap (replaceCapture . Text.pack) . filter (not . any isPathSeparator) . splitDirectories
+    where
+      replaceCapture :: Text -> PathItem
+      replaceCapture path
+        | Text.head path == '$' = CapturePath (Text.tail path)
+        | path == "*" = CapturePath path
+        | otherwise = StaticPath path
 
 data PathItem
   = StaticPath Text
   | CapturePath Text
   deriving (Show, Eq, Ord)
 
-instance IsString Path where
-  fromString = pure . StaticPath . fromString
-
 type CaptureMap = Map Text Text
 
 -- | Find an api item by path. Also it accumulates capture map along the way.
 getPath :: [Text] -> Api a -> Maybe (a, CaptureMap)
-getPath = go mempty
+getPath mainPath = go mempty (filter (not . Text.null) mainPath)
   where
     go :: CaptureMap -> [Text] -> Api a -> Maybe (a, CaptureMap)
     go !captureMap path api =
       case path of
         [] -> case api of
                 Route a -> Just (a, captureMap)
-                Append (Route a) _ -> Just (a, captureMap)
+                Append a b -> maybe (go captureMap path b) Just (go captureMap path a)
                 _ -> Nothing
         p:rest -> case api of
                 WithPath template restApi -> goPath captureMap p rest template restApi
                 Append a b -> maybe (go captureMap path b) Just (go captureMap path a)
                 _ -> Nothing
 
-    goPath !captureMap !pathHead !pathTail !template restApi =
+    goPath !captureMap !pathHead !pathTail (Path !template) restApi =
       case template of
         [] -> go captureMap (pathHead : pathTail) restApi
         StaticPath apiHead : templateRest ->
@@ -157,50 +226,18 @@ getPath = go mempty
       case templateRest of
         [] -> go captureMap pathTail restApi
         _ -> case pathTail of
-              nextPathHead : nextPathTail -> goPath captureMap nextPathHead nextPathTail templateRest restApi
+              nextPathHead : nextPathTail -> goPath captureMap nextPathHead nextPathTail (Path templateRest) restApi
               [] -> Nothing
 
 
-{-
--------------------------------------------------------------------------------------
--- client lib
-
-class ToClient a where
-  -- | converts to client function
-  toClient :: Api RouteInfo -> a
-
-  -- | how many routes client has
-  clientArity :: Proxy a -> Int
-
-
-data (:|) a b = a :| b
-
-instance (ToClient a, ToClient b) => ToClient (a :| b) where
-  toClient api = a :| b
-    where
-      (a, b) = toClient api
-
-instance (ToClient a, ToClient b) => ToClient (a, b) where
-  toClient api = (toClient (fromFlatApi apiA), toClient (fromFlatApi apiB))
-    where
-      (apiA, apiB) = splitAt (clientArity (Proxy @a)) (flatApi api)
-
-instance (ToClient a, ToClient b, ToClient c) => ToClient (a, b, c) where
-  toClient api =
-    case toClient api of
-      (a, (b, c)) -> (a, b, c)
-
-instance (ToClient a, ToClient b, ToClient c, ToClient d) => ToClient (a, b, c, d) where
-  toClient api =
-    case toClient api of
-      (a, (b, c, d)) -> (a, b, c, d)
-
 flatApi :: Api a -> [(Path, a)]
-flatApi = undefined
+flatApi = go mempty
+  where
+    go prefix = \case
+      Empty -> mempty
+      Append a b -> go prefix a <> go prefix b
+      WithPath path a -> go (prefix <> path) a
+      Route a -> [(prefix, a)]
 
 fromFlatApi :: [(Path, a)] -> Api a
-fromFlatApi = undefined
-
-atApi :: Api a -> Path -> Api a
-atApi = undefined
--}
+fromFlatApi = foldMap (\(path, route) -> WithPath path (Route route))

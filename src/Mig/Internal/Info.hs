@@ -3,118 +3,110 @@ module Mig.Internal.Info
   ( RouteInfo (..)
   , RouteInput (..)
   , RouteOutput (..)
-  , PrimType (..)
   , FormType (..)
   , ToFormType (..)
-  , MediaInputType (..)
+  , MediaType (..)
   , MediaType (..)
   , addRouteInput
   , setMethod
+  , setJsonMethod
   , setMediaInputType
   , emptyRouteInfo
   , ToMediaType (..)
   , Json
-  , ToPrimType (..)
-  , ToJsonSpec (..)
+  , RawMedia
   , ToRouteInfo (..)
-  , JsonSpec (..)
   ) where
 
+import GHC.TypeLits
+import Data.Proxy
+import Data.String
 import Data.Text (Text)
 import Network.HTTP.Types.Status
 import Network.HTTP.Types.Method
 import Data.ByteString.Lazy qualified as BL
 import Text.Blaze.Html (Html)
-
-class ToJsonSpec a where
-  toJsonSpec :: JsonSpec
+import Data.OpenApi
 
 data RouteInfo = RouteInfo
   { method :: Maybe Method
-  , inputType :: MediaInputType
+  , inputType :: MediaType
   , inputs :: [RouteInput]
   , output :: RouteOutput
+  , tags :: [Text]
+  , description :: Text
+  , summary :: Text
   }
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq)
 
 data RouteInput
-  = BodyJsonInput JsonSpec
+  = BodyJsonInput NamedSchema
   | RawBodyInput
-  | CaptureInput Text PrimType
-  | QueryInput Text PrimType
-  | OptionalInput Text PrimType
-  | HeaderInput Text PrimType
+  | CaptureInput Text Schema
+  | QueryInput Text Schema
+  | OptionalInput Text Schema
+  | HeaderInput Text Schema
   | FormBodyInput FormType
-  deriving (Show, Eq, Ord)
-
-data PrimType
-  = IntType | TextType | DateType
-  deriving (Show, Eq, Ord)
-
-class ToPrimType a where
-  toPrimType :: PrimType
-
-instance ToPrimType Int where
-  toPrimType = IntType
-
-instance ToPrimType Text where
-  toPrimType = TextType
+  deriving (Show, Eq)
 
 class ToFormType a where
   toFormType :: FormType
 
-newtype FormType = FormType [(Text, PrimType)]
-  deriving (Show, Eq, Ord)
-
-data JsonSpec = Any
-  deriving (Show, Eq, Ord)
+newtype FormType = FormType [(Text, Schema)]
+  deriving (Show, Eq)
 
 data RouteOutput = RouteOutput
   { status :: Status
   , media :: MediaType
+  , schema :: Maybe NamedSchema
   }
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq)
 
-data MediaInputType
-  = JsonInputType | FormInputType | AnyInputType
-  deriving (Show, Eq, Ord)
-
-data MediaType
-  = RawType | JsonType | HtmlType | PlainTextType | OtherMedia
-  deriving (Show, Eq, Ord)
+newtype MediaType = MediaType Text
+  deriving (Show, Eq, Ord, IsString)
 
 class ToMediaType a where
   toMediaType :: MediaType
 
 instance ToMediaType Text where
-  toMediaType = PlainTextType
+  toMediaType = MediaType "text/plain"
 
 instance ToMediaType Html where
-  toMediaType = HtmlType
+  toMediaType = MediaType "text/html"
 
 instance ToMediaType BL.ByteString where
-  toMediaType = RawType
+  toMediaType = MediaType "application/octet-stream"
 
 data Json
 
 instance ToMediaType Json where
-  toMediaType = JsonType
+  toMediaType = MediaType "application/json"
+
+data RawMedia (sym :: Symbol)
+
+instance KnownSymbol sym => ToMediaType (RawMedia sym) where
+  toMediaType = MediaType (fromString (symbolVal (Proxy @sym)))
 
 addRouteInput :: RouteInput -> RouteInfo -> RouteInfo
 addRouteInput inp info = info { inputs = inp : info.inputs }
 
 emptyRouteInfo :: RouteInfo
-emptyRouteInfo = RouteInfo Nothing AnyInputType [] (RouteOutput ok200 PlainTextType)
+emptyRouteInfo = RouteInfo Nothing (MediaType "*/*") [] (RouteOutput ok200 (MediaType "*/*") Nothing) [] "" ""
 
 setMethod :: Method -> MediaType -> RouteInfo -> RouteInfo
 setMethod method mediaType info = info
   { method = Just method
-  , output = RouteOutput info.output.status mediaType
+  , output = RouteOutput info.output.status mediaType Nothing
   }
 
-setMediaInputType :: MediaInputType -> RouteInfo -> RouteInfo
+setJsonMethod :: Method -> MediaType -> NamedSchema -> RouteInfo -> RouteInfo
+setJsonMethod method mediaType schema info = info
+  { method = Just method
+  , output = RouteOutput info.output.status mediaType (Just schema)
+  }
+
+setMediaInputType :: MediaType -> RouteInfo -> RouteInfo
 setMediaInputType ty info = info { inputType = ty }
 
 class ToRouteInfo a where
   toRouteInfo :: RouteInfo -> RouteInfo
-

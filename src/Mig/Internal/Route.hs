@@ -21,17 +21,27 @@ module Mig.Internal.Route
   , AddHeaders (..)
 
   -- * Output methods
-  , Get (..)
-  , Post (..)
-  , Put (..)
+  , Send (..)
+  , Get
+  , Post
+  , Put
+  , Delete
+  , IsMethod (..)
+  , GetMethod
+  , PostMethod
+  , PutMethod
+  , DeleteMethod
   ) where
 
+import Data.OpenApi (ToParamSchema (..), ToSchema (..))
+import Data.OpenApi.Internal.Schema (toNamedSchema)
 import Data.Text (Text)
 import Mig.Internal.Info
 import Mig.Internal.ServerFun
-import Mig.Internal.Types (ToTextResp (..), ToJsonResp (..), ToHtmlResp (..), setRespStatus)
+import Mig.Internal.Types (ToTextResp (..), ToJsonResp (..), ToHtmlResp (..), ToByteStringResp (..), setRespStatus, addRespHeaders)
 import Data.Kind
 import Data.Aeson (FromJSON)
+import Data.Aeson qualified as Json
 import Web.HttpApiData
 import Web.FormUrlEncoded
 import GHC.TypeLits
@@ -88,10 +98,10 @@ instance MonadIO m => ToRoute (ServerFun m) where
 
 newtype Body a = Body a
 
-instance (ToJsonSpec a, ToRouteInfo b) => ToRouteInfo (Body a -> b) where
-  toRouteInfo = setMediaInputType JsonInputType . addRouteInput (BodyJsonInput (toJsonSpec @a)) . toRouteInfo @b
+instance (ToSchema a, ToRouteInfo b) => ToRouteInfo (Body a -> b) where
+  toRouteInfo = setMediaInputType (toMediaType @Json) . addRouteInput (BodyJsonInput (toNamedSchema (Proxy @a))) . toRouteInfo @b
 
-instance (ToJsonSpec a, FromJSON a, ToRoute b) => ToRoute (Body a -> b) where
+instance (ToSchema a, FromJSON a, ToRoute b) => ToRoute (Body a -> b) where
   type RouteMonad (Body a -> b) = RouteMonad b
 
   toRouteFun f = withBody (toRouteFun . f . Body)
@@ -112,12 +122,12 @@ instance (ToRoute b) => ToRoute (RawBody -> b) where
 
 newtype Query (sym :: Symbol) a = Query a
 
-instance (KnownSymbol sym, ToPrimType a, ToRouteInfo b) => ToRouteInfo (Query sym a -> b) where
-  toRouteInfo = addRouteInput (QueryInput name (toPrimType @a)) . toRouteInfo @b
+instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Query sym a -> b) where
+  toRouteInfo = addRouteInput (QueryInput name (toParamSchema (Proxy @a))) . toRouteInfo @b
     where
       name = fromString (symbolVal (Proxy @sym))
 
-instance (FromHttpApiData a, ToPrimType a, ToRoute b, KnownSymbol sym) => ToRoute (Query sym a -> b) where
+instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (Query sym a -> b) where
   type RouteMonad (Query sym a -> b) = RouteMonad b
 
   toRouteFun f = withQuery name (toRouteFun . f . Query)
@@ -128,12 +138,12 @@ instance (FromHttpApiData a, ToPrimType a, ToRoute b, KnownSymbol sym) => ToRout
 
 newtype Optional (sym :: Symbol) a = Optional (Maybe a)
 
-instance (KnownSymbol sym, ToPrimType a, ToRouteInfo b) => ToRouteInfo (Optional sym a -> b) where
-  toRouteInfo = addRouteInput (QueryInput name (toPrimType @a)) . toRouteInfo @b
+instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Optional sym a -> b) where
+  toRouteInfo = addRouteInput (QueryInput name (toParamSchema (Proxy @a))) . toRouteInfo @b
     where
       name = fromString (symbolVal (Proxy @sym))
 
-instance (FromHttpApiData a, ToPrimType a, ToRoute b, KnownSymbol sym) => ToRoute (Optional sym a -> b) where
+instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (Optional sym a -> b) where
   type RouteMonad (Optional sym a -> b) = RouteMonad b
 
   toRouteFun f = withOptional name (toRouteFun . f . Optional)
@@ -144,12 +154,12 @@ instance (FromHttpApiData a, ToPrimType a, ToRoute b, KnownSymbol sym) => ToRout
 
 newtype Capture (sym :: Symbol) a = Capture a
 
-instance (KnownSymbol sym, ToPrimType a, ToRouteInfo b) => ToRouteInfo (Capture sym a -> b) where
-  toRouteInfo = addRouteInput (CaptureInput name (toPrimType @a)) . toRouteInfo @b
+instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Capture sym a -> b) where
+  toRouteInfo = addRouteInput (CaptureInput name (toParamSchema (Proxy @a))) . toRouteInfo @b
     where
       name = fromString (symbolVal (Proxy @sym))
 
-instance (FromHttpApiData a, ToPrimType a, ToRoute b, KnownSymbol sym) => ToRoute (Capture sym a -> b) where
+instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (Capture sym a -> b) where
   type RouteMonad (Capture sym a -> b) = RouteMonad b
 
   toRouteFun f = withCapture name (toRouteFun . f . Capture)
@@ -160,12 +170,12 @@ instance (FromHttpApiData a, ToPrimType a, ToRoute b, KnownSymbol sym) => ToRout
 
 newtype Header (sym :: Symbol) a = Header (Maybe a)
 
-instance (KnownSymbol sym, ToPrimType a, ToRouteInfo b) => ToRouteInfo (Header sym a -> b) where
-  toRouteInfo = addRouteInput (HeaderInput name (toPrimType @a)) . toRouteInfo @b
+instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Header sym a -> b) where
+  toRouteInfo = addRouteInput (HeaderInput name (toParamSchema (Proxy @a))) . toRouteInfo @b
     where
       name = fromString (symbolVal (Proxy @sym))
 
-instance (FromHttpApiData a, ToPrimType a, ToRoute b, KnownSymbol sym) => ToRoute (Header sym a -> b) where
+instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (Header sym a -> b) where
   type RouteMonad (Header sym a -> b) = RouteMonad b
 
   toRouteFun f = withHeader name (toRouteFun . f . Header)
@@ -177,7 +187,7 @@ instance (FromHttpApiData a, ToPrimType a, ToRoute b, KnownSymbol sym) => ToRout
 newtype FormBody a = FormBody a
 
 instance (ToFormType a, ToRouteInfo b) => ToRouteInfo (FormBody a -> b) where
-  toRouteInfo = setMediaInputType FormInputType . addRouteInput (FormBodyInput (toFormType @a)) . toRouteInfo @b
+  toRouteInfo = setMediaInputType (MediaType "application/x-www-form-urlencoded") . addRouteInput (FormBodyInput (toFormType @a)) . toRouteInfo @b
 
 instance (ToFormType a, FromForm a, ToRoute b) => ToRoute (FormBody a -> b) where
   type RouteMonad (FormBody a -> b) = RouteMonad b
@@ -200,92 +210,71 @@ instance (ToRoute b) => ToRoute (PathInfo -> b) where
 -------------------------------------------------------------------------------------
 -- outputs
 
--- Get method
+data GetMethod
+data PostMethod
+data PutMethod
+data DeleteMethod
 
--- | Get method. Note that we can not use body input with Get-method, use Post for that.
--- So with Get we can use only URI inputs (Query, Optional, Capture)
-newtype Get ty m a = Get (m a)
+type Get ty m a = Send GetMethod ty m a
+type Post ty m a = Send PostMethod ty m a
+type Put ty m a = Send PutMethod ty m a
+type Delete ty m a = Send DeleteMethod ty m a
 
-instance (ToMediaType ty) => ToRouteInfo (Get ty m a) where
-  toRouteInfo = setMethod methodGet (toMediaType @ty)
+class IsMethod a where
+  toMethod :: Method
 
-instance (MonadIO m, ToTextResp a) => ToRoute (Get Text m a) where
-  type RouteMonad (Get Text m a) = m
-  toRouteFun (Get a) = sendText a
-  emptyRoute = Get (pure (error "No implementation"))
+instance IsMethod GetMethod where
+  toMethod = methodGet
 
-instance (MonadIO m, ToJsonResp a) => ToRoute (Get Json m a) where
-  type RouteMonad (Get Json m a) = m
-  toRouteFun (Get a) = sendJson a
-  emptyRoute = Get (pure (error "No implementation"))
+instance IsMethod PostMethod where
+  toMethod = methodPost
 
-instance (MonadIO m, ToHtmlResp a) => ToRoute (Get Html m a) where
-  type RouteMonad (Get Html m a) = m
-  toRouteFun (Get a) = sendHtml a
-  emptyRoute = Get (pure (error "No implementation"))
+instance IsMethod PutMethod where
+  toMethod = methodPut
 
-instance (MonadIO m) => ToRoute (Get BL.ByteString m BL.ByteString) where
-  type RouteMonad (Get BL.ByteString m BL.ByteString) = m
-  toRouteFun (Get a) = sendRaw a
-  emptyRoute = Get (pure (error "No implementation"))
+instance IsMethod DeleteMethod where
+  toMethod = methodDelete
 
--- Post method
+newtype Send method ty m a = Send { unSend :: m a }
 
--- | Post method.
+instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m a) where
+  toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
-newtype Post ty m a = Post (m a)
+instance {-# OVERLAPPABLE #-} (IsMethod method, ToSchema a) => ToRouteInfo (Send method Json m a) where
+  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toNamedSchema (Proxy @a))
 
-instance (ToMediaType ty) => ToRouteInfo (Post ty m a) where
-  toRouteInfo = setMethod methodPost (toMediaType @ty)
+instance (IsMethod method) => ToRouteInfo (Send method Json m Json.Value) where
+  toRouteInfo = setMethod (toMethod @method) (toMediaType @Json)
 
-instance (MonadIO m, ToTextResp a) => ToRoute (Post Text m a) where
-  type RouteMonad (Post Text m a) = m
-  toRouteFun (Post a) = sendText a
-  emptyRoute = Post (pure (error "No implementation"))
+instance (MonadIO m, ToTextResp a, IsMethod method) => ToRoute (Send method Text m a) where
+  type RouteMonad (Send method Text m a) = m
+  toRouteFun (Send a) = sendText a
+  emptyRoute = Send (pure (error "No implementation"))
 
-instance (MonadIO m, ToJsonResp a) => ToRoute (Post Json m a) where
-  type RouteMonad (Post Json m a) = m
-  toRouteFun (Post a) = sendJson a
-  emptyRoute = Post (pure (error "No implementation"))
+instance {-# OVERLAPPABLE #-} (MonadIO m, ToSchema a, ToJsonResp a, IsMethod method) => ToRoute (Send method Json m a) where
+  type RouteMonad (Send method Json m a) = m
+  toRouteFun (Send a) = sendJson a
+  emptyRoute = Send (pure (error "No implementation"))
 
-instance (MonadIO m, ToHtmlResp a) => ToRoute (Post Html m a) where
-  type RouteMonad (Post Html m a) = m
-  toRouteFun (Post a) = sendHtml a
-  emptyRoute = Post (pure (error "No implementation"))
+instance (MonadIO m, IsMethod method) => ToRoute (Send method Json m Json.Value) where
+  type RouteMonad (Send method Json m Json.Value) = m
+  toRouteFun (Send a) = sendJson a
+  emptyRoute = Send (pure (error "No implementation"))
 
-instance (MonadIO m) => ToRoute (Post BL.ByteString m BL.ByteString) where
-  type RouteMonad (Post BL.ByteString m BL.ByteString) = m
-  toRouteFun (Post a) = sendRaw a
-  emptyRoute = Post (pure (error "No implementation"))
+instance (MonadIO m, ToHtmlResp a, IsMethod method) => ToRoute (Send method Html m a) where
+  type RouteMonad (Send method Html m a) = m
+  toRouteFun (Send a) = sendHtml a
+  emptyRoute = Send (pure (error "No implementation"))
 
--- Put method
+instance (MonadIO m, ToByteStringResp a, IsMethod method) => ToRoute (Send method BL.ByteString m a) where
+  type RouteMonad (Send method BL.ByteString m a) = m
+  toRouteFun (Send a) = sendRaw a
+  emptyRoute = Send (pure (error "No implementation"))
 
--- | Put method.
-
-newtype Put ty m a = Put (m a)
-
-instance (ToMediaType ty) => ToRouteInfo (Put ty m a) where
-  toRouteInfo = setMethod methodPost (toMediaType @ty)
-
-instance (MonadIO m, ToTextResp a) => ToRoute (Put Text m a) where
-  type RouteMonad (Put Text m a) = m
-  toRouteFun (Put a) = sendText a
-  emptyRoute = Put (pure (error "No implementation"))
-
-instance (MonadIO m, ToJsonResp a) => ToRoute (Put Json m a) where
-  type RouteMonad (Put Json m a) = m
-  toRouteFun (Put a) = sendJson a
-  emptyRoute = Put (pure (error "No implementation"))
-
-instance (MonadIO m, ToHtmlResp a) => ToRoute (Put Html m a) where
-  type RouteMonad (Put Html m a) = m
-  toRouteFun (Put a) = sendHtml a
-  emptyRoute = Put (pure (error "No implementation"))
-
-instance (MonadIO m) => ToRoute (Put BL.ByteString m BL.ByteString) where
-  type RouteMonad (Put BL.ByteString m BL.ByteString) = m
-  toRouteFun (Put a) = sendRaw a
-  emptyRoute = Put (pure (error "No implementation"))
+instance (MonadIO m, KnownSymbol sym, ToByteStringResp a, IsMethod method) => ToRoute (Send method (RawMedia sym) m a) where
+  type RouteMonad (Send method (RawMedia sym) m a) = m
+  toRouteFun (Send a) = sendRawMedia (fromString $ symbolVal (Proxy @sym)) a
+  emptyRoute = Send (pure (error "No implementation"))
 
 -- set status
 
@@ -304,10 +293,7 @@ data AddHeaders a = AddHeaders
 -- text response
 
 instance ToTextResp a => ToTextResp (AddHeaders a) where
-  toTextResp (AddHeaders headers content) =
-    resp { Resp.headers = resp.headers <> headers }
-    where
-      resp = toTextResp content
+  toTextResp (AddHeaders headers content) = addRespHeaders headers (toTextResp content)
 
 instance ToTextResp a => ToTextResp (SetStatus a) where
   toTextResp (SetStatus st content) =
@@ -316,10 +302,7 @@ instance ToTextResp a => ToTextResp (SetStatus a) where
 -- json response
 
 instance ToJsonResp a => ToJsonResp (AddHeaders a) where
-  toJsonResp (AddHeaders headers content) =
-    resp { Resp.headers = resp.headers <> headers }
-    where
-      resp = toJsonResp content
+  toJsonResp (AddHeaders headers content) = addRespHeaders headers (toJsonResp content)
 
 instance ToJsonResp a => ToJsonResp (SetStatus a) where
   toJsonResp (SetStatus st content) =
@@ -328,11 +311,17 @@ instance ToJsonResp a => ToJsonResp (SetStatus a) where
 -- html response
 
 instance ToHtmlResp a => ToHtmlResp (AddHeaders a) where
-  toHtmlResp (AddHeaders headers content) =
-    resp { Resp.headers = resp.headers <> headers }
-    where
-      resp = toHtmlResp content
+  toHtmlResp (AddHeaders headers content) = addRespHeaders headers (toHtmlResp content)
 
 instance ToHtmlResp a => ToHtmlResp (SetStatus a) where
   toHtmlResp (SetStatus st content) =
     setRespStatus st (toHtmlResp content)
+
+-- raw response
+
+instance ToByteStringResp a => ToByteStringResp (AddHeaders a) where
+  toByteStringResp (AddHeaders headers content) = addRespHeaders headers (toByteStringResp content)
+
+instance ToByteStringResp a => ToByteStringResp (SetStatus a) where
+  toByteStringResp (SetStatus st content) =
+    setRespStatus st (toByteStringResp content)

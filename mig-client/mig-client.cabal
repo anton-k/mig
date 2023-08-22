@@ -4,8 +4,8 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           mig
-version:        0.1.0.3
+name:           mig-client
+version:        0.1.0.0
 synopsis:       Build lightweight and composable servers
 description:    With library mig we can build lightweight and composable servers.
                 There are only couple of combinators to assemble servers from parts.
@@ -15,15 +15,13 @@ description:    With library mig we can build lightweight and composable servers
                 .
                 The main features are:
                 .
-                * lightweight library
+                * lightweight library to build HTTP-clients based on mig library
                 .
-                * expressive DSL to compose servers
+                * expressive DSL to compose clients
                 .
                 * type-safe handlers
                 .
                 * handlers are encoded with generic haskell functions
-                .
-                * built on top of WAI and warp server libraries.
                 .
                 Example of hello world server:
                 .
@@ -65,7 +63,6 @@ author:         Anton Kholomiov
 maintainer:     anton.kholomiov@gmail.com
 copyright:      2023 Anton Kholomiov
 license:        BSD3
-license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
@@ -77,23 +74,9 @@ source-repository head
 
 library
   exposed-modules:
-      Mig
-      Mig.Common
-      Mig.Html
-      Mig.Html.IO
-      Mig.Internal.Api
-      Mig.Internal.Api.NormalForm
-      Mig.Internal.Info
-      Mig.Internal.Route
-      Mig.Internal.Server
-      Mig.Internal.ServerFun
-      Mig.Internal.Types
-      Mig.Internal.Wai
-      Mig.Json
-      Mig.Json.IO
-      Mig.Server
+      Mig.Client
   other-modules:
-      Paths_mig
+      Paths_mig_client
   hs-source-dirs:
       src
   default-extensions:
@@ -114,17 +97,11 @@ library
     , blaze-html
     , blaze-markup
     , bytestring
-    , case-insensitive
     , containers
-    , exceptions
-    , extra
-    , filepath
     , http-api-data
+    , http-client
     , http-types
-    , mtl
-    , openapi3
+    , mig
     , safe
     , text
-    , wai
-    , warp
   default-language: GHC2021

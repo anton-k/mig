@@ -50,13 +50,19 @@ language: GHC2021
 
 dependencies:
   - base >= 4.7 && < 5
-  - base
+  - aeson-pretty
+  - bytestring
   - mig
+  - mig-client
+  - mig-openapi3
+  - mig-swagger-ui
   - text
   - aeson
   - random
   - time
   - pretty-show
+  - openapi3
+  - lens
 
 executables:
   hello-world-mig-example-app:
@@ -66,6 +72,16 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+
+  hello-client-mig-example-app:
+    main:                Main.hs
+    source-dirs:         HelloClient
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+      - http-client
 
   route-args-mig-example-app:
     main:                Main.hs

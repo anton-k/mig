@@ -44,9 +44,53 @@ executable counter-mig-example-app
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , aeson-pretty
+    , base >=4.7 && <5
+    , bytestring
+    , lens
     , mig
+    , mig-client
+    , mig-openapi3
+    , mig-swagger-ui
     , mtl
+    , openapi3
+    , pretty-show
+    , random
+    , text
+    , time
+  default-language: GHC2021
+
+executable hello-client-mig-example-app
+  main-is: Main.hs
+  other-modules:
+      Paths_mig_example_apps
+  hs-source-dirs:
+      HelloClient
+  default-extensions:
+      ImportQualifiedPost
+      OverloadedStrings
+      TypeFamilies
+      OverloadedRecordDot
+      DuplicateRecordFields
+      LambdaCase
+      DerivingStrategies
+      DataKinds
+      StrictData
+      DeriveAnyClass
+      RecordWildCards
+  ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , aeson-pretty
+    , base >=4.7 && <5
+    , bytestring
+    , http-client
+    , lens
+    , mig
+    , mig-client
+    , mig-openapi3
+    , mig-swagger-ui
+    , openapi3
     , pretty-show
     , random
     , text
@@ -74,8 +118,15 @@ executable hello-world-mig-example-app
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , aeson-pretty
+    , base >=4.7 && <5
+    , bytestring
+    , lens
     , mig
+    , mig-client
+    , mig-openapi3
+    , mig-swagger-ui
+    , openapi3
     , pretty-show
     , random
     , text
@@ -110,9 +161,16 @@ executable html-mig-example-app
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , aeson-pretty
+    , base >=4.7 && <5
     , blaze-html
+    , bytestring
+    , lens
     , mig
+    , mig-client
+    , mig-openapi3
+    , mig-swagger-ui
+    , openapi3
     , pretty-show
     , random
     , text
@@ -145,9 +203,16 @@ executable json-api-mig-example-app
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , aeson-pretty
+    , base >=4.7 && <5
+    , bytestring
     , containers
+    , lens
     , mig
+    , mig-client
+    , mig-openapi3
+    , mig-swagger-ui
+    , openapi3
     , pretty-show
     , random
     , text
@@ -175,8 +240,15 @@ executable route-args-mig-example-app
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
-    , base
+    , aeson-pretty
+    , base >=4.7 && <5
+    , bytestring
+    , lens
     , mig
+    , mig-client
+    , mig-openapi3
+    , mig-swagger-ui
+    , openapi3
     , pretty-show
     , random
     , text
