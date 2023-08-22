@@ -30,7 +30,7 @@ resolver:
 #   - auto-update
 #   - wai
 packages:
-- .
+- mig
 - mig-client
 - mig-openapi3
 - mig-swagger-ui
