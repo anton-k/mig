@@ -1,25 +1,25 @@
-module Mig.Internal.Wai
-  ( ServerConfig (..)
-  , toApplication
-  ) where
+module Mig.Internal.Wai (
+  ServerConfig (..),
+  toApplication,
+) where
 
-import Mig.Internal.Types (Kilobytes, Req (..), Resp (..), RespBody (..), Error (..), badRequest, ToText (..))
-import Mig.Internal.ServerFun
-import Network.Wai
+import Control.Monad.Catch
+import Data.Aeson qualified as Json
 import Data.ByteString qualified as B
 import Data.ByteString.Lazy qualified as BL
+import Data.Foldable
 import Data.Map.Strict qualified as Map
-import Data.Aeson qualified as Json
-import Text.Blaze.Renderer.Utf8 qualified as Html
-import Control.Monad.Catch
 import Data.Maybe
+import Data.Sequence (Seq (..), (|>))
+import Data.Sequence qualified as Seq
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
-import Data.Sequence (Seq (..), (|>))
-import Data.Sequence qualified as Seq
-import Data.Foldable
+import Mig.Internal.ServerFun
+import Mig.Internal.Types (Error (..), Kilobytes, Req (..), Resp (..), RespBody (..), ToText (..), badRequest)
 import Network.HTTP.Types.Status (status413)
+import Network.Wai
+import Text.Blaze.Renderer.Utf8 qualified as Html
 
 -- | Server config
 data ServerConfig = ServerConfig
@@ -51,22 +51,24 @@ toResponse resp =
     lbs = responseLBS resp.status resp.headers
 
 -- | Handle errors
-handleError ::(Exception a, MonadCatch m) => (a -> ServerFun m) -> ServerFun m -> ServerFun m
+handleError :: (Exception a, MonadCatch m) => (a -> ServerFun m) -> ServerFun m -> ServerFun m
 handleError handler (ServerFun act) = ServerFun $ \req ->
   (act req) `catch` (\err -> unServerFun (handler err) req)
 
--- | Read request from low-level WAI-request
--- First argument limits the size of input body. The body is read in chunks.
+{-| Read request from low-level WAI-request
+First argument limits the size of input body. The body is read in chunks.
+-}
 fromRequest :: Maybe Kilobytes -> Request -> IO Req
 fromRequest maxSize req =
-  pure $ Req
-    { path = pathInfo req
-    , query = Map.fromList $ mapMaybe (\(key, mVal) -> (key, ) <$> mVal) (queryString req)
-    , headers = Map.fromList $ requestHeaders req
-    , method = requestMethod req
-    , readBody = fmap (fmap BL.fromChunks) $ readRequestBody (getRequestBodyChunk req) maxSize
-    , capture = mempty
-    }
+  pure $
+    Req
+      { path = pathInfo req
+      , query = Map.fromList $ mapMaybe (\(key, mVal) -> (key,) <$> mVal) (queryString req)
+      , headers = Map.fromList $ requestHeaders req
+      , method = requestMethod req
+      , readBody = fmap (fmap BL.fromChunks) $ readRequestBody (getRequestBodyChunk req) maxSize
+      , capture = mempty
+      }
 
 -- | Read request body in chunks
 readRequestBody :: IO B.ByteString -> Maybe Kilobytes -> IO (Either (Error Text) [B.ByteString])

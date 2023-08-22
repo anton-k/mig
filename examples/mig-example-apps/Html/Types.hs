@@ -1,27 +1,27 @@
 -- | types
-module Types
-  ( Page (..)
-  , Greeting (..)
-  , WritePost (..)
-  , ListPosts (..)
-  , BlogPostId (..)
-  , BlogPost (..)
-  , Quote (..)
-  , SubmitBlogPost (..)
-  ) where
+module Types (
+  Page (..),
+  Greeting (..),
+  WritePost (..),
+  ListPosts (..),
+  BlogPostId (..),
+  BlogPost (..),
+  Quote (..),
+  SubmitBlogPost (..),
+) where
 
 import Data.Aeson (FromJSON)
 import Data.Text (Text)
 import Data.Time
 import GHC.Generics
-import Mig (FromHttpApiData, FromForm)
+import Mig (FromForm, FromHttpApiData)
 
 -- | Web-page for our site
 data Page a
-  = Page a
-    -- ^ page with some content
-  | PostNotFound BlogPostId
-    -- ^ error: post not found by id
+  = -- | page with some content
+    Page a
+  | -- | error: post not found by id
+    PostNotFound BlogPostId
 
 -- | Greeting page
 data Greeting = Greeting
@@ -33,12 +33,12 @@ data WritePost = WritePost
 newtype ListPosts = ListPosts [BlogPost]
 
 -- | Blog post id
-newtype BlogPostId = BlogPostId { unBlogPostId :: Text }
-  deriving newtype  (FromHttpApiData, Eq, Show, FromJSON)
+newtype BlogPostId = BlogPostId {unBlogPostId :: Text}
+  deriving newtype (FromHttpApiData, Eq, Show, FromJSON)
 
 -- | Blog post
 data BlogPost = BlogPost
-  { id ::BlogPostId
+  { id :: BlogPostId
   , title :: Text
   , createdAt :: UTCTime
   , content :: Text

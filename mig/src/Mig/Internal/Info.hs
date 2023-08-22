@@ -1,32 +1,32 @@
 -- | Types that describe route info
-module Mig.Internal.Info
-  ( RouteInfo (..)
-  , RouteInput (..)
-  , RouteOutput (..)
-  , FormType (..)
-  , ToFormType (..)
-  , MediaType (..)
-  , MediaType (..)
-  , addRouteInput
-  , setMethod
-  , setJsonMethod
-  , setMediaInputType
-  , emptyRouteInfo
-  , ToMediaType (..)
-  , Json
-  , RawMedia
-  , ToRouteInfo (..)
-  ) where
+module Mig.Internal.Info (
+  RouteInfo (..),
+  RouteInput (..),
+  RouteOutput (..),
+  FormType (..),
+  ToFormType (..),
+  MediaType (..),
+  MediaType (..),
+  addRouteInput,
+  setMethod,
+  setJsonMethod,
+  setMediaInputType,
+  emptyRouteInfo,
+  ToMediaType (..),
+  Json,
+  RawMedia,
+  ToRouteInfo (..),
+) where
 
-import GHC.TypeLits
+import Data.ByteString.Lazy qualified as BL
+import Data.OpenApi
 import Data.Proxy
 import Data.String
 import Data.Text (Text)
-import Network.HTTP.Types.Status
+import GHC.TypeLits
 import Network.HTTP.Types.Method
-import Data.ByteString.Lazy qualified as BL
+import Network.HTTP.Types.Status
 import Text.Blaze.Html (Html)
-import Data.OpenApi
 
 data RouteInfo = RouteInfo
   { method :: Maybe Method
@@ -84,29 +84,31 @@ instance ToMediaType Json where
 
 data RawMedia (sym :: Symbol)
 
-instance KnownSymbol sym => ToMediaType (RawMedia sym) where
+instance (KnownSymbol sym) => ToMediaType (RawMedia sym) where
   toMediaType = MediaType (fromString (symbolVal (Proxy @sym)))
 
 addRouteInput :: RouteInput -> RouteInfo -> RouteInfo
-addRouteInput inp info = info { inputs = inp : info.inputs }
+addRouteInput inp info = info{inputs = inp : info.inputs}
 
 emptyRouteInfo :: RouteInfo
 emptyRouteInfo = RouteInfo Nothing (MediaType "*/*") [] (RouteOutput ok200 (MediaType "*/*") Nothing) [] "" ""
 
 setMethod :: Method -> MediaType -> RouteInfo -> RouteInfo
-setMethod method mediaType info = info
-  { method = Just method
-  , output = RouteOutput info.output.status mediaType Nothing
-  }
+setMethod method mediaType info =
+  info
+    { method = Just method
+    , output = RouteOutput info.output.status mediaType Nothing
+    }
 
 setJsonMethod :: Method -> MediaType -> NamedSchema -> RouteInfo -> RouteInfo
-setJsonMethod method mediaType schema info = info
-  { method = Just method
-  , output = RouteOutput info.output.status mediaType (Just schema)
-  }
+setJsonMethod method mediaType schema info =
+  info
+    { method = Just method
+    , output = RouteOutput info.output.status mediaType (Just schema)
+    }
 
 setMediaInputType :: MediaType -> RouteInfo -> RouteInfo
-setMediaInputType ty info = info { inputType = ty }
+setMediaInputType ty info = info{inputType = ty}
 
 class ToRouteInfo a where
   toRouteInfo :: RouteInfo -> RouteInfo

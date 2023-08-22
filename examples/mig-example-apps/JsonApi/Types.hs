@@ -1,23 +1,25 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
--- | domain types
-module Types
-  ( -- * Auth
-    User (..)
-  , AuthToken(..)
-    -- * Weather
-  , DayInterval (..)
-  , Timed (..)
-  , Location (..)
-  , WeatherData (..)
-  , UpdateData (..)
-  , module X
-  ) where
 
-import Data.Aeson (ToJSON, FromJSON)
-import Data.Time as X (Day)
+-- | domain types
+module Types (
+  -- * Auth
+  User (..),
+  AuthToken (..),
+
+  -- * Weather
+  DayInterval (..),
+  Timed (..),
+  Location (..),
+  WeatherData (..),
+  UpdateData (..),
+  module X,
+) where
+
+import Data.Aeson (FromJSON, ToJSON)
 import Data.Text as X (Text)
-import Mig.Json.IO (FromHttpApiData (..))
+import Data.Time as X (Day)
 import GHC.Generics
+import Mig.Json.IO (FromHttpApiData (..))
 
 -- auth domain
 

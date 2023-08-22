@@ -1,25 +1,27 @@
 -- | server and handlers
-module Server
-  ( server
-  ) where
+module Server (
+  server,
+) where
 
-import Mig.Json.IO
-import Data.Time
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad
+import Data.Time
+import Mig.Json.IO
 
-import Types
 import Interface
+import Types
 
 server :: Env -> Server IO
 server env =
-  "api" /. "v1" /. "weather" /.
-    mconcat
-      [ "get" /.
-            mconcat
-              [ "weather" /. handleGetWeather env
-              , "auth-token" /. handleAuthToken env
-              ]
+  "api"
+    /. "v1"
+    /. "weather"
+    /. mconcat
+      [ "get"
+          /. mconcat
+            [ "weather" /. handleGetWeather env
+            , "auth-token" /. handleAuthToken env
+            ]
       , "update" /. handleUpdateWeather env
       ]
 
@@ -42,7 +44,10 @@ handleAuthToken env (Body user) = Post $ do
 
 handleGetWeather ::
   Env ->
-  Query "auth" AuthToken -> Capture Location -> Capture Day -> Capture DayInterval ->
+  Query "auth" AuthToken ->
+  Capture Location ->
+  Capture Day ->
+  Capture DayInterval ->
   Get (Either (Error Text) (Timed WeatherData))
 handleGetWeather env (Query token) (Capture location) (Capture fromDay) (Capture interval) = Get $ do
   env.logger.info "get the weather forecast"
@@ -54,12 +59,14 @@ handleGetWeather env (Query token) (Capture location) (Capture fromDay) (Capture
 
 handleUpdateWeather ::
   Env ->
-  Query "auth" AuthToken -> Body UpdateData ->
+  Query "auth" AuthToken ->
+  Body UpdateData ->
   Post ()
 handleUpdateWeather env (Query token) (Body updateData) = Post $ do
   env.logger.info "update the weather data"
-  void $ whenAuth env token $
-    env.weather.update updateData
+  void $
+    whenAuth env token $
+      env.weather.update updateData
 
 whenAuth :: Env -> AuthToken -> IO a -> IO (Either (Error Text) a)
 whenAuth env token act = do
@@ -71,5 +78,3 @@ whenAuth env token act = do
       pure $ Left $ Error status500 errMessage
   where
     errMessage = "Token is invalid"
-
-

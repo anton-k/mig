@@ -1,8 +1,8 @@
 -- | random content for blog posts
-module Content
-  ( poems
-  , quotes
-  ) where
+module Content (
+  poems,
+  quotes,
+) where
 
 import Data.Text (Text)
 import Data.Text qualified as Text
@@ -74,7 +74,8 @@ dream =
     ]
 
 pie :: Text
-pie = Text.unlines
+pie =
+  Text.unlines
     [ "Cottleston Cottleston Cottleston Pie,"
     , "A fly can't bird, but a bird can fly."
     , "Ask me a riddle and I reply"

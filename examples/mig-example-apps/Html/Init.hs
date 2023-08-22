@@ -1,33 +1,35 @@
-module Init
-  ( initSite
-  ) where
+module Init (
+  initSite,
+) where
 
+import Data.IORef
+import Data.List qualified as List
 import Data.Text (Text)
 import Data.Text.IO qualified as Text
-import Data.IORef
-import System.Random
-import Data.List qualified as List
 import Data.Time
+import System.Random
 
 import Content
-import Types
 import Interface
 import Internal.State
+import Types
 
--- | Initialise the logic for our website.
--- we read the posts from some poems and fill the site with them.
---
--- Also we init all actions. Note how we hide the mutable state Env with interface for Site.
+{-| Initialise the logic for our website.
+we read the posts from some poems and fill the site with them.
+
+Also we init all actions. Note how we hide the mutable state Env with interface for Site.
+-}
 initSite :: IO Site
 initSite = do
   env <- initEnv
-  pure $ Site
-    { readBlogPost = mockRead env
-    , writeBlogPost = mockWriteBlogPost env
-    , listBlogPosts = readIORef env.blogPosts
-    , readQuote = Quote <$> randomQuote
-    , logInfo = Text.putStrLn . mappend "[INFO]: "
-    }
+  pure $
+    Site
+      { readBlogPost = mockRead env
+      , writeBlogPost = mockWriteBlogPost env
+      , listBlogPosts = readIORef env.blogPosts
+      , readQuote = Quote <$> randomQuote
+      , logInfo = Text.putStrLn . mappend "[INFO]: "
+      }
 
 -------------------------------------------------------------------------------------
 -- implementation of the site interfaces.
@@ -46,9 +48,8 @@ mockWriteBlogPost env title content = do
   pid <- randomBlogPostId
   time <- getCurrentTime
   -- unsafe in concurrent, it is here just for example (use TVar or atomicModifyIORef)
-  modifyIORef' env.blogPosts (BlogPost pid title time content : )
+  modifyIORef' env.blogPosts (BlogPost pid title time content :)
   pure pid
-
 
 randomQuote :: IO Text
 randomQuote = oneOf quotes
@@ -58,6 +59,6 @@ randomQuote = oneOf quotes
 
 -- pick random element from a list
 oneOf :: [a] -> IO a
-oneOf as = (as !! ) . (`mod` len) <$> randomIO
+oneOf as = (as !!) . (`mod` len) <$> randomIO
   where
     len = length as

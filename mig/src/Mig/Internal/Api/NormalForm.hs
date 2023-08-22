@@ -1,12 +1,12 @@
-module Mig.Internal.Api.NormalForm
-  ( ApiNormal (..)
-  , getPath
-  , toApiNormal
-  ) where
+module Mig.Internal.Api.NormalForm (
+  ApiNormal (..),
+  getPath,
+  toApiNormal,
+) where
 
-import Data.Text (Text)
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
+import Data.Text (Text)
 import Mig.Internal.Api qualified as Api
 
 data ApiNormal a
@@ -45,13 +45,12 @@ getPath = go mempty
       [] -> go captureMap (hd : tl) api
       prefixHd : prefixTl ->
         if (hd == prefixHd)
-          then
-            case tl of
-              [] ->
-                case prefixTl of
-                  [] -> go captureMap [] api
-                  _ -> Nothing
-              nextHd : nextTl -> onStaticPrefix captureMap nextHd nextTl prefixTl api
+          then case tl of
+            [] ->
+              case prefixTl of
+                [] -> go captureMap [] api
+                _ -> Nothing
+            nextHd : nextTl -> onStaticPrefix captureMap nextHd nextTl prefixTl api
           else Nothing
 
     onSwitch captureMap hd tl pathSwitch mCaptureSwitch =
@@ -68,8 +67,9 @@ toApiNormal = \case
   Api.WithPath path a -> case parsePath path of
     Nothing -> toApiNormal a
     Just (prefix, rest) ->
-      let nextApi = toApiNormal (Api.WithPath rest a)
-      in
+      let
+        nextApi = toApiNormal (Api.WithPath rest a)
+       in
         case prefix of
           StaticPath ts -> StaticPrefix ts nextApi
           CapturePath name -> CapturePrefix name nextApi

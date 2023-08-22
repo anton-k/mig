@@ -1,63 +1,64 @@
-{-# Language UndecidableInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
+
 -- | Creation of routes from functions
-module Mig.Internal.Route
-  ( Route (..)
-  , ToRoute (..)
-  , toRoute
-  , ServerFun (..)
+module Mig.Internal.Route (
+  Route (..),
+  ToRoute (..),
+  toRoute,
+  ServerFun (..),
 
   -- * Inputs
-  , Body (..)
-  , RawBody (..)
-  , Query (..)
-  , Optional (..)
-  , Capture (..)
-  , Header (..)
-  , FormBody (..)
-  , PathInfo (..)
+  Body (..),
+  RawBody (..),
+  Query (..),
+  Optional (..),
+  Capture (..),
+  Header (..),
+  FormBody (..),
+  PathInfo (..),
 
   -- * Outputs
-  , SetStatus (..)
-  , AddHeaders (..)
+  SetStatus (..),
+  AddHeaders (..),
 
   -- * Output methods
-  , Send (..)
-  , Get
-  , Post
-  , Put
-  , Delete
-  , IsMethod (..)
-  , GetMethod
-  , PostMethod
-  , PutMethod
-  , DeleteMethod
-  ) where
+  Send (..),
+  Get,
+  Post,
+  Put,
+  Delete,
+  IsMethod (..),
+  GetMethod,
+  PostMethod,
+  PutMethod,
+  DeleteMethod,
+) where
 
-import Data.OpenApi (ToParamSchema (..), ToSchema (..))
-import Data.OpenApi.Internal.Schema (toNamedSchema)
-import Data.Text (Text)
-import Mig.Internal.Info
-import Mig.Internal.ServerFun
-import Mig.Internal.Types (ToTextResp (..), ToJsonResp (..), ToHtmlResp (..), ToByteStringResp (..), setRespStatus, addRespHeaders)
-import Data.Kind
+import Control.Monad.IO.Class
 import Data.Aeson (FromJSON)
 import Data.Aeson qualified as Json
-import Web.HttpApiData
-import Web.FormUrlEncoded
-import GHC.TypeLits
+import Data.ByteString.Lazy qualified as BL
+import Data.Kind
+import Data.OpenApi (ToParamSchema (..), ToSchema (..))
+import Data.OpenApi.Internal.Schema (toNamedSchema)
 import Data.Proxy
 import Data.String
-import Data.ByteString.Lazy qualified as BL
-import Network.HTTP.Types.Status
+import Data.Text (Text)
+import GHC.TypeLits
+import Mig.Internal.Info
+import Mig.Internal.ServerFun
+import Mig.Internal.Types (ToByteStringResp (..), ToHtmlResp (..), ToJsonResp (..), ToTextResp (..), addRespHeaders, setRespStatus)
+import Mig.Internal.Types qualified as Resp (Resp (..))
 import Network.HTTP.Types.Header (ResponseHeaders)
 import Network.HTTP.Types.Method
+import Network.HTTP.Types.Status
 import Text.Blaze.Html (Html)
-import Mig.Internal.Types qualified as Resp (Resp (..))
-import Control.Monad.IO.Class
+import Web.FormUrlEncoded
+import Web.HttpApiData
 
 class (MonadIO (RouteMonad a), ToRouteInfo a) => ToRoute a where
   -- | Underyling server monad
-  type  RouteMonad a :: Type -> Type
+  type RouteMonad a :: Type -> Type
 
   -- | Convert to route
   toRouteFun :: a -> ServerFun (RouteMonad a)
@@ -71,11 +72,12 @@ data Route m = Route
   , run :: ServerFun m
   }
 
-toRoute :: forall a . ToRoute a => a -> Route (RouteMonad a)
-toRoute a = Route
-  { api = toRouteInfo @a emptyRouteInfo
-  , run = toRouteFun a
-  }
+toRoute :: forall a. (ToRoute a) => a -> Route (RouteMonad a)
+toRoute a =
+  Route
+    { api = toRouteInfo @a emptyRouteInfo
+    , run = toRouteFun a
+    }
 
 -------------------------------------------------------------------------------------
 -- identity instances
@@ -83,12 +85,12 @@ toRoute a = Route
 instance ToRouteInfo (Route m) where
   toRouteInfo = id
 
-instance MonadIO m => ToRoute (Route m) where
+instance (MonadIO m) => ToRoute (Route m) where
   type RouteMonad (Route m) = m
   toRouteFun = (.run)
   emptyRoute = Route emptyRouteInfo emptyRoute
 
-instance MonadIO m => ToRoute (ServerFun m) where
+instance (MonadIO m) => ToRoute (ServerFun m) where
   type RouteMonad (ServerFun m) = m
   toRouteFun = id
   emptyRoute = ServerFun $ const $ pure Nothing
@@ -235,7 +237,7 @@ instance IsMethod PutMethod where
 instance IsMethod DeleteMethod where
   toMethod = methodDelete
 
-newtype Send method ty m a = Send { unSend :: m a }
+newtype Send method ty m a = Send {unSend :: m a}
 
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m a) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
@@ -292,36 +294,36 @@ data AddHeaders a = AddHeaders
 
 -- text response
 
-instance ToTextResp a => ToTextResp (AddHeaders a) where
+instance (ToTextResp a) => ToTextResp (AddHeaders a) where
   toTextResp (AddHeaders headers content) = addRespHeaders headers (toTextResp content)
 
-instance ToTextResp a => ToTextResp (SetStatus a) where
+instance (ToTextResp a) => ToTextResp (SetStatus a) where
   toTextResp (SetStatus st content) =
     setRespStatus st (toTextResp content)
 
 -- json response
 
-instance ToJsonResp a => ToJsonResp (AddHeaders a) where
+instance (ToJsonResp a) => ToJsonResp (AddHeaders a) where
   toJsonResp (AddHeaders headers content) = addRespHeaders headers (toJsonResp content)
 
-instance ToJsonResp a => ToJsonResp (SetStatus a) where
+instance (ToJsonResp a) => ToJsonResp (SetStatus a) where
   toJsonResp (SetStatus st content) =
     setRespStatus st (toJsonResp content)
 
 -- html response
 
-instance ToHtmlResp a => ToHtmlResp (AddHeaders a) where
+instance (ToHtmlResp a) => ToHtmlResp (AddHeaders a) where
   toHtmlResp (AddHeaders headers content) = addRespHeaders headers (toHtmlResp content)
 
-instance ToHtmlResp a => ToHtmlResp (SetStatus a) where
+instance (ToHtmlResp a) => ToHtmlResp (SetStatus a) where
   toHtmlResp (SetStatus st content) =
     setRespStatus st (toHtmlResp content)
 
 -- raw response
 
-instance ToByteStringResp a => ToByteStringResp (AddHeaders a) where
+instance (ToByteStringResp a) => ToByteStringResp (AddHeaders a) where
   toByteStringResp (AddHeaders headers content) = addRespHeaders headers (toByteStringResp content)
 
-instance ToByteStringResp a => ToByteStringResp (SetStatus a) where
+instance (ToByteStringResp a) => ToByteStringResp (SetStatus a) where
   toByteStringResp (SetStatus st content) =
     setRespStatus st (toByteStringResp content)

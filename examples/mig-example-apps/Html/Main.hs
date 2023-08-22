@@ -1,19 +1,20 @@
--- | Example on how to serve Html
---
--- We create a simple blog post site which offers two types of content:
---
--- * blog posts
--- * quotes
---
--- We can choose between the two. Also we can create new blog posts and list them.
--- all posts are stored in memory.
-module Main
-  ( main
-  ) where
+{-| Example on how to serve Html
 
+We create a simple blog post site which offers two types of content:
+
+* blog posts
+* quotes
+
+We can choose between the two. Also we can create new blog posts and list them.
+all posts are stored in memory.
+-}
+module Main (
+  main,
+) where
+
+import Init (initSite)
 import Mig.Html.IO (runServer)
 import Server (server)
-import Init (initSite)
 
 -- run blog post server
 main :: IO ()

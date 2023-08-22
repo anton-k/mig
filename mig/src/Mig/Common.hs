@@ -1,52 +1,80 @@
 -- | Module for HTML-based servers
-module Mig.Common
-  ( -- * types
-    Server (..)
+module Mig.Common (
+  -- * types
+  Server (..),
+
   -- * DSL
-  , ToText (..)
-  , ToHtmlResp (..)
-  , FromText (..)
-  , ToServer (..)
-  , withServerAction
+  ToText (..),
+  ToHtmlResp (..),
+  FromText (..),
+  ToServer (..),
+  withServerAction,
+
   -- * path and query
-  , (/.)
-  , Capture (..)
-  , Query (..)
-  , Optional (..)
-  , Body (..)
-  , RawBody (..)
-  , Header (..)
-  , FormBody (..)
-  , PathInfo (..)
+  (/.),
+  Capture (..),
+  Query (..),
+  Optional (..),
+  Body (..),
+  RawBody (..),
+  Header (..),
+  FormBody (..),
+  PathInfo (..),
 
   -- * response
-  , AddHeaders (..)
-  , SetStatus (..)
-  , setStatus
-  , addHeaders
+  AddHeaders (..),
+  SetStatus (..),
+  setStatus,
+  addHeaders,
 
   -- * Errors
-  , Error (..)
-  , handleError
+  Error (..),
+  handleError,
 
   -- * Render
-  , HasServer (..)
-  , fromReader
+  HasServer (..),
+  fromReader,
+
   -- * Run
-  , ServerConfig (..)
-  , toApplication
-  , runServer
+  ServerConfig (..),
+  toApplication,
+  runServer,
+
   -- * utils
-  , badRequest
+  badRequest,
+  module X,
+) where
 
-  , module X
-  ) where
-
-import Mig
-  ( Server (..), ToServer (..), ToText (..), ToHtmlResp (..), FromText (..), handleError, PathInfo (..)
-  , (/.), Capture (..), Query (..), Optional (..), Body (..), RawBody (..), Header (..), FormBody (..), AddHeaders (..), SetStatus (..)
-  , setStatus, addHeaders, HasServer (..), fromReader, ServerConfig (..), toApplication, runServer, badRequest, Error (..), withServerAction)
+import Mig (
+  AddHeaders (..),
+  Body (..),
+  Capture (..),
+  Error (..),
+  FormBody (..),
+  FromText (..),
+  HasServer (..),
+  Header (..),
+  Optional (..),
+  PathInfo (..),
+  Query (..),
+  RawBody (..),
+  Server (..),
+  ServerConfig (..),
+  SetStatus (..),
+  ToHtmlResp (..),
+  ToServer (..),
+  ToText (..),
+  addHeaders,
+  badRequest,
+  fromReader,
+  handleError,
+  runServer,
+  setStatus,
+  toApplication,
+  withServerAction,
+  (/.),
+ )
 
 import Network.HTTP.Types.Status as X
-import Web.HttpApiData as X
 import Web.FormUrlEncoded as X
+import Web.HttpApiData as X

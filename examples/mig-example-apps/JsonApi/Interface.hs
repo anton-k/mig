@@ -1,9 +1,9 @@
-module Interface
-  ( Env (..)
-  , Logger (..)
-  , Auth (..)
-  , Weather (..)
-  ) where
+module Interface (
+  Env (..),
+  Logger (..),
+  Auth (..),
+  Weather (..),
+) where
 
 import Types
 

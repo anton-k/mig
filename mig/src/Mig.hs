@@ -1,135 +1,145 @@
-{-# Language UndecidableInstances #-}
--- | Main module to write servers
---
--- Server is a function from response (Resp) to request (Req). Request is wrapped into monad.
--- Library supports IO-monad and ReaderT over IO like monads.
---
--- We can build servers from parts with flexible combinators.
--- Let's build hello-world server:
---
--- > main :: IO ()
--- > main = runServer 8080 server
--- >
--- > server :: Server IO
--- > server =
--- >   "api" /. "v1" /. "hello" /. Get @Text handleHello
--- >
--- > handleHello :: IO Text
--- > handleHello = pure "Hello World"
---
--- We can iuse monoids to combine servers and newtype-wrappers to read various inputs.
--- See readme of the repo for tutorial and docs.
-module Mig
-  ( -- * types
-    Server (..)
+{-# LANGUAGE UndecidableInstances #-}
+
+{-| Main module to write servers
+
+Server is a function from response (Resp) to request (Req). Request is wrapped into monad.
+Library supports IO-monad and ReaderT over IO like monads.
+
+We can build servers from parts with flexible combinators.
+Let's build hello-world server:
+
+> main :: IO ()
+> main = runServer 8080 server
+>
+> server :: Server IO
+> server =
+>   "api" /. "v1" /. "hello" /. Get @Text handleHello
+>
+> handleHello :: IO Text
+> handleHello = pure "Hello World"
+
+We can iuse monoids to combine servers and newtype-wrappers to read various inputs.
+See readme of the repo for tutorial and docs.
+-}
+module Mig (
+  -- * types
+  Server (..),
+
   -- * DSL
-  , Json
+  Json,
+
   -- ** methods
-  , Get (..)
-  , Post (..)
-  , Put (..)
-  , Delete (..)
-  , Patch (..)
-  , Options (..)
+  Get (..),
+  Post (..),
+  Put (..),
+  Delete (..),
+  Patch (..),
+  Options (..),
+
   -- ** path and query
+
   -- | Build API for routes with queries and captures.
   -- Use monoid to combine several routes together.
-  , (/.)
-  , Capture (..)
-  , Query (..)
-  , Optional (..)
-  , Body (..)
-  , RawBody (..)
-  , Header (..)
-  , FormBody (..)
-  , PathInfo (..)
+  (/.),
+  Capture (..),
+  Query (..),
+  Optional (..),
+  Body (..),
+  RawBody (..),
+  Header (..),
+  FormBody (..),
+  PathInfo (..),
 
   -- ** response
+
   -- | How to modify response and attach specific info to it
-  , AddHeaders (..)
-  , SetStatus (..)
-  , setStatus
-  , addHeaders
+  AddHeaders (..),
+  SetStatus (..),
+  setStatus,
+  addHeaders,
 
   -- ** Errors
+
   -- | How to report errors
-  , Error (..)
-  , handleError
+  Error (..),
+  handleError,
 
   -- * Run
+
   -- | Run server application
-  , runServer
-  , ServerConfig (..)
-  , toApplication
+  runServer,
+  ServerConfig (..),
+  toApplication,
 
   -- ** Render
+
   -- | Render Reader-IO monad servers to IO servers.
-  , HasServer (..)
-  , fromReader
+  HasServer (..),
+  fromReader,
 
   -- * Convertes
-  , ToTextResp (..)
-  , ToJsonResp (..)
-  , ToHtmlResp (..)
-  , FromText (..)
-  , ToText (..)
+  ToTextResp (..),
+  ToJsonResp (..),
+  ToHtmlResp (..),
+  FromText (..),
+  ToText (..),
 
   -- * utils
-  , badRequest
-  , ToServer (..)
-  , withServerAction
-
-  , module X
-  ) where
+  badRequest,
+  ToServer (..),
+  withServerAction,
+  module X,
+) where
 
 import Mig.Internal.Types
 import Mig.Internal.Types qualified as Resp (Resp (..))
 
-import Web.HttpApiData as X
-import Web.FormUrlEncoded as X
+import Control.Exception (throw)
+import Control.Monad.Except
+import Control.Monad.Reader
+import Data.Aeson (FromJSON, ToJSON)
+import Data.Aeson qualified as Json
 import Data.Bifunctor
+import Data.ByteString (ByteString)
+import Data.ByteString.Lazy qualified as BL
 import Data.Kind
+import Data.Map.Strict qualified as Map
+import Data.Proxy
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Data.Text.Lazy qualified as TL
-import Data.Aeson (ToJSON, FromJSON)
-import Data.Aeson qualified as Json
-import Data.ByteString (ByteString)
-import Data.ByteString.Lazy qualified as BL
-import Text.Blaze.Html (Html)
-import Text.Blaze.Html (ToMarkup)
-import Text.Read (readMaybe)
-import Control.Monad.Reader
-import Control.Monad.Except
-import GHC.TypeLits
-import Data.Proxy
-import Data.Map.Strict qualified as Map
-import Network.HTTP.Types.Status as X
-import Network.HTTP.Types.Method
-import Network.HTTP.Types.Header (ResponseHeaders)
-import Network.Wai.Handler.Warp qualified as Warp
-import Control.Exception (throw)
 import Data.Typeable
+import GHC.TypeLits
+import Network.HTTP.Types.Header (ResponseHeaders)
+import Network.HTTP.Types.Method
+import Network.HTTP.Types.Status as X
+import Network.Wai.Handler.Warp qualified as Warp
+import Text.Blaze.Html (Html, ToMarkup)
+import Text.Read (readMaybe)
+import Web.FormUrlEncoded as X
+import Web.HttpApiData as X
 
--- | Path constructor (right associative). Example:
---
--- > server :: Server IO
--- > server =
--- >   "api" /. "v1" /.
--- >      mconcat
--- >        [ "foo" /. Get  @Json handleFoo
--- >        , "bar" /. Post @Json handleBar
--- >        ]
--- >
--- > handleFoo, handleBar :: IO Text
-(/.) :: ToServer a => Text -> a -> Server (ServerMonad a)
+{-| Path constructor (right associative). Example:
+
+> server :: Server IO
+> server =
+>   "api" /. "v1" /.
+>      mconcat
+>        [ "foo" /. Get  @Json handleFoo
+>        , "bar" /. Post @Json handleBar
+>        ]
+>
+> handleFoo, handleBar :: IO Text
+-}
+(/.) :: (ToServer a) => Text -> a -> Server (ServerMonad a)
 (/.) path act = toWithPath path (toServer act)
+
 infixr 4 /.
 
 -- | Map internal monad of the server
-hoistServer :: (forall a . m a -> n a) -> Server m -> Server n
+hoistServer :: (forall a. m a -> n a) -> Server m -> Server n
 hoistServer f (Server act) = Server (f . act)
 
 -- | Aything convertible from text
@@ -170,12 +180,12 @@ toWithQuery :: ByteString -> (Maybe ByteString -> Server m) -> Server m
 toWithQuery name act = Server $ \req ->
   unServer (act (Map.lookup name req.query)) req
 
-withQuery' :: FromHttpApiData a => QueryName a -> (Maybe a -> Server m) -> Server m
+withQuery' :: (FromHttpApiData a) => QueryName a -> (Maybe a -> Server m) -> Server m
 withQuery' (QueryName name) act = toWithQuery (Text.encodeUtf8 name) $ \mVal ->
   let
     -- TODO: do not ignore parse failure
     mArg = either (const Nothing) Just . (parseQueryParam <=< first (Text.pack . show) . Text.decodeUtf8') =<< mVal
-  in
+   in
     act mArg
 
 withQuery :: (Applicative m, FromHttpApiData a) => QueryName a -> (a -> Server m) -> Server m
@@ -183,16 +193,17 @@ withQuery (QueryName name) act = toWithQuery (Text.encodeUtf8 name) $ \mVal ->
   let
     -- TODO: do not ignore parse failure
     mArg = either (const Nothing) Just . (parseQueryParam <=< first (Text.pack . show) . Text.decodeUtf8') =<< mVal
-  in
+   in
     case mArg of
       Just arg -> act arg
       Nothing -> toConst (pure $ badRequest $ "Failed to parse arg: " <> name)
 
--- | Class contains types which can be converted to IO-based server to run as with WAI-interface.
---
--- We can run plain IO-servers and ReaderT over IO based servers. Readers can be wrapped in newtypes.
--- In that case we can derive automatically @HasServer@ instance.
-class Monad m => HasServer m where
+{-| Class contains types which can be converted to IO-based server to run as with WAI-interface.
+
+We can run plain IO-servers and ReaderT over IO based servers. Readers can be wrapped in newtypes.
+In that case we can derive automatically @HasServer@ instance.
+-}
+class (Monad m) => HasServer m where
   type ServerResult m :: Type
   renderServer :: Server m -> ServerResult m
 
@@ -210,8 +221,9 @@ fromReader env server =
   flip runReaderT env $ ReaderT $ \e -> pure $ hoistServer (flip runReaderT e) server
 
 instance (Show a, Typeable a) => HasServer (ReaderT env (ExceptT (Error a) IO)) where
-  type ServerResult (ReaderT env (ExceptT (Error a) IO)) =
-    (Error a -> Server IO) -> env -> IO (Server IO)
+  type
+    ServerResult (ReaderT env (ExceptT (Error a) IO)) =
+      (Error a -> Server IO) -> env -> IO (Server IO)
 
   renderServer server handleErr initEnv = fromReaderExcept handleErr initEnv server
 
@@ -219,11 +231,13 @@ fromReaderExcept ::
   (Show a, Typeable a) =>
   (Error a -> Server IO) ->
   env ->
-  Server (ReaderT env (ExceptT (Error a) IO)) -> IO (Server IO)
+  Server (ReaderT env (ExceptT (Error a) IO)) ->
+  IO (Server IO)
 fromReaderExcept handleErr env server =
   fmap (handleError handleErr) $
-    flip runReaderT env $ ReaderT $
-      \e -> pure $ hoistServer (either throw pure <=< runExceptT . flip runReaderT e) server
+    flip runReaderT env $
+      ReaderT $
+        \e -> pure $ hoistServer (either throw pure <=< runExceptT . flip runReaderT e) server
 
 -- Prim types
 
@@ -232,120 +246,124 @@ data Json
 
 -- server DSL
 
--- | Class ToServer contains anything convertible to @Server m@. We use it for flexuble composition
--- of servers from functions with arbitrary number of arguments. Arguments can
--- be of specific types: Query, Body, Optional, Capture, Header, etc.
--- We use type-level strings to encode query-names.
--- Example:
---
--- > "api" /. "foo" /.
--- >     (\(Query @"argA" argA) (Optional @"argB" argB) (Body jsonRequest) -> Post @Json $ handleFoo argA argB jsonRequest)
--- >
--- > handleFoo :: Int -> Maybe Text -> FooRequest -> IO FooResponse
--- > handleFoo = ...
---
--- Note that we can use any amount of arguments. And type of the input is decoded fron newtype wrapper
--- which is used with argument of the handler function.
---
--- Also we can return pure errors with Either. Anything which can be returned from function
--- can be wrapped to @Either (Error err)@.
---
--- For example in previous case we can use function which returns errors as values:
---
--- > type ServerError = Error Text
--- >
--- > handleFoo :: Int -> Maybe Text -> FooRequest -> IO (Either ServerError FooResponse)
--- > handleFoo = ...
---
--- the result of error response is automatically matched with normal response of the server
--- and standard Error type lets us pass status to response and some details.
-class Monad (ServerMonad a) => ToServer a where
+{-| Class ToServer contains anything convertible to @Server m@. We use it for flexuble composition
+of servers from functions with arbitrary number of arguments. Arguments can
+be of specific types: Query, Body, Optional, Capture, Header, etc.
+We use type-level strings to encode query-names.
+Example:
+
+> "api" /. "foo" /.
+>     (\(Query @"argA" argA) (Optional @"argB" argB) (Body jsonRequest) -> Post @Json $ handleFoo argA argB jsonRequest)
+>
+> handleFoo :: Int -> Maybe Text -> FooRequest -> IO FooResponse
+> handleFoo = ...
+
+Note that we can use any amount of arguments. And type of the input is decoded fron newtype wrapper
+which is used with argument of the handler function.
+
+Also we can return pure errors with Either. Anything which can be returned from function
+can be wrapped to @Either (Error err)@.
+
+For example in previous case we can use function which returns errors as values:
+
+> type ServerError = Error Text
+>
+> handleFoo :: Int -> Maybe Text -> FooRequest -> IO (Either ServerError FooResponse)
+> handleFoo = ...
+
+the result of error response is automatically matched with normal response of the server
+and standard Error type lets us pass status to response and some details.
+-}
+class (Monad (ServerMonad a)) => ToServer a where
   type ServerMonad a :: (Type -> Type)
   toServer :: a -> Server (ServerMonad a)
 
-instance Monad m => ToServer (Server m) where
+instance (Monad m) => ToServer (Server m) where
   type ServerMonad (Server m) = m
   toServer = id
 
 -- Status
 
--- | Set status to response. It can be ised inside any ToXxxResp value. Example:
---
--- > "api" /. handleFoo
--- >
--- > handleFoo :: Get Text IO (SetStatus Text)
--- > handleFoo = Get $ pure $ SetStatus status500 "Bad request"
+{-| Set status to response. It can be ised inside any ToXxxResp value. Example:
+
+> "api" /. handleFoo
+>
+> handleFoo :: Get Text IO (SetStatus Text)
+> handleFoo = Get $ pure $ SetStatus status500 "Bad request"
+-}
 data SetStatus a = SetStatus
   { status :: Status
   , content :: a
   }
 
 -- | Sets status for response of the server
-setStatus :: Monad m => Status -> Server m -> Server m
-setStatus st = mapResp $ \resp -> resp { Resp.status = st }
+setStatus :: (Monad m) => Status -> Server m -> Server m
+setStatus st = mapResp $ \resp -> resp{Resp.status = st}
 
 -- Headers
 
--- | Attach headers to response. It can be used inside any ToXxxResp value.
--- Example:
---
--- > "api" /. handleFoo
--- >
--- > handleFoo :: Get Text IO (AddHeaders Text)
--- > handleFoo = Get $ pure $ AddHeaders headers "Hello foo"
+{-| Attach headers to response. It can be used inside any ToXxxResp value.
+Example:
+
+> "api" /. handleFoo
+>
+> handleFoo :: Get Text IO (AddHeaders Text)
+> handleFoo = Get $ pure $ AddHeaders headers "Hello foo"
+-}
 data AddHeaders a = AddHeaders
   { headers :: ResponseHeaders
   , content :: a
   }
 
 -- | Adds headers for response of the server
-addHeaders :: Monad m => ResponseHeaders -> Server m -> Server m
-addHeaders headers = mapResp $ \resp -> resp { Resp.headers = resp.headers <> headers }
+addHeaders :: (Monad m) => ResponseHeaders -> Server m -> Server m
+addHeaders headers = mapResp $ \resp -> resp{Resp.headers = resp.headers <> headers}
 
-mapResp :: Monad m => (Resp -> Resp) -> Server m -> Server m
+mapResp :: (Monad m) => (Resp -> Resp) -> Server m -> Server m
 mapResp f (Server act) = Server $ \req ->
   fmap (fmap f) $ act req
 
 -- text response
 
-instance ToTextResp a => ToTextResp (AddHeaders a) where
+instance (ToTextResp a) => ToTextResp (AddHeaders a) where
   toTextResp (AddHeaders headers content) =
-    resp { Resp.headers = resp.headers <> headers }
+    resp{Resp.headers = resp.headers <> headers}
     where
       resp = toTextResp content
 
-instance ToTextResp a => ToTextResp (SetStatus a) where
+instance (ToTextResp a) => ToTextResp (SetStatus a) where
   toTextResp (SetStatus st content) =
     setRespStatus st (toTextResp content)
 
 -- json response
 
-instance ToJsonResp a => ToJsonResp (AddHeaders a) where
+instance (ToJsonResp a) => ToJsonResp (AddHeaders a) where
   toJsonResp (AddHeaders headers content) =
-    resp { Resp.headers = resp.headers <> headers }
+    resp{Resp.headers = resp.headers <> headers}
     where
       resp = toJsonResp content
 
-instance ToJsonResp a => ToJsonResp (SetStatus a) where
+instance (ToJsonResp a) => ToJsonResp (SetStatus a) where
   toJsonResp (SetStatus st content) =
     setRespStatus st (toJsonResp content)
 
 -- html response
 
-instance ToHtmlResp a => ToHtmlResp (AddHeaders a) where
+instance (ToHtmlResp a) => ToHtmlResp (AddHeaders a) where
   toHtmlResp (AddHeaders headers content) =
-    resp { Resp.headers = resp.headers <> headers }
+    resp{Resp.headers = resp.headers <> headers}
     where
       resp = toHtmlResp content
 
-instance ToHtmlResp a => ToHtmlResp (SetStatus a) where
+instance (ToHtmlResp a) => ToHtmlResp (SetStatus a) where
   toHtmlResp (SetStatus st content) =
     setRespStatus st (toHtmlResp content)
 
 -- Get
 
--- | Get method. Note that we can not use body input with Get-method, use Post for that.
--- So with Get we can use only URI inputs (Query, Optional, Capture)
+{-| Get method. Note that we can not use body input with Get-method, use Post for that.
+So with Get we can use only URI inputs (Query, Optional, Capture)
+-}
 newtype Get ty m a = Get (m a)
 
 instance (Monad m, ToTextResp a) => ToServer (Get Text m a) where
@@ -455,12 +473,13 @@ instance (Monad m, ToHtmlResp a) => ToServer (Options Html m a) where
 
 -- Query
 
--- | Mandatary query parameter. Name is encoded as type-level string. Example:
---
--- > "api" /. handleFoo
--- >
--- > handleFoo :: Query "name" Int -> Server IO
--- > handleFoo (Query arg) = ...
+{-| Mandatary query parameter. Name is encoded as type-level string. Example:
+
+> "api" /. handleFoo
+>
+> handleFoo :: Query "name" Int -> Server IO
+> handleFoo (Query arg) = ...
+-}
 newtype Query (sym :: Symbol) a = Query a
 
 instance (FromHttpApiData a, ToServer b, KnownSymbol sym) => ToServer (Query sym a -> b) where
@@ -469,12 +488,13 @@ instance (FromHttpApiData a, ToServer b, KnownSymbol sym) => ToServer (Query sym
 
 -- Optional query
 
--- | Optional query parameter. Name is encoded as type-level string. Example:
---
--- > "api" /. handleFoo
--- >
--- > handleFoo :: Optional "name" -> Server IO
--- > handleFoo (Optional maybeArg) = ...
+{-| Optional query parameter. Name is encoded as type-level string. Example:
+
+> "api" /. handleFoo
+>
+> handleFoo :: Optional "name" -> Server IO
+> handleFoo (Optional maybeArg) = ...
+-}
 newtype Optional (sym :: Symbol) a = Optional (Maybe a)
 
 instance (FromHttpApiData a, ToServer b, KnownSymbol sym) => ToServer (Optional sym a -> b) where
@@ -499,9 +519,10 @@ instance (FromHttpApiData a, ToServer b) => ToServer (Capture a -> b) where
 
 -- Read Body input
 
--- | Reads Json body (lazy). We can limit the body size with server config. Example:
---
--- > "api" /. "search" /. (\(Body request) -> handleSearch request)
+{-| Reads Json body (lazy). We can limit the body size with server config. Example:
+
+> "api" /. "search" /. (\(Body request) -> handleSearch request)
+-}
 newtype Body a = Body a
 
 instance (MonadIO (ServerMonad b), FromJSON a, ToServer b) => ToServer (Body a -> b) where
@@ -511,9 +532,10 @@ instance (MonadIO (ServerMonad b), FromJSON a, ToServer b) => ToServer (Body a -
       Right v -> toServer $ act $ Body v
       Left err -> toConst $ pure $ badRequest $ "Failed to parse JSON body: " <> Text.pack err
 
--- | Reads raw body as lazy bytestring. We can limit the body size with server config. Example:
---
--- > "api" /. "upload" /. (\(RawBody content) -> handleUpload content)
+{-| Reads raw body as lazy bytestring. We can limit the body size with server config. Example:
+
+> "api" /. "upload" /. (\(RawBody content) -> handleUpload content)
+-}
 newtype RawBody = RawBody BL.ByteString
 
 instance (MonadIO (ServerMonad b), ToServer b) => ToServer (RawBody -> b) where
@@ -529,11 +551,12 @@ instance (ToServer b, MonadIO (ServerMonad b), FromForm a) => ToServer (FormBody
 
 -- Request Headers
 
--- | Reads input header. Example:
---
--- > "api" /. (\(Header @"Trace-Id" traceId) -> Post @Json (handleFoo traceId))
--- >
--- > handleFoo :: Maybe ByteString -> IO FooResponse
+{-| Reads input header. Example:
+
+> "api" /. (\(Header @"Trace-Id" traceId) -> Post @Json (handleFoo traceId))
+>
+> handleFoo :: Maybe ByteString -> IO FooResponse
+-}
 newtype Header (sym :: Symbol) a = Header (Maybe a)
 
 instance (FromHttpApiData a, ToServer b, KnownSymbol sym) => ToServer (Header sym a -> b) where
@@ -548,7 +571,7 @@ instance (ToServer b) => ToServer (PathInfo -> b) where
   toServer act = toWithPathInfo (toServer . act . PathInfo)
 
 -- | Appends action to the server
-withServerAction :: Monad m => Server m -> m () -> Server m
+withServerAction :: (Monad m) => Server m -> m () -> Server m
 withServerAction srv act = Server $ \req -> do
   act
   unServer srv req
@@ -561,4 +584,4 @@ runServer :: Int -> Server IO -> IO ()
 runServer port server =
   Warp.run port (toApplication config server)
   where
-    config = ServerConfig { maxBodySize = Nothing }
+    config = ServerConfig{maxBodySize = Nothing}

@@ -1,30 +1,30 @@
 -- | Internal API description
-module Mig.Internal.Api
-  ( Api (..)
-  , (/.)
-  , Path (..)
-  , ApiNormal (..)
-  , toNormalApi
-  , fromNormalApi
-  , PathItem (..)
-  , getPath
-  , CaptureMap
-  , flatApi
-  , fromFlatApi
-  ) where
+module Mig.Internal.Api (
+  Api (..),
+  (/.),
+  Path (..),
+  ApiNormal (..),
+  toNormalApi,
+  fromNormalApi,
+  PathItem (..),
+  getPath,
+  CaptureMap,
+  flatApi,
+  fromFlatApi,
+) where
 
+import Data.Foldable (fold)
+import Data.List qualified as List
+import Data.Map.Strict (Map)
+import Data.Map.Strict qualified as Map
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Data.Map.Strict (Map)
-import Data.Map.Strict qualified as Map
 import Mig.Internal.Info (MediaType (..), RouteInfo (..), RouteOutput (..))
-import Network.HTTP.Types.Method
 import Mig.Internal.Route qualified as Route
-import Data.List qualified as List
+import Network.HTTP.Types.Method
 import System.FilePath
 import Web.HttpApiData
-import Data.Foldable (fold)
 
 data Api a
   = Append (Api a) (Api a)
@@ -56,15 +56,16 @@ filterApi check = \case
   where
     rec = filterApi check
 
-toNormalApi :: forall m . Api (Route.Route m) -> ApiNormal (Route.Route m)
-toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (toMethodMap api )
-{-
-fmap toMethodApi $ InputMediaMap $ case medias of
-  [] -> MultiMedia mempty
-  m : [] -> SingleMedia m api
-  other -> MultiMedia $ filterEmpty $ Map.fromList $ fmap toMediaApi other
-  -}
+toNormalApi :: forall m. Api (Route.Route m) -> ApiNormal (Route.Route m)
+toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (toMethodMap api)
   where
+    {-
+    fmap toMethodApi $ InputMediaMap $ case medias of
+      [] -> MultiMedia mempty
+      m : [] -> SingleMedia m api
+      other -> MultiMedia $ filterEmpty $ Map.fromList $ fmap toMediaApi other
+      -}
+
     {-
     toMultiMedia m
       | Map.size m == 1 = case Map.toList m of
@@ -78,10 +79,14 @@ fmap toMethodApi $ InputMediaMap $ case medias of
       _ -> True
 
     toMethodMap :: Api (Route.Route m) -> MethodMap (Api (Route.Route m))
-    toMethodMap a = filterEmpty $ Map.fromList $ fmap
-      (\m ->
-          (m, filterApi (\r -> r.api.method == Just m) a)
-      ) methods
+    toMethodMap a =
+      filterEmpty $
+        Map.fromList $
+          fmap
+            ( \m ->
+                (m, filterApi (\r -> r.api.method == Just m) a)
+            )
+            methods
       where
         methods = foldMap (\r -> maybe [] pure r.api.method) a
 
@@ -110,7 +115,7 @@ fmap toMethodApi $ InputMediaMap $ case medias of
 
         toMediaApi media = (media, filterApi (\r -> r.api.inputType == media) a)
 
-insertCategoryCases :: forall m . Map MediaType (Api (Route.Route m)) -> Map MediaType (Api (Route.Route m))
+insertCategoryCases :: forall m. Map MediaType (Api (Route.Route m)) -> Map MediaType (Api (Route.Route m))
 insertCategoryCases a =
   Map.union a (Map.fromList $ fmap toGroupApi groups)
   where
@@ -166,7 +171,7 @@ infixr 4 /.
   where
     go rest a = WithPath (path <> rest) a
 
-newtype Path = Path { unPath :: [PathItem] }
+newtype Path = Path {unPath :: [PathItem]}
   deriving newtype (Show, Eq, Ord, Semigroup, Monoid)
 
 instance ToHttpApiData Path where
@@ -202,13 +207,13 @@ getPath mainPath = go mempty (filter (not . Text.null) mainPath)
     go !captureMap path api =
       case path of
         [] -> case api of
-                Route a -> Just (a, captureMap)
-                Append a b -> maybe (go captureMap path b) Just (go captureMap path a)
-                _ -> Nothing
-        p:rest -> case api of
-                WithPath template restApi -> goPath captureMap p rest template restApi
-                Append a b -> maybe (go captureMap path b) Just (go captureMap path a)
-                _ -> Nothing
+          Route a -> Just (a, captureMap)
+          Append a b -> maybe (go captureMap path b) Just (go captureMap path a)
+          _ -> Nothing
+        p : rest -> case api of
+          WithPath template restApi -> goPath captureMap p rest template restApi
+          Append a b -> maybe (go captureMap path b) Just (go captureMap path a)
+          _ -> Nothing
 
     goPath !captureMap !pathHead !pathTail (Path !template) restApi =
       case template of
@@ -217,18 +222,18 @@ getPath mainPath = go mempty (filter (not . Text.null) mainPath)
           if pathHead == apiHead
             then goPathNext captureMap pathTail templateRest restApi
             else Nothing
-
         CapturePath name : templateRest ->
-          let nextCaptureMap = Map.insert name pathHead captureMap
-          in  goPathNext nextCaptureMap pathTail templateRest restApi
+          let
+            nextCaptureMap = Map.insert name pathHead captureMap
+           in
+            goPathNext nextCaptureMap pathTail templateRest restApi
 
     goPathNext !captureMap !pathTail !templateRest restApi =
       case templateRest of
         [] -> go captureMap pathTail restApi
         _ -> case pathTail of
-              nextPathHead : nextPathTail -> goPath captureMap nextPathHead nextPathTail (Path templateRest) restApi
-              [] -> Nothing
-
+          nextPathHead : nextPathTail -> goPath captureMap nextPathHead nextPathTail (Path templateRest) restApi
+          [] -> Nothing
 
 flatApi :: Api a -> [(Path, a)]
 flatApi = go mempty

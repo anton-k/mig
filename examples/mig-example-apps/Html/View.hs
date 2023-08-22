@@ -1,17 +1,17 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+
 -- | html renderers. View for all pages
 module View () where
 
-import Types
-import Text.Blaze.Html5 qualified as H
-import Text.Blaze.Html5.Attributes qualified as HA
-import Text.Blaze.Html (Html)
-import Text.Blaze.Html (ToMarkup)
 import Data.List qualified as List
 import Data.Text (Text)
+import Text.Blaze.Html (Html, ToMarkup)
+import Text.Blaze.Html5 qualified as H
+import Text.Blaze.Html5.Attributes qualified as HA
+import Types
 
 -- writes the template for main page
-instance ToMarkup a => ToMarkup (Page a) where
+instance (ToMarkup a) => ToMarkup (Page a) where
   toMarkup page = case page of
     Page a -> siteTemplate (H.toMarkup a)
     PostNotFound _pid -> siteTemplate $ H.p (H.text "Post not found")
@@ -89,5 +89,7 @@ instance ToMarkup ListPosts where
       H.ul $ mapM_ (\p -> H.li $ toPostSummary p) $ List.sortOn (.createdAt) posts
     where
       toPostSummary post =
-        H.p $ H.a H.! HA.href (H.toValue $ "/blog/read/post?id=" <> post.id.unBlogPostId) $
-          H.text $ post.title
+        H.p $
+          H.a H.! HA.href (H.toValue $ "/blog/read/post?id=" <> post.id.unBlogPostId) $
+            H.text $
+              post.title

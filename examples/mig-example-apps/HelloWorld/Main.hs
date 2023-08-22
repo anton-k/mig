@@ -1,27 +1,30 @@
--- | Most basic Hello world server.
--- It has only one route which outputs the greeting to the user
-module Main
-  ( main
-  , hello'
-  , bye'
-  ) where
+{-| Most basic Hello world server.
+It has only one route which outputs the greeting to the user
+-}
+module Main (
+  main,
+  hello',
+  bye',
+) where
 
 -- import Mig.Json.IO
-import Data.Text (Text)
-import Mig.Server
-import Mig.Internal.Api (toNormalApi)
-import Text.Show.Pretty
-import Mig.OpenApi
+
+import Control.Lens ((&), (.~), (?~))
 import Data.Aeson.Encode.Pretty
 import Data.ByteString.Lazy.Char8 qualified as BL
+import Data.Text (Text)
+import Mig.Internal.Api (toNormalApi)
+import Mig.OpenApi
+import Mig.Server
 import Mig.Swagger.Ui
-import Control.Lens ((.~), (?~), (&))
+import Text.Show.Pretty
 
-import Mig.Client
 import Data.OpenApi qualified as OA
+import Mig.Client
 
--- | We can render the server and run it on port 8085.
--- It uses wai and warp.
+{-| We can render the server and run it on port 8085.
+It uses wai and warp.
+-}
 main :: IO ()
 main = do
   putStrLn ("The hello world server listens on port: " <> show port)
@@ -31,14 +34,18 @@ main = do
   where
     port = 8085
 
--- | Init simple hello world server which
--- replies on a single route
+{-| Init simple hello world server which
+replies on a single route
+-}
 server :: Server IO
-server = withSwagger swaggerConfig $
-  "api" /. "v1" /. mconcat
-    [ setDescription "Greeting action" $ "hello" /. "*" /. "*" /. route hello
-    , "bye" /. route bye
-    ]
+server =
+  withSwagger swaggerConfig $
+    "api"
+      /. "v1"
+      /. mconcat
+        [ setDescription "Greeting action" $ "hello" /. "*" /. "*" /. route hello
+        , "bye" /. route bye
+        ]
   where
     swaggerConfig =
       SwaggerConfig
@@ -48,12 +55,12 @@ server = withSwagger swaggerConfig $
         }
 
     addInfo =
-      OA.info .~
-        (mempty
-          & OA.title .~ "Hello world app"
-          & OA.description ?~ "Demo application"
-          & OA.version .~ "1.0"
-        )
+      OA.info
+        .~ ( mempty
+              & OA.title .~ "Hello world app"
+              & OA.description ?~ "Demo application"
+              & OA.version .~ "1.0"
+           )
 
 type Hello m = Capture "who" Text -> Capture "suffix" Text -> Get Json m Text
 
@@ -71,6 +78,5 @@ bye (Optional mWho) = Send $ pure $ mappend "Hello " $ maybe "World" id mWho
 
 hello' :: Hello Client
 bye' :: Bye Client
-
 hello'
- :| bye' = toClient server
+  :| bye' = toClient server

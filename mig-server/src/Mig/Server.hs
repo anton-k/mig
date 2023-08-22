@@ -1,2 +1,5 @@
 module Mig.Server (
-  ) where
+  hello,
+) where
+
+hello = 1

@@ -1,4 +1,5 @@
-{-# Language UndecidableInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
+
 --  | Example shows how to use custom monad with server.
 -- We use Json response server with our Monad App which is a newtype over ReaderT-IO.
 -- As we can run only @Server IO@ we need to convert the @Server App@ to IO-based server.
@@ -8,14 +9,15 @@
 -- extension as our monad is a newtype wrapper over ReaderT-IO and for that monad server can be derived.
 --
 -- Also we can derive instance for the newtypes over @ReaderT env (ExceptT err IO)@
-module Main
-  ( main
-  ) where
+module Main (
+  main,
+) where
 
 -- import Json based server
-import Mig.Json
+
 import Control.Monad.Reader
 import Data.IORef
+import Mig.Json
 
 main :: IO ()
 main = do
@@ -32,14 +34,16 @@ counter =
 -------------------------------------------------------------------------------------
 -- server types
 
--- | Custom type for application monad which is based on Reader-IO pattern.
--- Note the HasServer instance. It allows us to render server to IO-based one
--- which we can run as warp + WAI server
+{-| Custom type for application monad which is based on Reader-IO pattern.
+Note the HasServer instance. It allows us to render server to IO-based one
+which we can run as warp + WAI server
+-}
 newtype App a = App (ReaderT Env IO a)
   deriving newtype (Functor, Applicative, Monad, MonadReader Env, MonadIO, HasServer)
 
--- | Common shared state
--- We can put more shared state if we need. Like logger state or some interfaces.
+{-| Common shared state
+We can put more shared state if we need. Like logger state or some interfaces.
+-}
 data Env = Env
   { current :: IORef Int
   }
@@ -51,14 +55,16 @@ initEnv = Env <$> newIORef 0
 -------------------------------------------------------------------------------------
 -- server definition
 
--- | Server has two routes:
---
--- * get - to querry current state
--- * put - to add some integer to the state
+{-| Server has two routes:
+
+* get - to querry current state
+* put - to add some integer to the state
+-}
 server :: Server App
 server =
-  "counter" /. "api" /.
-    mconcat
+  "counter"
+    /. "api"
+    /. mconcat
       [ "get" /. handleGet
       , "put" /. handlePut
       ]

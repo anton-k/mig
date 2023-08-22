@@ -1,7 +1,7 @@
 -- server
-module Server
-  ( server
-  ) where
+module Server (
+  server,
+) where
 
 import Control.Monad
 import Data.Text (Text)
@@ -11,40 +11,41 @@ import Mig.Html.IO
 import System.Random
 
 import Interface
-import View ()
 import Types
+import View ()
 
 -- | Server definition. Note how we assemble it from parts with monoid method mconcat.
 server :: Site -> Server IO
-server site = logRoutes $
-  mconcat
-    [ "blog" /.
-        mconcat
-          [ readServer
-          , writeServer
-          ]
-    , defaultPage
-    ]
+server site =
+  logRoutes $
+    mconcat
+      [ "blog"
+          /. mconcat
+            [ readServer
+            , writeServer
+            ]
+      , defaultPage
+      ]
   where
     -- server to read info.
     -- We can read blog posts and quotes.
     readServer =
       mconcat
-        [ "read" /.
-              mconcat
-                [ "post" /. handleBlogPost site
-                , "quote" /. handleQuote site
-                ]
+        [ "read"
+            /. mconcat
+              [ "post" /. handleBlogPost site
+              , "quote" /. handleQuote site
+              ]
         , "list" /. handleListPosts site
         ]
 
     -- server to write new blog posts
     writeServer =
-      "write" /.
-          mconcat
-            [ toServer $ handleWriteForm site
-            , toServer $ handleWriteSubmit site
-            ]
+      "write"
+        /. mconcat
+          [ toServer $ handleWriteForm site
+          , toServer $ handleWriteSubmit site
+          ]
 
     -- default main page
     defaultPage =
@@ -78,8 +79,10 @@ handleQuote site = Get $ Page <$> site.readQuote
 
 -- | Show form to the user to fill new post data
 handleWriteForm :: Site -> Get (Page WritePost)
-handleWriteForm _site = Get $
-  pure $ Page WritePost
+handleWriteForm _site =
+  Get $
+    pure $
+      Page WritePost
 
 -- | Submit form with data provided by the user
 handleWriteSubmit :: Site -> FormBody SubmitBlogPost -> Post (Page BlogPost)
@@ -108,6 +111,6 @@ randomBlogPost site =
 
 -- pick random element from a list
 oneOf :: [a] -> IO a
-oneOf as = (as !! ) . (`mod` len) <$> randomIO
+oneOf as = (as !!) . (`mod` len) <$> randomIO
   where
     len = length as
