@@ -81,6 +81,7 @@ library
     Mig.Core.Api
     Mig.Core.Api.NormalForm
     Mig.Core.Info
+    Mig.Core.OpenApi
     Mig.Core.Route
     Mig.Core.Server
     Mig.Core.ServerFun
@@ -117,7 +118,10 @@ library
     , extra
     , filepath
     , http-api-data
+    , http-media
     , http-types
+    , insert-ordered-containers
+    , lens
     , mtl
     , openapi3
     , safe

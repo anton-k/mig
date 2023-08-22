@@ -12,7 +12,7 @@ import Data.OpenApi (OpenApi)
 import Data.Text (Text)
 import Data.Text qualified as Text
 import FileEmbedLzma
-import Mig.OpenApi
+import Mig.Core.OpenApi
 import Mig.Server
 import Text.Blaze (ToMarkup (..))
 import Text.Blaze.Html (Html)
