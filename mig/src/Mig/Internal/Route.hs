@@ -48,7 +48,6 @@ import GHC.TypeLits
 import Mig.Internal.Info
 import Mig.Internal.ServerFun
 import Mig.Internal.Types (ToByteStringResp (..), ToHtmlResp (..), ToJsonResp (..), ToTextResp (..), addRespHeaders, setRespStatus)
-import Mig.Internal.Types qualified as Resp (Resp (..))
 import Network.HTTP.Types.Header (ResponseHeaders)
 import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status

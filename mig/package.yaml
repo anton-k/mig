@@ -103,6 +103,7 @@ default-extensions:
 language: GHC2021
 
 ghc-options:
+- -Werror
 - -Wall
 - -Wcompat
 - -Widentities

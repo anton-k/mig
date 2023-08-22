@@ -3,7 +3,6 @@
 -- | Internal types and functions
 module Mig.Internal.Types (
   -- * types
-  Server (..),
   Req (..),
   Resp (..),
   RespBody (..),
@@ -17,16 +16,6 @@ module Mig.Internal.Types (
   ToHtmlResp (..),
   ToByteStringResp (..),
 
-  -- * constructors
-  toConst,
-  toMethod,
-  toWithBody,
-  toWithCapture,
-  toWithPath,
-  toWithHeader,
-  toWithFormData,
-  toWithPathInfo,
-
   -- * responses
   text,
   json,
@@ -36,47 +25,28 @@ module Mig.Internal.Types (
   badRequest,
   setContent,
 
-  -- * WAI
-  Kilobytes,
-
   -- * utils
   setRespStatus,
   addRespHeaders,
-  handleError,
-  pathHead,
 ) where
 
 import Control.Monad.Catch
-import Control.Monad.IO.Class
 import Data.Aeson (ToJSON)
 import Data.Aeson qualified as Json
-import Data.Bifunctor
 import Data.ByteString (ByteString)
-import Data.ByteString qualified as B
 import Data.ByteString.Lazy qualified as BL
-import Data.CaseInsensitive qualified as CI
-import Data.Either (fromRight)
-import Data.Foldable
-import Data.List qualified as List
 import Data.Map.Strict (Map)
-import Data.Map.Strict qualified as Map
-import Data.Maybe
-import Data.Sequence (Seq (..), (|>))
-import Data.Sequence qualified as Seq
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Data.Text.Lazy qualified as TL
 import Data.Typeable
-import Network.HTTP.Types.Header (HeaderName, RequestHeaders, ResponseHeaders)
+import Network.HTTP.Types.Header (HeaderName, ResponseHeaders)
 import Network.HTTP.Types.Method (Method)
-import Network.HTTP.Types.Status (Status, ok200, status413, status500)
+import Network.HTTP.Types.Status (Status, ok200, status500)
 import Text.Blaze.Html (Html, ToMarkup)
 import Text.Blaze.Html qualified as Html
-import Text.Blaze.Renderer.Utf8 qualified as Html
-import Web.FormUrlEncoded
-import Web.HttpApiData
 
 -- | Http response
 data Resp = Resp
@@ -199,159 +169,6 @@ badRequest message =
     , body = TextResp message
     }
 
-{-| Server type. It is a function fron request to response.
-Some servers does not return valid value. We use it to find right path.
-
-Example:
-
-> server :: Server IO
-> server =
->   "api" /. "v1" /.
->      mconcat
->        [ "foo" /. (\(Query @"name" arg) -> Get  @Json (handleFoo arg)
->        , "bar" /. Post @Json handleBar
->        ]
->
-> handleFoo :: Int -> IO Text
-> handleBar :: IO Text
-
-Note that server is monoid and it can be constructed with Monoid functions and
-path constructor @(/.)@. To pass inputs for handler we can use special newtype wrappers:
-
-* @Query@ - for required query parameters
-* @Optional@ - for optional query parameters
-* @Capture@ - for parsing elements of URI
-* @Body@ - fot JSON-body input
-* @RawBody@ - for raw ByteString input
-* @Header@ - for headers
-
-To distinguish by HTTP-method we use corresponding constructors: Get, Post, Put, etc.
-Let's discuss the structure of the constructor. Let's take Get for example:
-
-> newtype Get ty m a = Get (m a)
-
- Let's look at the arguments of he type
-
-* @ty@ - type of the response. it can be: Text, Html, Json, ByteString
-* @m@ - underlying server monad
-* @a@ - result type. It should be convertible to the type of the response.
-
-also result can be wrapped to special data types to modify Http-response.
-we have wrappers:
-
-* @SetStatus@ - to set status
-* @AddHeaders@ - to append headers
-* @Either (Error err)@ - to response with errors
--}
-newtype Server m = Server {unServer :: Req -> m (Maybe Resp)}
-
--- | Replies to any http-method
-toConst :: (Functor m) => m Resp -> Server m
-toConst act = Server $ const $ Just <$> act
-
--- | Specify which method to reply
-toMethod :: (Monad m) => Method -> m Resp -> Server m
-toMethod method act = Server $ checkMethod method act
-
-checkMethod :: (Monad m) => Method -> m Resp -> Req -> m (Maybe Resp)
-checkMethod method act req
-  | null req.path && req.method == method = Just <$> act
-  | otherwise = pure Nothing
-
--- | Reads full body as lazy bytestring
-toWithBody :: (MonadIO m) => (BL.ByteString -> Server m) -> Server m
-toWithBody act = Server $ \req -> do
-  eBody <- liftIO req.readBody
-  case eBody of
-    Right body -> unServer (act body) req
-    Left err -> pure $ Just $ setRespStatus err.status (text err.body)
-
--- | Reads URL-encoded form data
-toWithFormData :: (FromForm a, MonadIO m) => (a -> Server m) -> Server m
-toWithFormData act = Server $ \req -> do
-  eBody <- first (\(Error _ details) -> details) <$> liftIO req.readBody
-  case eBody >>= urlDecodeForm >>= fromForm of
-    Right a -> unServer (act a) req
-    Left err -> pure $ Just $ setRespStatus status413 $ badRequest err
-
--- | Size of the input body
-type Kilobytes = Int
-
--- | Read request body in chunks
-readRequestBody :: IO B.ByteString -> Maybe Kilobytes -> IO (Either (Error Text) [B.ByteString])
-readRequestBody readChunk maxSize = loop 0 Seq.empty
-  where
-    loop :: Kilobytes -> Seq B.ByteString -> IO (Either (Error Text) [B.ByteString])
-    loop !currentSize !result
-      | isBigger currentSize = pure outOfSize
-      | otherwise = do
-          chunk <- readChunk
-          if B.null chunk
-            then pure $ Right (toList result)
-            else loop (currentSize + B.length chunk) (result |> chunk)
-
-    outOfSize :: Either (Error Text) a
-    outOfSize = Left (Error status413 (Text.pack $ "Request is too big Jim!"))
-
-    isBigger = case maxSize of
-      Just size -> \current -> current > size
-      Nothing -> const False
-
--- | Match path prefix
-toWithPath :: (Monad m) => Text -> Server m -> Server m
-toWithPath route act = Server $ \req ->
-  case hasPath route req.path of
-    Just restPath -> unServer act (req{path = restPath})
-    _ -> pure Nothing
-
-type Path = [Text]
-
-hasPath :: Text -> Path -> Maybe Path
-hasPath route (path : restPath)
-  | route == path = Just restPath
-  | otherwise = Nothing
-hasPath _ _ = Nothing
-
--- | Reads capture URL-piece element
-toWithCapture :: (Monad m) => (Text -> Server m) -> Server m
-toWithCapture act = Server $ \req ->
-  case pathHead req of
-    Just (arg, nextReq) -> unServer (act arg) nextReq
-    Nothing -> pure Nothing
-
--- | Match on path prefix
-pathHead :: Req -> Maybe (Text, Req)
-pathHead req =
-  case req.path of
-    hd : tl -> Just (hd, req{path = tl})
-    _ -> Nothing
-
--- | Read info from header
-toWithHeader :: (Monad m, FromHttpApiData a) => HeaderName -> (Maybe a -> Server m) -> Server m
-toWithHeader name act = Server $ \req ->
-  case Map.lookup name req.headers of
-    Just bs ->
-      case parseHeader bs of
-        Right val -> unServer (act (Just val)) req
-        Left err -> pure $ Just $ badRequest (errMessage err)
-    Nothing -> unServer (act Nothing) req
-  where
-    errMessage :: Text -> Text
-    errMessage err = "Failed to parse header " <> (fromRight "" $ Text.decodeUtf8' $ CI.original name) <> ": " <> err
-
--- | reads path info
-toWithPathInfo :: ([Text] -> Server m) -> Server m
-toWithPathInfo act = Server $ \req ->
-  unServer (act req.path) req
-
-instance (Monad m) => Semigroup (Server m) where
-  (<>) (Server serverA) (Server serverB) = Server $ \req -> do
-    mRespA <- serverA req
-    maybe (serverB req) (pure . Just) mRespA
-
-instance (Monad m) => Monoid (Server m) where
-  mempty = Server (const $ pure Nothing)
-
 -- | Values convertible to lazy text
 class ToText a where
   toText :: a -> Text
@@ -404,8 +221,3 @@ raw = ok [] . RawResp
 -- | Respond with ok 200-status
 ok :: ResponseHeaders -> RespBody -> Resp
 ok headers body = Resp ok200 headers body
-
--- | Handle errors
-handleError :: (Exception a, MonadCatch m) => (a -> Server m) -> Server m -> Server m
-handleError handler (Server act) = Server $ \req ->
-  (act req) `catch` (\err -> unServer (handler err) req)
