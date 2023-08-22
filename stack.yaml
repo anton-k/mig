@@ -33,7 +33,6 @@ packages:
 - mig
 - mig-client
 - mig-server
-- mig-openapi3
 - mig-swagger-ui
 # Dependency packages to be pulled from upstream that are not in the resolver.
 # These entries can reference officially published versions as well as

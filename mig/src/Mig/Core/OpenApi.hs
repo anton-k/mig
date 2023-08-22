@@ -1,4 +1,4 @@
-module Mig.OpenApi (
+module Mig.Core.OpenApi (
   toOpenApi,
 ) where
 
@@ -104,7 +104,7 @@ toOperation routeInfo =
             & content .~ InsOrd.singleton (toMediaType outp.media) (mempty & schema .~ fmap (Inline . (._namedSchemaSchema)) outp.schema)
 
 toMediaType :: Info.MediaType -> MediaType
-toMediaType (Info.MediaType name) = fromString $ Text.unpack name
+toMediaType (Info.MediaType txt) = fromString $ Text.unpack txt
 
 nonEmptyText :: Text -> Maybe Text
 nonEmptyText txt

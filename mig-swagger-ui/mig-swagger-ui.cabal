@@ -64,7 +64,6 @@ library
     , file-embed-lzma
     , http-api-data
     , mig
-    , mig-openapi3
     , mig-server
     , mtl
     , openapi3

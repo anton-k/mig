@@ -32,7 +32,6 @@ dependencies:
 - bytestring
 - text
 - mig
-- mig-openapi3
 - mig-server
 - file-embed-lzma
 - blaze-html
