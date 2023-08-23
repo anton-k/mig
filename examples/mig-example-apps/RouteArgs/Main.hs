@@ -62,7 +62,7 @@ handleSucc (Header mTraceId) (Query n) = Send $ do
       | otherwise = ok200
 
 -- | Using optional query parameters and error as Either
-handleSuccOpt :: Optional "value" Int -> Get (Either (Error Text) Int)
+handleSuccOpt :: Optional "value" Int -> Get (Either Error Int)
 handleSuccOpt (Optional n) = Send $ do
   logDebug "succ optional route call"
   pure $ maybe (Left $ Error status400 "error") Right (succ <$> n)
