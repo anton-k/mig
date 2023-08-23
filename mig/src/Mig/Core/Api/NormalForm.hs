@@ -63,7 +63,7 @@ getPath = go mempty
 toApiNormal :: Api.Api a -> ApiNormal a
 toApiNormal = \case
   Api.Empty -> Empty
-  Api.Route a -> Route a
+  Api.HandleRoute a -> Route a
   Api.WithPath path a -> case parsePath path of
     Nothing -> toApiNormal a
     Just (prefix, rest) ->

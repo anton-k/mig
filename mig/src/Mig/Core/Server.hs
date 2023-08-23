@@ -110,7 +110,7 @@ fillCaptures = go 0
           Api.WithPath pathNext (go m api)
       Api.Append a b -> Api.Append (go n a) (go n b)
       Api.Empty -> Api.Empty
-      Api.Route a -> Api.Route a
+      Api.HandleRoute a -> Api.HandleRoute a
 
     goPath :: Int -> Api.Path -> Api (Route m) -> (Api.Path, Int)
     goPath n (Api.Path path) api = case path of
@@ -133,7 +133,7 @@ getCaptureName index = \case
   Api.Append a _b -> rec a
   Api.Empty -> Nothing
   Api.WithPath _ a -> rec a
-  Api.Route a -> mapMaybe toCapture a.api.inputs `atMay` index
+  Api.HandleRoute a -> mapMaybe toCapture a.api.inputs `atMay` index
   where
     rec = getCaptureName index
 
@@ -187,7 +187,7 @@ staticFiles files root =
   foldMap (uncurry serveFile) files
   where
     serveFile path content =
-      (fromString $ withRoot path) `Api.WithPath` (Api.Route (toRoute (getFile path content)))
+      (fromString $ withRoot path) `Api.WithPath` (Api.HandleRoute (toRoute (getFile path content)))
 
     getFile :: FilePath -> ByteString -> Get BL.ByteString m (AddHeaders BL.ByteString)
     getFile path fileContent = Send $ pure $ AddHeaders contentHeaders $ BL.fromStrict fileContent

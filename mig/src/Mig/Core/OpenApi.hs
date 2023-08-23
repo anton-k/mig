@@ -28,7 +28,7 @@ toOpenApi x = case fillCaptures x of
       [] -> toOpenApi a
       Api.StaticPath p : rest -> prependPath (Text.unpack p) $ toOpenApi $ Api.WithPath (Api.Path rest) a
       Api.CapturePath captureName : rest -> addCapture captureName $ toOpenApi $ Api.WithPath (Api.Path rest) a
-  Api.Route a -> addPathItem a.api mempty
+  Api.HandleRoute a -> addPathItem a.api mempty
   where
     addCapture :: Text -> OpenApi -> OpenApi
     addCapture captureName =
