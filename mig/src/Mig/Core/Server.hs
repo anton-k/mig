@@ -1,7 +1,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 module Mig.Core.Server (
-  Server,
+  Server (..),
   fromServer,
   fillCaptures,
   addTag,
@@ -30,6 +30,7 @@ import Mig.Core.Api (Api, fromNormalApi, toNormalApi)
 import Mig.Core.Api qualified as Api
 import Mig.Core.Info (MediaType (..), RouteInfo (..), RouteInput (..))
 import Mig.Core.Route
+import Mig.Core.ServerFun (MapServerFun (..))
 import Mig.Core.Types (Req (..), Resp)
 import Network.HTTP.Types.Header (ResponseHeaders)
 import Safe (atMay)
@@ -82,16 +83,17 @@ we have wrappers:
 * @AddHeaders@ - to append headers
 * @Either (Error err)@ - to response with errors
 -}
-type Server m = Api (Route m)
+newtype Server m = Server {unServer :: Api (Route m)}
+  deriving newtype (Semigroup, Monoid)
 
-mapServerFun :: (ServerFun m -> ServerFun n) -> Server m -> Server n
-mapServerFun f = fmap $ \x -> Route x.api (f x.run)
+instance MapServerFun Server where
+  mapServerFun f (Server server) = Server $ fmap (\x -> Route x.api (f x.run)) server
 
 mapResp :: (Functor m) => (Resp -> Resp) -> Server m -> Server m
 mapResp f = mapServerFun $ \(ServerFun fun) -> ServerFun (fmap (fmap f) . fun)
 
 fromServer :: (Monad m) => Server m -> ServerFun m
-fromServer server = ServerFun $ \req ->
+fromServer (Server server) = ServerFun $ \req ->
   case Api.getPath req.path =<< firstJust (\outputMedia -> fromNormalApi req.method outputMedia (getInputMediaType req) serverNormal) (getOutputMediaType req) of
     Just (routes, captureMap) -> unServerFun routes.run (req{capture = captureMap})
     Nothing -> pure Nothing
@@ -177,14 +179,14 @@ setSummary :: Text -> Server m -> Server m
 setSummary val = mapRouteInfo $ \info -> info{summary = val}
 
 mapRouteInfo :: (RouteInfo -> RouteInfo) -> Server m -> Server m
-mapRouteInfo f = fmap $ \x -> x{api = f x.api}
+mapRouteInfo f (Server srv) = Server $ fmap (\x -> x{api = f x.api}) srv
 
 insertTag :: Text -> RouteInfo -> RouteInfo
 insertTag tag info = info{tags = tag : info.tags}
 
 staticFiles :: forall m. (MonadIO m) => [(FilePath, ByteString)] -> FilePath -> Server m
 staticFiles files root =
-  foldMap (uncurry serveFile) files
+  Server $ foldMap (uncurry serveFile) files
   where
     serveFile path content =
       (fromString $ withRoot path) `Api.WithPath` (Api.HandleRoute (toRoute (getFile path content)))

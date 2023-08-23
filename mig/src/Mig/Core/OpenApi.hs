@@ -6,28 +6,27 @@ import Control.Lens ((%~), (&), (.~), (?~))
 import Data.HashMap.Strict.InsOrd qualified as InsOrd
 import Data.HashSet.InsOrd qualified as Set
 import Data.Monoid (Endo (..))
-import Data.OpenApi
+import Data.OpenApi hiding (Server (..))
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Mig.Core.Api (Api)
 import Mig.Core.Api qualified as Api
 import Mig.Core.Info qualified as Info
 import Mig.Core.Route (Route (..))
-import Mig.Core.Server (fillCaptures)
+import Mig.Core.Server (Server (..), fillCaptures)
 import Network.HTTP.Media.MediaType (MediaType)
 import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status (Status (..))
 
-toOpenApi :: Api (Route m) -> OpenApi
-toOpenApi x = case fillCaptures x of
+toOpenApi :: Server m -> OpenApi
+toOpenApi (Server x) = case fillCaptures x of
   Api.Empty -> mempty
-  Api.Append a b -> toOpenApi a <> toOpenApi b
+  Api.Append a b -> toOpenApi (Server a) <> toOpenApi (Server b)
   Api.WithPath (Api.Path path) a ->
     case path of
-      [] -> toOpenApi a
-      Api.StaticPath p : rest -> prependPath (Text.unpack p) $ toOpenApi $ Api.WithPath (Api.Path rest) a
-      Api.CapturePath captureName : rest -> addCapture captureName $ toOpenApi $ Api.WithPath (Api.Path rest) a
+      [] -> toOpenApi (Server a)
+      Api.StaticPath p : rest -> prependPath (Text.unpack p) $ toOpenApi $ Server $ Api.WithPath (Api.Path rest) a
+      Api.CapturePath captureName : rest -> addCapture captureName $ toOpenApi $ Server $ Api.WithPath (Api.Path rest) a
   Api.HandleRoute a -> addPathItem a.api mempty
   where
     addCapture :: Text -> OpenApi -> OpenApi

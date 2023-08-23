@@ -71,7 +71,7 @@ instance (MapRequest a, MapRequest b, MapRequest c, MapRequest d) => MapRequest 
 
 class (MapRequest a) => ToClient a where
   -- | converts to client function
-  toClient :: Api (Route m) -> a
+  toClient :: Server m -> a
 
   -- | how many routes client has
   clientArity :: Int
@@ -106,7 +106,7 @@ instance (IsMethod method, FromJSON a) => ToClient (Send method Json Client a) w
   clientArity = 1
 
 instance (ToClient a, ToClient b) => ToClient (a, b) where
-  toClient api = (toClient apiA, toClient apiB)
+  toClient (Server api) = (toClient (Server apiA), toClient (Server apiB))
     where
       (apiA, apiB) = bimap fromFlatApi fromFlatApi $ Prelude.splitAt (clientArity @a) (flatApi api)
 
@@ -127,7 +127,7 @@ instance (ToClient a, ToClient b, ToClient c, ToClient d) => ToClient (a, b, c, 
   clientArity = clientArity @(a, (b, c, d))
 
 getHeadPath :: Server m -> Path
-getHeadPath api = case flatApi api of
+getHeadPath (Server api) = case flatApi api of
   (pathHead, _) : _ -> pathHead
   _ -> error "Not enought methods. API is empty"
 

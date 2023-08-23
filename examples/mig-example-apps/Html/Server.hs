@@ -3,10 +3,9 @@ module Server (
   server,
 ) where
 
--- import Control.Monad
--- import Data.Text (Text)
--- import Data.Text qualified as Text
--- import Data.Time
+import Control.Monad
+import Data.Text qualified as Text
+import Data.Time
 
 import Mig.Core.Server.Class ()
 import Mig.Html.IO
@@ -19,15 +18,15 @@ import View ()
 -- | Server definition. Note how we assemble it from parts with monoid method mconcat.
 server :: Site -> Server IO
 server site =
-  -- logRoutes $
-  mconcat
-    [ "blog"
-        /. mconcat
-          [ readServer
-          , writeServer
-          ]
-    , defaultPage
-    ]
+  logRoutes $
+    mconcat
+      [ "blog"
+          /. mconcat
+            [ readServer
+            , writeServer
+            ]
+      , defaultPage
+      ]
   where
     -- server to read info.
     -- We can read blog posts and quotes.
@@ -56,12 +55,14 @@ server site =
         , toServer (handleGreeting site)
         ]
 
-{-
-    -- log all requests to the server
-    logRoutes srv = toServer $ \(PathInfo path) -> prependServerAction srv $ do
-      when (path /= ["favicon.ico"]) $ do
-        logRoute site (Text.intercalate "/" path)
--}
+    logRoutes :: Server IO -> Server IO
+    logRoutes = mapServerFun go
+      where
+        go :: ServerFun IO -> ServerFun IO
+        go f = toRouteFun $ \(PathInfo path) ->
+          prependServerAction f $ do
+            when (path /= ["favicon.ico"]) $ do
+              logRoute site (Text.intercalate "/" path)
 
 -------------------------------------------------------------------------------------
 -- server handlers
@@ -99,13 +100,11 @@ handleListPosts :: Site -> Get (Page ListPosts)
 handleListPosts site = Send $ do
   Page . ListPosts <$> site.listBlogPosts
 
-{-
 -- | Logs the route info
 logRoute :: Site -> Text -> IO ()
 logRoute site route = do
   time <- getCurrentTime
   site.logInfo $ route <> " page visited at: " <> Text.pack (show time)
--}
 
 -- | Get random blog post
 randomBlogPost :: Site -> IO BlogPost
