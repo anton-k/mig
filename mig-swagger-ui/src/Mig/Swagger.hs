@@ -46,12 +46,12 @@ instance (Applicative m) => Default (SwaggerConfig m) where
 swagger :: forall m. (MonadIO m) => SwaggerConfig m -> m OpenApi -> Server m
 swagger config getOpenApi =
   mconcat
-    [ config.swaggerFile /. route getSchema
+    [ config.swaggerFile /. getSchema
     , config.staticDir
         /. mconcat
-          [ "index.html" /. route getIndex
+          [ "index.html" /. getIndex
           , staticFiles swaggerFiles ""
-          , route getIndex
+          , toServer getIndex
           ]
     ]
   where

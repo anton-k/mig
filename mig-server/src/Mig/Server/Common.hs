@@ -11,7 +11,6 @@ module Mig.Server.Common (
   ToServer (..),
   ToRoute (..),
   ToRouteInfo (..),
-  route,
 
   -- ** methods
   Send (..),
