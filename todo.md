@@ -4,20 +4,26 @@ Open problems for releases:
 
 ## v2
 
+### Major
+
 * update / add docs
+
+* add Accept and Content-Type headers for client
+
+* test client 
 
 * fix swagger on Json example 
    * errors on missing components
    * Either Left - schema on error
    * [] - empty list schema on list output
 
+* check that all examples work
+
+### Normal
+
+* generate client for JsonExample
+
 * fill missing captures at the end
-
-* add capture all case
-
-* add Accept and Content-Type headers for client
-
-* test client 
 
 * add swagger examples
 
@@ -27,12 +33,11 @@ Open problems for releases:
 
 * add static files for html example
 
-* check that all examples work
-
 * update external handler and reader apps examples
 
 ## v3
 
+* add capture all case
 * add XML support
 * add docs (build separate site on github pages)
 
