@@ -7,26 +7,28 @@ import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad
 import Data.Time
 import Mig.Json.IO
+import Mig.Swagger
 
 import Interface
 import Types
 
 server :: Env -> Server IO
 server env =
-  "api"
-    /. "v1"
-    /. "weather"
-    /. mconcat
-      [ "get"
-          /. mconcat
-            [ "weather" /. handleGetWeather env
-            , "auth-token" /. handleAuthToken env
-            ]
-      , "update" /. handleUpdateWeather env
-      ]
+  withSwagger def $
+    "api"
+      /. "v1"
+      /. "weather"
+      /. mconcat
+        [ "get"
+            /. mconcat
+              [ "weather" /. "*" /. "*" /. "*" /. handleGetWeather env
+              , "auth-token" /. handleAuthToken env
+              ]
+        , "update" /. handleUpdateWeather env
+        ]
 
 handleAuthToken :: Env -> Body User -> Post (Either (Error Text) AuthToken)
-handleAuthToken env (Body user) = Post $ do
+handleAuthToken env (Body user) = Send $ do
   env.logger.info ("get new auth token for: " <> user.name)
   isValid <- env.auth.validUser user
   if isValid
@@ -45,11 +47,11 @@ handleAuthToken env (Body user) = Post $ do
 handleGetWeather ::
   Env ->
   Query "auth" AuthToken ->
-  Capture Location ->
-  Capture Day ->
-  Capture DayInterval ->
+  Capture "location" Location ->
+  Capture "day" Day ->
+  Capture "day-interval" DayInterval ->
   Get (Either (Error Text) (Timed WeatherData))
-handleGetWeather env (Query token) (Capture location) (Capture fromDay) (Capture interval) = Get $ do
+handleGetWeather env (Query token) (Capture location) (Capture fromDay) (Capture interval) = Send $ do
   env.logger.info "get the weather forecast"
   fmap join $ whenAuth env token $ do
     mResult <- env.weather.get location fromDay interval
@@ -62,7 +64,7 @@ handleUpdateWeather ::
   Query "auth" AuthToken ->
   Body UpdateData ->
   Post ()
-handleUpdateWeather env (Query token) (Body updateData) = Post $ do
+handleUpdateWeather env (Query token) (Body updateData) = Send $ do
   env.logger.info "update the weather data"
   void $
     whenAuth env token $

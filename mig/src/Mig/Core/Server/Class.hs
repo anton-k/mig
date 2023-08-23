@@ -6,16 +6,19 @@ module Mig.Core.Server.Class (
 
 import Control.Monad.IO.Class
 import Data.Aeson (FromJSON)
+import Data.Aeson qualified as Json (Value)
+import Data.ByteString.Lazy qualified as BL
 import Data.Kind
 import Data.OpenApi (ToParamSchema, ToSchema)
 import Data.Text (Text)
 import GHC.TypeLits
 import Mig.Core.Api (Api)
 import Mig.Core.Api qualified as Api
-import Mig.Core.Info (ToFormType)
+import Mig.Core.Info (Json, RawMedia)
 import Mig.Core.Route
 import Mig.Core.Server (Server)
-import Mig.Core.Types (ToTextResp)
+import Mig.Core.Types (ToByteStringResp, ToHtmlResp, ToJsonResp, ToTextResp)
+import Text.Blaze.Html (Html)
 import Web.FormUrlEncoded
 import Web.HttpApiData
 
@@ -44,6 +47,26 @@ instance (MonadIO m, ToTextResp a, IsMethod method) => ToServer (Send method Tex
   type ServerMonad (Send method Text m a) = m
   toServer a = Api.Route (toRoute a)
 
+instance (MonadIO m, IsMethod method) => ToServer (Send method Json m Json.Value) where
+  type ServerMonad (Send method Json m Json.Value) = m
+  toServer a = Api.Route (toRoute a)
+
+instance {-# OVERLAPPABLE #-} (MonadIO m, ToSchema a, ToJsonResp a, IsMethod method) => ToServer (Send method Json m a) where
+  type ServerMonad (Send method Json m a) = m
+  toServer a = Api.Route (toRoute a)
+
+instance (MonadIO m, ToHtmlResp a, IsMethod method) => ToServer (Send method Html m a) where
+  type ServerMonad (Send method Html m a) = m
+  toServer a = Api.Route (toRoute a)
+
+instance (MonadIO m, ToByteStringResp a, IsMethod method) => ToServer (Send method BL.ByteString m a) where
+  type ServerMonad (Send method BL.ByteString m a) = m
+  toServer a = Api.Route (toRoute a)
+
+instance (MonadIO m, KnownSymbol sym, ToByteStringResp a, IsMethod method) => ToServer (Send method (RawMedia sym) m a) where
+  type ServerMonad (Send method (RawMedia sym) m a) = m
+  toServer a = Api.Route (toRoute a)
+
 -- inputs
 
 instance (ToSchema a, FromJSON a, ToRoute b) => ToServer (Body a -> b) where
@@ -70,7 +93,7 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToS
   type ServerMonad (Header sym a -> b) = RouteMonad b
   toServer a = Api.Route (toRoute a)
 
-instance (ToFormType a, FromForm a, ToRoute b) => ToServer (FormBody a -> b) where
+instance (ToSchema a, FromForm a, ToRoute b) => ToServer (FormBody a -> b) where
   type ServerMonad (FormBody a -> b) = RouteMonad b
   toServer a = Api.Route (toRoute a)
 

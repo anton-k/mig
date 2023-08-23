@@ -3,8 +3,6 @@ module Mig.Core.Info (
   RouteInfo (..),
   RouteInput (..),
   RouteOutput (..),
-  FormType (..),
-  ToFormType (..),
   MediaType (..),
   addRouteInput,
   setMethod,
@@ -45,13 +43,7 @@ data RouteInput
   | QueryInput Text Schema
   | OptionalInput Text Schema
   | HeaderInput Text Schema
-  | FormBodyInput FormType
-  deriving (Show, Eq)
-
-class ToFormType a where
-  toFormType :: FormType
-
-newtype FormType = FormType [(Text, Schema)]
+  | FormBodyInput NamedSchema
   deriving (Show, Eq)
 
 data RouteOutput = RouteOutput

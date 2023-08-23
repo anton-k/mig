@@ -54,7 +54,7 @@ dependencies:
   - bytestring
   - mig
   - mig-client
-  - mig-openapi3
+  - mig-server
   - mig-swagger-ui
   - text
   - aeson

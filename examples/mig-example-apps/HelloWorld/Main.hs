@@ -7,16 +7,14 @@ module Main (
   bye',
 ) where
 
--- import Mig.Json.IO
-
 import Control.Lens ((&), (.~), (?~))
 import Data.Aeson.Encode.Pretty
 import Data.ByteString.Lazy.Char8 qualified as BL
-import Data.Text (Text)
-import Mig.Internal.Api (toNormalApi)
-import Mig.OpenApi
-import Mig.Server
-import Mig.Swagger.Ui
+import Mig
+import Mig.Core.Api (toNormalApi)
+import Mig.Core.Route (Route (..))
+import Mig.Core.Server (fillCaptures)
+import Mig.Swagger
 import Text.Show.Pretty
 
 import Data.OpenApi qualified as OA
@@ -43,8 +41,8 @@ server =
     "api"
       /. "v1"
       /. mconcat
-        [ setDescription "Greeting action" $ "hello" /. "*" /. "*" /. route hello
-        , "bye" /. route bye
+        [ setDescription "Greeting action" $ "hello/*/*" /. hello
+        , "bye" /. bye
         ]
   where
     swaggerConfig =
