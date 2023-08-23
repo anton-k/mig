@@ -2,6 +2,7 @@ module Mig.Core.OpenApi (
   toOpenApi,
 ) where
 
+import Control.Applicative (Alternative (..))
 import Control.Lens ((%~), (&), (.~), (?~))
 import Data.HashMap.Strict.InsOrd qualified as InsOrd
 import Data.HashSet.InsOrd qualified as Set
@@ -38,7 +39,47 @@ toOpenApi (Server x) = case fillCaptures x of
         tname = captureName
 
 addPathItem :: Info.RouteInfo -> OpenApi -> OpenApi
-addPathItem routeInfo x = x{_openApiPaths = InsOrd.singleton mempty (toPathItem routeInfo)}
+addPathItem routeInfo x =
+  x{_openApiPaths = InsOrd.singleton mempty (toPathItem routeInfo)}
+    <> (mempty & components .~ toComponents routeInfo)
+
+toComponents :: Info.RouteInfo -> Components
+toComponents routeInfo =
+  mconcat
+    [ outputComponents
+    , inputComponents
+    ]
+  where
+    outputComponents =
+      maybe mempty singleSchema routeInfo.output.schema
+
+    inputComponents =
+      foldMap fromInput routeInfo.inputs
+
+    fromInput :: Info.RouteInput -> Components
+    fromInput = \case
+      Info.BodyJsonInput sch -> singleSchema sch
+      Info.RawBodyInput -> mempty
+      Info.CaptureInput _captureName sch -> singleSchema (liftSchema sch)
+      Info.QueryInput _queryName sch -> singleSchema (liftSchema sch)
+      Info.OptionalInput _queryName sch -> singleSchema (liftSchema sch)
+      Info.HeaderInput _headerName sch -> singleSchema (liftSchema sch)
+      Info.FormBodyInput sch -> singleSchema sch
+
+    singleSchema :: NamedSchema -> Components
+    singleSchema sch =
+      ( case sch._namedSchemaName <|> sch._namedSchemaSchema._schemaTitle of
+          Just schName -> mempty & schemas .~ InsOrd.singleton schName sch._namedSchemaSchema
+          Nothing -> mempty
+      )
+        <> foldMap fromRef sch._namedSchemaSchema._schemaProperties
+      where
+        fromRef = \case
+          Inline a -> singleSchema (liftSchema a)
+          Ref _ -> mempty
+
+liftSchema :: Schema -> NamedSchema
+liftSchema sch = NamedSchema sch._schemaTitle sch
 
 toPathItem :: Info.RouteInfo -> PathItem
 toPathItem routeInfo =
