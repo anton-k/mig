@@ -5,10 +5,11 @@ module Mig.Server (
   module X,
 ) where
 
-import Mig.Core.Api as X (Api, Path (..), PathItem, (/.))
+import Mig.Core.Api as X (Api, Path (..), PathItem)
 import Mig.Core.Info as X
 import Mig.Core.Route as X
 import Mig.Core.Server as X
+import Mig.Core.Server.Class as X
 
 import Control.Monad.Catch
 import Data.Aeson qualified as Json

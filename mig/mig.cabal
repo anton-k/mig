@@ -84,6 +84,7 @@ library
     Mig.Core.OpenApi
     Mig.Core.Route
     Mig.Core.Server
+    Mig.Core.Server.Class
     Mig.Core.ServerFun
     Mig.Core.Types
 

@@ -27,8 +27,10 @@ source-repository head
 
 library
   exposed-modules:
+    Mig
     Mig.Server
     Mig.Server.Class
+    Mig.Server.Common
 
   other-modules:      Paths_mig_server
   hs-source-dirs:     src
@@ -52,9 +54,11 @@ library
     , bytestring
     , containers
     , exceptions
+    , http-api-data
     , http-types
     , mig
     , mtl
+    , openapi3
     , text
     , wai
     , warp

@@ -42,6 +42,8 @@ dependencies:
 - bytestring
 - exceptions
 - mtl
+- http-api-data
+- openapi3
 
 ghc-options:
 - -Wall

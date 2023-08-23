@@ -1,7 +1,6 @@
 -- | Core API description
 module Mig.Core.Api (
   Api (..),
-  (/.),
   Path (..),
   ApiNormal (..),
   toNormalApi,
@@ -147,15 +146,6 @@ lookupMedia :: MediaType -> MediaMap a -> Maybe a
 lookupMedia mediaType = \case
   SingleMedia ty a -> if ty == mediaType then Just a else Nothing
   MultiMedia as -> Map.lookup mediaType as
-
-infixr 4 /.
-
-(/.) :: Path -> Api a -> Api a
-(/.) path = \case
-  WithPath rest a -> go rest a
-  other -> go mempty other
-  where
-    go rest a = WithPath (path <> rest) a
 
 newtype Path = Path {unPath :: [PathItem]}
   deriving newtype (Show, Eq, Ord, Semigroup, Monoid)
