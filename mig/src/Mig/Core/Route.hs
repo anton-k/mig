@@ -197,10 +197,10 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToR
 
 newtype FormBody a = FormBody a
 
-instance (ToFormType a, ToRouteInfo b) => ToRouteInfo (FormBody a -> b) where
-  toRouteInfo = setMediaInputType (MediaType "application/x-www-form-urlencoded") . addRouteInput (FormBodyInput (toFormType @a)) . toRouteInfo @b
+instance (ToSchema a, ToRouteInfo b) => ToRouteInfo (FormBody a -> b) where
+  toRouteInfo = setMediaInputType (MediaType "application/x-www-form-urlencoded") . addRouteInput (FormBodyInput (toNamedSchema (Proxy @a))) . toRouteInfo @b
 
-instance (ToFormType a, FromForm a, ToRoute b) => ToRoute (FormBody a -> b) where
+instance (ToSchema a, FromForm a, ToRoute b) => ToRoute (FormBody a -> b) where
   type RouteMonad (FormBody a -> b) = RouteMonad b
 
   toRouteFun f = withFormBody (toRouteFun . f . FormBody)
@@ -314,12 +314,18 @@ data SetStatus a = SetStatus
   , content :: a
   }
 
+instance (ToSchema a) => ToSchema (SetStatus a) where
+  declareNamedSchema _ = declareNamedSchema (Proxy @a)
+
 -- add headers
 
 data AddHeaders a = AddHeaders
   { headers :: ResponseHeaders
   , content :: a
   }
+
+instance (ToSchema a) => ToSchema (AddHeaders a) where
+  declareNamedSchema _ = declareNamedSchema (Proxy @a)
 
 -- text response
 

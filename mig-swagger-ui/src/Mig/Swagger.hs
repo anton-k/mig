@@ -2,6 +2,7 @@ module Mig.Swagger (
   SwaggerConfig (..),
   withSwagger,
   swagger,
+  Default (..),
 ) where
 
 import Control.Monad.IO.Class (MonadIO)

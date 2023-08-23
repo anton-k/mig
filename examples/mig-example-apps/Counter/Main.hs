@@ -66,19 +66,19 @@ server =
     /. "api"
     /. mconcat
       [ "get" /. handleGet
-      , "put" /. handlePut
+      , "put" /. "*" /. handlePut
       ]
 
 -- | Get handler. It logs the call and returns current state
 handleGet :: Get App Int
-handleGet = Get $ do
+handleGet = Send $ do
   logInfo "Call get"
   ref <- asks (.current)
   liftIO $ readIORef ref
 
 -- | Put handler. It logs the call and updates the state with integer which is read from URL
-handlePut :: Capture Int -> Get App ()
-handlePut (Capture val) = Get $ do
+handlePut :: Capture "arg" Int -> Get App ()
+handlePut (Capture val) = Send $ do
   logInfo $ "Call put with: " <> show val
   ref <- asks (.current)
   liftIO $ atomicModifyIORef' ref (\cur -> (cur + val, ()))

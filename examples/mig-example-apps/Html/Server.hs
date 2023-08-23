@@ -3,10 +3,12 @@ module Server (
   server,
 ) where
 
-import Control.Monad
-import Data.Text (Text)
-import Data.Text qualified as Text
-import Data.Time
+-- import Control.Monad
+-- import Data.Text (Text)
+-- import Data.Text qualified as Text
+-- import Data.Time
+
+import Mig.Core.Server.Class ()
 import Mig.Html.IO
 import System.Random
 
@@ -17,15 +19,15 @@ import View ()
 -- | Server definition. Note how we assemble it from parts with monoid method mconcat.
 server :: Site -> Server IO
 server site =
-  logRoutes $
-    mconcat
-      [ "blog"
-          /. mconcat
-            [ readServer
-            , writeServer
-            ]
-      , defaultPage
-      ]
+  -- logRoutes $
+  mconcat
+    [ "blog"
+        /. mconcat
+          [ readServer
+          , writeServer
+          ]
+    , defaultPage
+    ]
   where
     -- server to read info.
     -- We can read blog posts and quotes.
@@ -54,52 +56,56 @@ server site =
         , toServer (handleGreeting site)
         ]
 
+{-
     -- log all requests to the server
-    logRoutes srv = toServer $ \(PathInfo path) -> withServerAction srv $ do
+    logRoutes srv = toServer $ \(PathInfo path) -> prependServerAction srv $ do
       when (path /= ["favicon.ico"]) $ do
         logRoute site (Text.intercalate "/" path)
+-}
 
 -------------------------------------------------------------------------------------
 -- server handlers
 
 -- | Greet the user on main page
 handleGreeting :: Site -> Get (Page Greeting)
-handleGreeting _site = Get $ pure (Page Greeting)
+handleGreeting _site = Send $ pure (Page Greeting)
 
 -- | Read blog post by id
 handleBlogPost :: Site -> Optional "id" BlogPostId -> Get (Page BlogPost)
-handleBlogPost site (Optional mBlogId) = Get $
+handleBlogPost site (Optional mBlogId) = Send $
   case mBlogId of
     Nothing -> Page <$> randomBlogPost site
     Just blogId -> maybe (PostNotFound blogId) Page <$> site.readBlogPost blogId
 
 -- | Read random quote
 handleQuote :: Site -> Get (Page Quote)
-handleQuote site = Get $ Page <$> site.readQuote
+handleQuote site = Send $ Page <$> site.readQuote
 
 -- | Show form to the user to fill new post data
 handleWriteForm :: Site -> Get (Page WritePost)
 handleWriteForm _site =
-  Get $
+  Send $
     pure $
       Page WritePost
 
 -- | Submit form with data provided by the user
 handleWriteSubmit :: Site -> FormBody SubmitBlogPost -> Post (Page BlogPost)
-handleWriteSubmit site (FormBody (SubmitBlogPost title content)) = Post $ do
+handleWriteSubmit site (FormBody (SubmitBlogPost title content)) = Send $ do
   pid <- site.writeBlogPost title content
   maybe (PostNotFound pid) Page <$> site.readBlogPost pid
 
 -- | List all posts so far
 handleListPosts :: Site -> Get (Page ListPosts)
-handleListPosts site = Get $ do
+handleListPosts site = Send $ do
   Page . ListPosts <$> site.listBlogPosts
 
+{-
 -- | Logs the route info
 logRoute :: Site -> Text -> IO ()
 logRoute site route = do
   time <- getCurrentTime
   site.logInfo $ route <> " page visited at: " <> Text.pack (show time)
+-}
 
 -- | Get random blog post
 randomBlogPost :: Site -> IO BlogPost

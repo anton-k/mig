@@ -18,8 +18,7 @@ module Types (
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Text as X (Text)
 import Data.Time as X (Day)
-import GHC.Generics
-import Mig.Json.IO (FromHttpApiData (..))
+import Mig.Json.IO (FromHttpApiData (..), Generic, ToParamSchema, ToSchema)
 
 -- auth domain
 
@@ -27,15 +26,15 @@ data User = User
   { name :: Text
   , pass :: Text
   }
-  deriving (Generic, ToJSON, FromJSON)
+  deriving (Generic, ToJSON, FromJSON, ToSchema)
 
 newtype AuthToken = AuthToken Text
-  deriving newtype (ToJSON, FromJSON, FromHttpApiData, Eq, Ord, Show)
+  deriving newtype (ToJSON, FromJSON, FromHttpApiData, Eq, Ord, Show, ToParamSchema, ToSchema)
 
 -- weather domain
 
 newtype DayInterval = DayInterval Int
-  deriving newtype (ToJSON, FromJSON, FromHttpApiData)
+  deriving newtype (ToJSON, FromJSON, FromHttpApiData, ToParamSchema)
 
 data Timed a = Timed
   { from :: Day
@@ -43,8 +42,10 @@ data Timed a = Timed
   }
   deriving (Generic, ToJSON, FromJSON)
 
+deriving instance (ToSchema a) => ToSchema (Timed a)
+
 newtype Location = Location Text
-  deriving newtype (ToJSON, FromJSON, FromHttpApiData, Eq, Ord, Show)
+  deriving newtype (ToJSON, FromJSON, FromHttpApiData, Eq, Ord, Show, ToParamSchema, ToSchema)
 
 data WeatherData = WeatherData
   { temperature :: Int
@@ -52,7 +53,7 @@ data WeatherData = WeatherData
   , sunRainRatio :: Int
   , pressure :: Int
   }
-  deriving (Generic, ToJSON, FromJSON)
+  deriving (Generic, ToJSON, FromJSON, ToSchema)
 
 -- | Update weather data
 data UpdateData = UpdateData
@@ -60,4 +61,4 @@ data UpdateData = UpdateData
   , location :: Location
   , content :: WeatherData
   }
-  deriving (Generic, ToJSON, FromJSON)
+  deriving (Generic, ToJSON, FromJSON, ToSchema)

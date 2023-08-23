@@ -36,6 +36,7 @@ import Data.Aeson qualified as Json
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BL
 import Data.Map.Strict (Map)
+import Data.OpenApi (ToSchema (..))
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
@@ -154,6 +155,9 @@ data Error a = Error
     -- message or error details
   }
   deriving (Show)
+
+instance (ToSchema a) => ToSchema (Error a) where
+  declareNamedSchema _ = declareNamedSchema (Proxy @a)
 
 instance (Typeable a, Show a) => Exception (Error a)
 

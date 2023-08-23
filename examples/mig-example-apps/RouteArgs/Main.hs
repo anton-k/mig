@@ -9,7 +9,6 @@ module Main (
 
 -- import Text and IO based server
 
-import Data.Text (Text)
 import Data.Text.IO qualified as Text
 import Mig.Json.IO
 
@@ -35,25 +34,25 @@ routeArgs =
       , -- several query params
         "add" /. handleAdd
       , -- capture
-        "mul" /. handleMul
+        "mul" /. "*" /. "*" /. handleMul
       , -- json body as input
         "add-json" /. handleAddJson
       ]
 
 -- | Simple getter
 helloWorld :: Get Text
-helloWorld = Get $ do
+helloWorld = Send $ do
   logDebug "hello world route call"
   pure "Hello world!"
 
 newtype TraceId = TraceId Text
-  deriving newtype (FromHttpApiData, ToText)
+  deriving newtype (FromHttpApiData, ToText, ToParamSchema)
 
 {-| Using several inputs: header argument and required query
 and using conditional output status
 -}
 handleSucc :: Header "Trace-Id" TraceId -> Query "value" Int -> Get (SetStatus Int)
-handleSucc (Header mTraceId) (Query n) = Get $ do
+handleSucc (Header mTraceId) (Query n) = Send $ do
   logDebug "succ route call"
   mapM_ (logDebug . mappend "traceId: " . toText) mTraceId
   pure $ SetStatus st (succ n)
@@ -64,7 +63,7 @@ handleSucc (Header mTraceId) (Query n) = Get $ do
 
 -- | Using optional query parameters and error as Either
 handleSuccOpt :: Optional "value" Int -> Get (Either (Error Text) Int)
-handleSuccOpt (Optional n) = Get $ do
+handleSuccOpt (Optional n) = Send $ do
   logDebug "succ optional route call"
   pure $ maybe (Left $ Error status400 "error") Right (succ <$> n)
 
@@ -73,7 +72,7 @@ Note that function can have any number of arguments.
 We encode the input type with proper type-wrapper.
 -}
 handleAdd :: Query "a" Int -> Query "b" Int -> Get (AddHeaders Int)
-handleAdd (Query a) (Query b) = Get $ do
+handleAdd (Query a) (Query b) = Send $ do
   logDebug "add route call"
   pure $ AddHeaders headers $ a + b
   where
@@ -84,14 +83,14 @@ captured in URL. For example:
 
 > http://localhost:8085/hello/api/mul/3/100
 -}
-handleMul :: Capture Int -> Capture Int -> Get Int
-handleMul (Capture a) (Capture b) = Get $ do
+handleMul :: Capture "a" Int -> Capture "b" Int -> Get Int
+handleMul (Capture a) (Capture b) = Send $ do
   logDebug "mul route call"
   pure (a * b)
 
 -- | Using JSON as input and setting status for response
 handleAddJson :: Body (Int, Int) -> Post (SetStatus Int)
-handleAddJson (Body (a, b)) = Post $ do
+handleAddJson (Body (a, b)) = Send $ do
   logDebug "add route call"
   pure $ SetStatus ok200 $ a + b
 
