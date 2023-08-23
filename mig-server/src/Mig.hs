@@ -28,6 +28,10 @@ module Mig (
 
   -- * DSL
   Json,
+  ToServer (..),
+  ToRoute (..),
+  ToRouteInfo (..),
+  route,
 
   -- ** methods
   Send (..),
@@ -71,6 +75,9 @@ module Mig (
   setStatus,
   addHeaders,
 
+  -- ** specific cases
+  staticFiles,
+
   -- ** Errors
 
   -- | How to report errors
@@ -104,15 +111,17 @@ module Mig (
 
   -- * utils
   badRequest,
-  ToServer (..),
   prependServerAction,
-  setDescription,
-  setSummary,
+
+  -- ** Server
   mapRouteInfo,
   mapServerFun,
   mapResp,
-  staticFiles,
+
+  -- ** OpenApi
   toOpenApi,
+  setDescription,
+  setSummary,
   module X,
 ) where
 
@@ -123,6 +132,7 @@ import Data.Text as X (Text)
 import GHC.Generics as X (Generic)
 import Network.HTTP.Types.Header as X (RequestHeaders, ResponseHeaders)
 import Network.HTTP.Types.Status as X
+import Text.Blaze.Html as X (Html, ToMarkup (..))
 import Web.FormUrlEncoded as X
 import Web.HttpApiData as X
 

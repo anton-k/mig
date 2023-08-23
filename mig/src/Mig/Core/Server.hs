@@ -48,12 +48,12 @@ Example:
 > server =
 >   "api" /. "v1" /.
 >      mconcat
->        [ "foo" /. (\(Query @"name" arg) -> Get  @Json (handleFoo arg)
->        , "bar" /. Post @Json handleBar
+>        [ "foo" /. handleFoo
+>        , "bar" /. handleBar
 >        ]
 >
-> handleFoo :: Int -> IO Text
-> handleBar :: IO Text
+> handleFoo :: Query "name" Int -> Get Json IO Text
+> handleBar :: Post Json IO Text
 
 Note that server is monoid and it can be constructed with Monoid functions and
 path constructor @(/.)@. To pass inputs for handler we can use special newtype wrappers:

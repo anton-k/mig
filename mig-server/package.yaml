@@ -44,6 +44,7 @@ dependencies:
 - mtl
 - http-api-data
 - openapi3
+- blaze-html
 
 ghc-options:
 - -Wall

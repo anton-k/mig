@@ -1,55 +1,120 @@
 -- | Module for common re-exports
-module Mig.Server.Common () where
+module Mig.Server.Common (
+  -- * types
+  Server,
+  Api,
+  Path (..),
+  PathItem (..),
 
-{-
-( -- * types
-    Server (..)
   -- * DSL
-  , ToText (..)
-  , ToHtmlResp (..)
-  , FromText (..)
-  , ToServer (..)
-  , withServerAction
-  -- * path and query
-  , (/.)
-  , Capture (..)
-  , Query (..)
-  , Optional (..)
-  , Body (..)
-  , RawBody (..)
-  , Header (..)
-  , FormBody (..)
-  , PathInfo (..)
+  Json,
+  ToServer (..),
+  ToRoute (..),
+  ToRouteInfo (..),
+  route,
 
-  -- * response
-  , AddHeaders (..)
-  , SetStatus (..)
-  , setStatus
-  , addHeaders
+  -- ** methods
+  Send (..),
+  IsMethod (..),
+  GetMethod,
+  PostMethod,
+  PutMethod,
+  DeleteMethod,
+  PatchMethod,
+  OptionsMethod,
+  HeadMethod,
+  TraceMethod,
 
-  -- * Errors
-  , Error (..)
-  , handleError
+  -- ** path and query
 
-  -- * Render
-  , HasServer (..)
-  , fromReader
+  -- | Build API for routes with queries and captures.
+  -- Use monoid to combine several routes together.
+  (/.),
+  Capture (..),
+  Query (..),
+  Optional (..),
+  Body (..),
+  RawBody (..),
+  Header (..),
+  FormBody (..),
+  PathInfo (..),
+
+  -- ** response
+
+  -- | How to modify response and attach specific info to it
+  AddHeaders (..),
+  SetStatus (..),
+  setStatus,
+  addHeaders,
+
+  -- ** specific cases
+  staticFiles,
+
+  -- ** Errors
+
+  -- | How to report errors
+  Error (..),
+
+  -- ** Low-level types
+  Req,
+  Resp,
+  ServerFun (..),
+  handleRespError,
+
   -- * Run
-  , ServerConfig (..)
-  , toApplication
-  , runServer
+
+  -- | Run server application
+  runServer,
+  ServerConfig (..),
+  toApplication,
+
+  -- ** Render
+
+  -- | Render Reader-IO monad servers to IO servers.
+  HasServer (..),
+  fromReader,
+
+  -- * Convertes
+  ToTextResp (..),
+  ToJsonResp (..),
+  ToHtmlResp (..),
+  ToByteStringResp (..),
+  ToText (..),
+
   -- * utils
-  , badRequest
+  badRequest,
+  prependServerAction,
 
-  , module X
-  ) where
+  -- ** Server
+  mapRouteInfo,
+  mapServerFun,
+  mapResp,
 
-import Mig
-  ( Server (..), ToServer (..), ToText (..), ToHtmlResp (..), FromText (..), handleError, PathInfo (..)
-  , (/.), Capture (..), Query (..), Optional (..), Body (..), RawBody (..), Header (..), FormBody (..), AddHeaders (..), SetStatus (..)
-  , setStatus, addHeaders, HasServer (..), fromReader, ServerConfig (..), toApplication, runServer, badRequest, Error (..), withServerAction)
+  -- ** OpenApi
+  toOpenApi,
+  setDescription,
+  setSummary,
+  module X,
+) where
 
+import Mig hiding (
+  Delete,
+  Get,
+  Head,
+  Options,
+  Patch,
+  Post,
+  Put,
+  Trace,
+ )
+
+-- common codecs and types
+import Data.Aeson as X (FromJSON (..), ToJSON (..))
+import Data.OpenApi as X (OpenApi, ToParamSchema (..), ToSchema (..))
+import Data.Text as X (Text)
+import GHC.Generics as X (Generic)
+import Network.HTTP.Types.Header as X (RequestHeaders, ResponseHeaders)
 import Network.HTTP.Types.Status as X
-import Web.HttpApiData as X
+import Text.Blaze.Html as X (Html, ToMarkup (..))
 import Web.FormUrlEncoded as X
--}
+import Web.HttpApiData as X
