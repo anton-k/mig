@@ -309,6 +309,11 @@ instance (MonadIO m, IsMethod method) => ToRoute (Send method Json m Json.Value)
   toRouteFun (Send a) = sendResp $ toJsonResp <$> a
   emptyRoute = Send (pure (error "No implementation"))
 
+instance (MonadIO m, IsMethod method) => ToRoute (Send method Json m (Response Json.Value)) where
+  type RouteMonad (Send method Json m (Response Json.Value)) = m
+  toRouteFun (Send a) = sendResp $ fromResponse toJsonResp <$> a
+  emptyRoute = Send (pure (error "No implementation"))
+
 instance {-# OVERLAPPABLE #-} (MonadIO m, ToHtmlResp a, IsMethod method) => ToRoute (Send method Html m a) where
   type RouteMonad (Send method Html m a) = m
   toRouteFun (Send a) = sendResp $ toHtmlResp <$> a
