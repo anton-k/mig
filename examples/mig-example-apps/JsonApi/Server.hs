@@ -15,13 +15,11 @@ import Types
 server :: Env -> Server IO
 server env =
   withSwagger def $
-    "api"
-      /. "v1"
-      /. "weather"
+    "api/v1/weather"
       /. mconcat
         [ "get"
             /. mconcat
-              [ "weather" /. "*" /. "*" /. "*" /. handleGetWeather env
+              [ "weather/*/*/*" /. handleGetWeather env
               , "auth-token" /. handleAuthToken env
               ]
         , "update" /. handleUpdateWeather env

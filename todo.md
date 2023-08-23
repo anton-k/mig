@@ -2,7 +2,7 @@
 
 Features, improvements and open problems for releases:
 
-## v2
+## v2.1
 
 ### Major
 
@@ -13,11 +13,14 @@ Features, improvements and open problems for releases:
 * test client 
 
 * fix swagger on Json example 
-   * errors on missing components
-   * Either Left - schema on error
+   * errors on missing components (use declareSchema and schemaName)
    * [] - empty list schema on list output
 
 * check that all examples work
+
+* html example:
+  * write post produces nothing (bug)
+  * use UUID as post ids
 
 ### Normal
 
@@ -35,10 +38,13 @@ Features, improvements and open problems for releases:
 
 * update external handler and reader apps examples
 
+## v2.2
+
 * RIO support (separate package mig-rio)
 
 ## v3
 
+* add support for (Either Error (Response a))
 * add capture all case
 * add XML support
 * add docs (build separate site on github pages)
