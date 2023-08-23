@@ -13,8 +13,8 @@ import Mig.Core.Types
 
 -- | Map internal monad of the server
 hoistServer :: (forall a. m a -> n a) -> Server m -> Server n
-hoistServer f server =
-  fmap (\x -> Route x.api (ServerFun $ f . x.run.unServerFun)) server
+hoistServer f (Server server) =
+  Server $ fmap (\x -> Route x.api (ServerFun $ f . x.run.unServerFun)) server
 
 {-| Class contains types which can be converted to IO-based server to run as with WAI-interface.
 

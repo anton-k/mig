@@ -21,10 +21,11 @@ See readme of the repo for tutorial and docs.
 -}
 module Mig (
   -- * types
-  Server,
-  Api,
+  Server (..),
+  Api (..),
   Path (..),
   PathItem (..),
+  Route (..),
 
   -- * DSL
   Json,
@@ -85,6 +86,7 @@ module Mig (
   -- ** Low-level types
   Req,
   Resp,
+  MapServerFun (..),
   ServerFun (..),
   handleRespError,
 
@@ -114,7 +116,6 @@ module Mig (
 
   -- ** Server
   mapRouteInfo,
-  mapServerFun,
   mapResp,
 
   -- ** OpenApi
@@ -137,10 +138,10 @@ import Web.HttpApiData as X
 
 import Control.Exception (Exception)
 import Control.Monad.Catch (MonadCatch, try)
-import Mig.Core.Api (PathItem (..))
 import Mig.Core.OpenApi (toOpenApi)
 import Mig.Core.Server
 import Mig.Core.Server.Class
+import Mig.Core.ServerFun (MapServerFun (..))
 import Mig.Core.Types (
   Error (..),
   Req,
@@ -166,7 +167,7 @@ setStatus :: (Monad m) => Status -> Server m -> Server m
 setStatus st = mapResp $ setRespStatus st
 
 -- | Prepends action to the server
-prependServerAction :: (Monad m) => Server m -> m () -> Server m
+prependServerAction :: (Monad m, MapServerFun f) => f m -> m () -> f m
 prependServerAction srv act = flip mapServerFun srv $ \(ServerFun f) -> ServerFun $ \req -> do
   act
   f req

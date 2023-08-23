@@ -1,6 +1,7 @@
 -- | input implementation
 module Mig.Core.ServerFun (
   ServerFun (..),
+  MapServerFun (..),
   withBody,
   withRawBody,
   withQuery,
@@ -46,6 +47,12 @@ import Network.HTTP.Types.Header (HeaderName)
 import Network.HTTP.Types.Status (status413)
 import Web.FormUrlEncoded
 import Web.HttpApiData
+
+class MapServerFun f where
+  mapServerFun :: (ServerFun m -> ServerFun n) -> f m -> f n
+
+instance MapServerFun ServerFun where
+  mapServerFun = id
 
 instance ToRouteInfo (ServerFun m) where
   toRouteInfo = id

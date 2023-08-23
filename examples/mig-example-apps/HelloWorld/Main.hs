@@ -12,7 +12,6 @@ import Data.Aeson.Encode.Pretty
 import Data.ByteString.Lazy.Char8 qualified as BL
 import Mig
 import Mig.Core.Api (toNormalApi)
-import Mig.Core.Route (Route (..))
 import Mig.Core.Server (fillCaptures)
 import Mig.Swagger
 import Text.Show.Pretty
@@ -26,7 +25,7 @@ It uses wai and warp.
 main :: IO ()
 main = do
   putStrLn ("The hello world server listens on port: " <> show port)
-  pPrint (fmap (.api) $ toNormalApi $ fillCaptures server)
+  pPrint (fmap (.api) $ toNormalApi $ fillCaptures server.unServer)
   BL.putStrLn $ encodePretty $ toOpenApi server
   runServer port server
   where

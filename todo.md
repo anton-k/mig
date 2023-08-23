@@ -4,6 +4,7 @@ Open problems for releases:
 
 ## v2
 
+* update / add docs
 
 * fix swagger on Json example 
    * errors on missing components
@@ -13,8 +14,6 @@ Open problems for releases:
 * fill missing captures at the end
 
 * add capture all case
-
-* html example: how to log on all routes?
 
 * add Accept and Content-Type headers for client
 
@@ -26,9 +25,16 @@ Open problems for releases:
   * reuse JsonApi and hello-world
   * client from scratch (without defined server) to test client-only apps
 
+* add static files for html example
+
+* check that all examples work
+
+* update external handler and reader apps examples
+
 ## v3
 
 * add XML support
+* add docs (build separate site on github pages)
 
 ## v4
 

@@ -1,10 +1,11 @@
 -- | Module for common re-exports
 module Mig.Server.Common (
   -- * types
-  Server,
-  Api,
+  Server (..),
+  Api (..),
   Path (..),
   PathItem (..),
+  Route (..),
 
   -- * DSL
   Json,

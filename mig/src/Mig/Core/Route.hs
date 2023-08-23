@@ -88,6 +88,9 @@ toRoute a =
     , run = toRouteFun a
     }
 
+instance MapServerFun Route where
+  mapServerFun f r = Route r.api (f r.run)
+
 -------------------------------------------------------------------------------------
 -- identity instances
 
