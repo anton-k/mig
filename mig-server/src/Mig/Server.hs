@@ -26,7 +26,7 @@ import Data.Text.Encoding qualified as Text
 import Mig.Core.ServerFun (handleError)
 import Mig.Core.Types (Error (..), Req (..), Resp (..), RespBody (..), ToText (..), badRequest)
 import Network.HTTP.Types.Status (status413)
-import Network.Wai
+import Network.Wai qualified as Wai
 import Network.Wai.Handler.Warp qualified as Warp
 import Text.Blaze.Renderer.Utf8 qualified as Html
 
@@ -44,7 +44,7 @@ runServer port server = Warp.run port (toApplication config server)
     config = ServerConfig{maxBodySize = Nothing}
 
 -- | Convert server to WAI-application
-toApplication :: ServerConfig -> Server IO -> Application
+toApplication :: ServerConfig -> Server IO -> Wai.Application
 toApplication config server req processResponse = do
   mResp <- unServerFun (handleError onErr (fromServer server)) =<< fromRequest config.maxBodySize req
   processResponse $ toResponse $ fromMaybe noResult mResp
@@ -55,30 +55,30 @@ toApplication config server req processResponse = do
     onErr err = ServerFun $ const $ pure $ Just $ badRequest $ "Error: Exception has happened: " <> toText (show err)
 
 -- | Convert response to low-level WAI-response
-toResponse :: Resp -> Response
+toResponse :: Resp -> Wai.Response
 toResponse resp =
   case resp.body of
     TextResp textResp -> lbs $ BL.fromStrict (Text.encodeUtf8 textResp)
     HtmlResp htmlResp -> lbs (Html.renderMarkup htmlResp)
     JsonResp jsonResp -> lbs (Json.encode jsonResp)
-    FileResp file -> responseFile resp.status resp.headers file Nothing
+    FileResp file -> Wai.responseFile resp.status resp.headers file Nothing
     RawResp str -> lbs str
     StreamResp -> undefined -- TODO
   where
-    lbs = responseLBS resp.status resp.headers
+    lbs = Wai.responseLBS resp.status resp.headers
 
 {-| Read request from low-level WAI-request
 First argument limits the size of input body. The body is read in chunks.
 -}
-fromRequest :: Maybe Kilobytes -> Request -> IO Req
+fromRequest :: Maybe Kilobytes -> Wai.Request -> IO Req
 fromRequest maxSize req =
   pure $
     Req
-      { path = pathInfo req
-      , query = Map.fromList $ mapMaybe (\(key, mVal) -> (key,) <$> mVal) (queryString req)
-      , headers = Map.fromList $ requestHeaders req
-      , method = requestMethod req
-      , readBody = fmap (fmap BL.fromChunks) $ readRequestBody (getRequestBodyChunk req) maxSize
+      { path = Wai.pathInfo req
+      , query = Map.fromList $ mapMaybe (\(key, mVal) -> (key,) <$> mVal) (Wai.queryString req)
+      , headers = Map.fromList $ Wai.requestHeaders req
+      , method = Wai.requestMethod req
+      , readBody = fmap (fmap BL.fromChunks) $ readRequestBody (Wai.getRequestBodyChunk req) maxSize
       , capture = mempty
       }
 

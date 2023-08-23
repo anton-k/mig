@@ -9,6 +9,11 @@ module Mig.Core.Types (
   QueryMap,
   ToText (..),
   Error (..),
+  Response (..),
+  fromResponse,
+  okResponse,
+  addHeaders,
+  setStatus,
 
   -- * classes
   ToTextResp (..),
@@ -145,6 +150,30 @@ type HeaderMap = Map HeaderName ByteString
 
 type CaptureMap = Map Text Text
 
+-- Generic response
+
+data Response a = Response
+  { status :: Status
+  , headers :: ResponseHeaders
+  , body :: a
+  }
+  deriving (Show, Functor)
+
+okResponse :: a -> Response a
+okResponse = Response ok200 []
+
+addHeaders :: ResponseHeaders -> Response a -> Response a
+addHeaders hs x = x{headers = x.headers <> hs}
+
+setStatus :: Status -> Response a -> Response a
+setStatus st x = x{status = st}
+
+instance (ToSchema a) => ToSchema (Response a) where
+  declareNamedSchema _ = declareNamedSchema (Proxy @a)
+
+fromResponse :: (a -> Resp) -> Response a -> Resp
+fromResponse f a = setRespStatus a.status $ addRespHeaders a.headers $ f a.body
+
 -- Errors
 
 -- | Errors
@@ -154,7 +183,7 @@ data Error a = Error
     body :: a
     -- message or error details
   }
-  deriving (Show)
+  deriving (Show, Functor)
 
 instance (ToSchema a) => ToSchema (Error a) where
   declareNamedSchema _ = declareNamedSchema (Proxy @a)

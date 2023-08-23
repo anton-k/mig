@@ -42,8 +42,8 @@ module Mig.Server.Common (
   -- ** response
 
   -- | How to modify response and attach specific info to it
-  AddHeaders (..),
-  SetStatus (..),
+  Response (..),
+  okResponse,
   setStatus,
   addHeaders,
 

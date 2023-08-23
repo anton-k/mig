@@ -17,10 +17,6 @@ module Mig.Core.Route (
   FormBody (..),
   PathInfo (..),
 
-  -- * Outputs
-  SetStatus (..),
-  AddHeaders (..),
-
   -- * Output methods
   Send (..),
   Get,
@@ -54,13 +50,12 @@ import Data.OpenApi.Internal.Schema (toNamedSchema)
 import Data.Proxy
 import Data.String
 import Data.Text (Text)
+import Data.Text.Encoding qualified as Text
 import GHC.TypeLits
 import Mig.Core.Info
 import Mig.Core.ServerFun
-import Mig.Core.Types (ToByteStringResp (..), ToHtmlResp (..), ToJsonResp (..), ToTextResp (..), addRespHeaders, setRespStatus)
-import Network.HTTP.Types.Header (ResponseHeaders)
+import Mig.Core.Types (Resp, Response (..), ToByteStringResp (..), ToHtmlResp (..), ToJsonResp (..), ToTextResp (..), addRespHeaders, fromResponse)
 import Network.HTTP.Types.Method
-import Network.HTTP.Types.Status
 import Text.Blaze.Html (Html)
 import Web.FormUrlEncoded
 import Web.HttpApiData
@@ -274,94 +269,76 @@ newtype Send method ty m a = Send {unSend :: m a}
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m a) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
+instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (Response a)) where
+  toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
+
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToSchema a) => ToRouteInfo (Send method Json m a) where
+  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toNamedSchema (Proxy @a))
+
+instance {-# OVERLAPPABLE #-} (IsMethod method, ToSchema a) => ToRouteInfo (Send method Json m (Response a)) where
   toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toNamedSchema (Proxy @a))
 
 instance (IsMethod method) => ToRouteInfo (Send method Json m Json.Value) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @Json)
 
-instance (MonadIO m, ToTextResp a, IsMethod method) => ToRoute (Send method Text m a) where
+instance (IsMethod method) => ToRouteInfo (Send method Json m (Response Json.Value)) where
+  toRouteInfo = setMethod (toMethod @method) (toMediaType @Json)
+
+instance {-# OVERLAPPABLE #-} (MonadIO m, ToTextResp a, IsMethod method) => ToRoute (Send method Text m a) where
   type RouteMonad (Send method Text m a) = m
-  toRouteFun (Send a) = sendText a
+  toRouteFun (Send a) = sendResp $ toTextResp <$> a
+  emptyRoute = Send (pure (error "No implementation"))
+
+instance (MonadIO m, ToTextResp a, IsMethod method) => ToRoute (Send method Text m (Response a)) where
+  type RouteMonad (Send method Text m (Response a)) = m
+  toRouteFun (Send a) = sendResp $ fromResponse toTextResp <$> a
   emptyRoute = Send (pure (error "No implementation"))
 
 instance {-# OVERLAPPABLE #-} (MonadIO m, ToSchema a, ToJsonResp a, IsMethod method) => ToRoute (Send method Json m a) where
   type RouteMonad (Send method Json m a) = m
-  toRouteFun (Send a) = sendJson a
+  toRouteFun (Send a) = sendResp $ toJsonResp <$> a
+  emptyRoute = Send (pure (error "No implementation"))
+
+instance {-# OVERLAPPABLE #-} (MonadIO m, ToSchema a, ToJsonResp a, IsMethod method) => ToRoute (Send method Json m (Response a)) where
+  type RouteMonad (Send method Json m (Response a)) = m
+  toRouteFun (Send a) = sendResp $ fromResponse toJsonResp <$> a
   emptyRoute = Send (pure (error "No implementation"))
 
 instance (MonadIO m, IsMethod method) => ToRoute (Send method Json m Json.Value) where
   type RouteMonad (Send method Json m Json.Value) = m
-  toRouteFun (Send a) = sendJson a
+  toRouteFun (Send a) = sendResp $ toJsonResp <$> a
   emptyRoute = Send (pure (error "No implementation"))
 
-instance (MonadIO m, ToHtmlResp a, IsMethod method) => ToRoute (Send method Html m a) where
+instance {-# OVERLAPPABLE #-} (MonadIO m, ToHtmlResp a, IsMethod method) => ToRoute (Send method Html m a) where
   type RouteMonad (Send method Html m a) = m
-  toRouteFun (Send a) = sendHtml a
+  toRouteFun (Send a) = sendResp $ toHtmlResp <$> a
   emptyRoute = Send (pure (error "No implementation"))
 
-instance (MonadIO m, ToByteStringResp a, IsMethod method) => ToRoute (Send method BL.ByteString m a) where
+instance (MonadIO m, ToHtmlResp a, IsMethod method) => ToRoute (Send method Html m (Response a)) where
+  type RouteMonad (Send method Html m (Response a)) = m
+  toRouteFun (Send a) = sendResp $ fromResponse toHtmlResp <$> a
+  emptyRoute = Send (pure (error "No implementation"))
+
+instance {-# OVERLAPPABLE #-} (MonadIO m, ToByteStringResp a, IsMethod method) => ToRoute (Send method BL.ByteString m a) where
   type RouteMonad (Send method BL.ByteString m a) = m
-  toRouteFun (Send a) = sendRaw a
+  toRouteFun (Send a) = sendResp $ toByteStringResp <$> a
   emptyRoute = Send (pure (error "No implementation"))
 
-instance (MonadIO m, KnownSymbol sym, ToByteStringResp a, IsMethod method) => ToRoute (Send method (RawMedia sym) m a) where
+instance (MonadIO m, ToByteStringResp a, IsMethod method) => ToRoute (Send method BL.ByteString m (Response a)) where
+  type RouteMonad (Send method BL.ByteString m (Response a)) = m
+  toRouteFun (Send a) = sendResp $ fromResponse toByteStringResp <$> a
+  emptyRoute = Send (pure (error "No implementation"))
+
+instance {-# OVERLAPPABLE #-} (MonadIO m, KnownSymbol sym, ToByteStringResp a, IsMethod method) => ToRoute (Send method (RawMedia sym) m a) where
   type RouteMonad (Send method (RawMedia sym) m a) = m
-  toRouteFun (Send a) = sendRawMedia (fromString $ symbolVal (Proxy @sym)) a
+  toRouteFun (Send a) = sendResp $ toRawByteStringResp (fromString $ symbolVal (Proxy @sym)) <$> a
   emptyRoute = Send (pure (error "No implementation"))
 
--- set status
+toRawByteStringResp :: (ToByteStringResp a) => MediaType -> a -> Resp
+toRawByteStringResp (MediaType mediaType) =
+  addRespHeaders [("Content-Type", Text.encodeUtf8 mediaType)] . toByteStringResp
 
-data SetStatus a = SetStatus
-  { status :: Status
-  , content :: a
-  }
-
-instance (ToSchema a) => ToSchema (SetStatus a) where
-  declareNamedSchema _ = declareNamedSchema (Proxy @a)
-
--- add headers
-
-data AddHeaders a = AddHeaders
-  { headers :: ResponseHeaders
-  , content :: a
-  }
-
-instance (ToSchema a) => ToSchema (AddHeaders a) where
-  declareNamedSchema _ = declareNamedSchema (Proxy @a)
-
--- text response
-
-instance (ToTextResp a) => ToTextResp (AddHeaders a) where
-  toTextResp (AddHeaders headers content) = addRespHeaders headers (toTextResp content)
-
-instance (ToTextResp a) => ToTextResp (SetStatus a) where
-  toTextResp (SetStatus st content) =
-    setRespStatus st (toTextResp content)
-
--- json response
-
-instance (ToJsonResp a) => ToJsonResp (AddHeaders a) where
-  toJsonResp (AddHeaders headers content) = addRespHeaders headers (toJsonResp content)
-
-instance (ToJsonResp a) => ToJsonResp (SetStatus a) where
-  toJsonResp (SetStatus st content) =
-    setRespStatus st (toJsonResp content)
-
--- html response
-
-instance (ToHtmlResp a) => ToHtmlResp (AddHeaders a) where
-  toHtmlResp (AddHeaders headers content) = addRespHeaders headers (toHtmlResp content)
-
-instance (ToHtmlResp a) => ToHtmlResp (SetStatus a) where
-  toHtmlResp (SetStatus st content) =
-    setRespStatus st (toHtmlResp content)
-
--- raw response
-
-instance (ToByteStringResp a) => ToByteStringResp (AddHeaders a) where
-  toByteStringResp (AddHeaders headers content) = addRespHeaders headers (toByteStringResp content)
-
-instance (ToByteStringResp a) => ToByteStringResp (SetStatus a) where
-  toByteStringResp (SetStatus st content) =
-    setRespStatus st (toByteStringResp content)
+instance (MonadIO m, KnownSymbol sym, ToByteStringResp a, IsMethod method) => ToRoute (Send method (RawMedia sym) m (Response a)) where
+  type RouteMonad (Send method (RawMedia sym) m (Response a)) = m
+  toRouteFun (Send a) = sendResp $ fromResponse (toRawByteStringResp (fromString $ symbolVal (Proxy @sym))) <$> a
+  emptyRoute = Send (pure (error "No implementation"))

@@ -8,8 +8,6 @@ module Mig.Core.Server (
   setDescription,
   setSummary,
   mapRouteInfo,
-  mapServerFun,
-  mapResp,
   staticFiles,
 ) where
 
@@ -31,7 +29,7 @@ import Mig.Core.Api qualified as Api
 import Mig.Core.Info (MediaType (..), RouteInfo (..), RouteInput (..))
 import Mig.Core.Route
 import Mig.Core.ServerFun (MapServerFun (..))
-import Mig.Core.Types (Req (..), Resp)
+import Mig.Core.Types (Req (..), Response (..), addHeaders, okResponse)
 import Network.HTTP.Types.Header (ResponseHeaders)
 import Safe (atMay)
 import System.FilePath (takeExtension, (</>))
@@ -88,9 +86,6 @@ newtype Server m = Server {unServer :: Api (Route m)}
 
 instance MapServerFun Server where
   mapServerFun f (Server server) = Server $ fmap (\x -> Route x.api (f x.run)) server
-
-mapResp :: (Functor m) => (Resp -> Resp) -> Server m -> Server m
-mapResp f = mapServerFun $ \(ServerFun fun) -> ServerFun (fmap (fmap f) . fun)
 
 fromServer :: (Monad m) => Server m -> ServerFun m
 fromServer (Server server) = ServerFun $ \req ->
@@ -191,8 +186,8 @@ staticFiles files root =
     serveFile path content =
       (fromString $ withRoot path) `Api.WithPath` (Api.HandleRoute (toRoute (getFile path content)))
 
-    getFile :: FilePath -> ByteString -> Get BL.ByteString m (AddHeaders BL.ByteString)
-    getFile path fileContent = Send $ pure $ AddHeaders contentHeaders $ BL.fromStrict fileContent
+    getFile :: FilePath -> ByteString -> Get BL.ByteString m (Response BL.ByteString)
+    getFile path fileContent = Send $ pure $ addHeaders contentHeaders $ okResponse $ BL.fromStrict fileContent
       where
         contentHeaders :: ResponseHeaders
         contentHeaders =
