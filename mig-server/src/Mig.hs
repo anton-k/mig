@@ -31,7 +31,6 @@ module Mig (
   ToServer (..),
   ToRoute (..),
   ToRouteInfo (..),
-  route,
 
   -- ** methods
   Send (..),

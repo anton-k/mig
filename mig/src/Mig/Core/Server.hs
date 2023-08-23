@@ -2,7 +2,6 @@
 
 module Mig.Core.Server (
   Server,
-  route,
   fromServer,
   fillCaptures,
   addTag,
@@ -90,9 +89,6 @@ mapServerFun f = fmap $ \x -> Route x.api (f x.run)
 
 mapResp :: (Functor m) => (Resp -> Resp) -> Server m -> Server m
 mapResp f = mapServerFun $ \(ServerFun fun) -> ServerFun (fmap (fmap f) . fun)
-
-route :: (ToRoute a) => a -> Server (RouteMonad a)
-route a = Api.Route (toRoute a)
 
 fromServer :: (Monad m) => Server m -> ServerFun m
 fromServer server = ServerFun $ \req ->
@@ -191,7 +187,7 @@ staticFiles files root =
   foldMap (uncurry serveFile) files
   where
     serveFile path content =
-      (fromString $ withRoot path) `Api.WithPath` route (getFile path content)
+      (fromString $ withRoot path) `Api.WithPath` (Api.Route (toRoute (getFile path content)))
 
     getFile :: FilePath -> ByteString -> Get BL.ByteString m (AddHeaders BL.ByteString)
     getFile path fileContent = Send $ pure $ AddHeaders contentHeaders $ BL.fromStrict fileContent

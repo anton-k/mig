@@ -25,6 +25,6 @@ server =
   "api"
     /. "v1"
     /. mconcat
-      [ "hello" /. "*" /. "*" /. route hello
-      , "bye" /. route bye
+      [ "hello" /. "*" /. "*" /. hello
+      , "bye" /. bye
       ]
