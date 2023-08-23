@@ -1,6 +1,6 @@
 # TODO
 
-Open problems for releases:
+Features, improvements and open problems for releases:
 
 ## v2
 
@@ -35,6 +35,8 @@ Open problems for releases:
 
 * update external handler and reader apps examples
 
+* RIO support (separate package mig-rio)
+
 ## v3
 
 * add capture all case
@@ -43,5 +45,4 @@ Open problems for releases:
 
 ## v4
 
-* generate Mig client and server from open-api. Useful for spec first approach
-
+* generate Mig client and server from open-api yaml file. Useful for spec first approach

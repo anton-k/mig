@@ -70,8 +70,8 @@ module Mig (
   -- ** response
 
   -- | How to modify response and attach specific info to it
-  AddHeaders (..),
-  SetStatus (..),
+  Response (..),
+  okResponse,
   setStatus,
   addHeaders,
 
@@ -141,30 +141,24 @@ import Control.Monad.Catch (MonadCatch, try)
 import Mig.Core.OpenApi (toOpenApi)
 import Mig.Core.Server
 import Mig.Core.Server.Class
-import Mig.Core.ServerFun (MapServerFun (..))
+import Mig.Core.ServerFun (MapServerFun (..), mapResp)
 import Mig.Core.Types (
   Error (..),
   Req,
   Resp,
+  Response (..),
   ToByteStringResp (..),
   ToHtmlResp (..),
   ToJsonResp (..),
   ToText (..),
   ToTextResp (..),
-  addRespHeaders,
+  addHeaders,
   badRequest,
-  setRespStatus,
+  okResponse,
+  setStatus,
  )
 import Mig.Server
 import Mig.Server.Class
-
--- | Adds headers for response of the server
-addHeaders :: (Monad m) => ResponseHeaders -> Server m -> Server m
-addHeaders headers = mapResp $ addRespHeaders headers
-
--- | Sets status for response of the server
-setStatus :: (Monad m) => Status -> Server m -> Server m
-setStatus st = mapResp $ setRespStatus st
 
 -- | Prepends action to the server
 prependServerAction :: (Monad m, MapServerFun f) => f m -> m () -> f m

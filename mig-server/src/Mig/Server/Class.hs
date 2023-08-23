@@ -9,6 +9,7 @@ import Control.Monad.Reader
 import Data.Kind
 import Mig.Core.Route
 import Mig.Core.Server
+import Mig.Core.ServerFun (MapServerFun (..))
 import Mig.Core.Types
 
 -- | Map internal monad of the server

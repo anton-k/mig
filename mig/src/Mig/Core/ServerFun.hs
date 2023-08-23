@@ -2,6 +2,8 @@
 module Mig.Core.ServerFun (
   ServerFun (..),
   MapServerFun (..),
+  mapResp,
+  sendResp,
   withBody,
   withRawBody,
   withQuery,
@@ -10,11 +12,6 @@ module Mig.Core.ServerFun (
   withHeader,
   withFormBody,
   withPathInfo,
-  sendText,
-  sendJson,
-  sendHtml,
-  sendRaw,
-  sendRawMedia,
   handleError,
 ) where
 
@@ -34,12 +31,14 @@ import Mig.Core.Types (
   Error (..),
   Req (..),
   Resp (..),
+  Response,
   ToByteStringResp (..),
   ToHtmlResp (..),
   ToJsonResp (..),
   ToTextResp (..),
   addRespHeaders,
   badRequest,
+  fromResponse,
   setRespStatus,
   text,
  )
@@ -50,6 +49,9 @@ import Web.HttpApiData
 
 class MapServerFun f where
   mapServerFun :: (ServerFun m -> ServerFun n) -> f m -> f n
+
+mapResp :: (Functor m, MapServerFun f) => (Resp -> Resp) -> f m -> f m
+mapResp f = mapServerFun $ \(ServerFun fun) -> ServerFun (fmap (fmap f) . fun)
 
 instance MapServerFun ServerFun where
   mapServerFun = id
@@ -134,21 +136,8 @@ withFormBody act = withRawBody $ \body -> ServerFun $ \req -> do
 withPathInfo :: ([Text] -> ServerFun m) -> ServerFun m
 withPathInfo act = ServerFun $ \req -> unServerFun (act req.path) req
 
-sendText :: (Monad m, ToTextResp a) => m a -> ServerFun m
-sendText act = ServerFun $ const $ fmap (Just . toTextResp) act
-
-sendJson :: (Monad m, ToJsonResp a) => m a -> ServerFun m
-sendJson act = ServerFun $ const $ fmap (Just . toJsonResp) act
-
-sendHtml :: (Monad m, ToHtmlResp a) => m a -> ServerFun m
-sendHtml act = ServerFun $ const $ fmap (Just . toHtmlResp) act
-
-sendRaw :: (Monad m, ToByteStringResp a) => m a -> ServerFun m
-sendRaw act = ServerFun $ const $ fmap (Just . toByteStringResp) act
-
-sendRawMedia :: (Monad m, ToByteStringResp a) => MediaType -> m a -> ServerFun m
-sendRawMedia (MediaType mediaType) act =
-  ServerFun $ const $ fmap (Just . addRespHeaders [("Content-Type", Text.encodeUtf8 mediaType)] . toByteStringResp) act
+sendResp :: (Functor m) => m Resp -> ServerFun m
+sendResp act = ServerFun $ const $ fmap Just act
 
 -- | Handle errors
 handleError :: (Exception a, MonadCatch m) => (a -> ServerFun m) -> ServerFun m -> ServerFun m
