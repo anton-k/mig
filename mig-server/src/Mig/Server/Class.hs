@@ -39,29 +39,28 @@ fromReader :: env -> Server (ReaderT env IO) -> IO (Server IO)
 fromReader env server =
   flip runReaderT env $ ReaderT $ \e -> pure $ hoistServer (flip runReaderT e) server
 
-instance (ToText a) => HasServer (ReaderT env (ExceptT (Error a) IO)) where
+instance HasServer (ReaderT env (ExceptT Error IO)) where
   type
-    ServerResult (ReaderT env (ExceptT (Error a) IO)) =
+    ServerResult (ReaderT env (ExceptT Error IO)) =
       env -> IO (Server IO)
 
   renderServer server initEnv = fromReaderExcept initEnv server
 
 fromReaderExcept ::
-  forall a env.
-  (ToText a) =>
+  forall env.
   env ->
-  Server (ReaderT env (ExceptT (Error a) IO)) ->
+  Server (ReaderT env (ExceptT Error IO)) ->
   IO (Server IO)
 fromReaderExcept env server =
   flip runReaderT env $
     ReaderT $
       \e -> pure $ mapServerFun (handle e) server
   where
-    handle :: env -> ServerFun (ReaderT env (ExceptT (Error a) IO)) -> ServerFun IO
+    handle :: env -> ServerFun (ReaderT env (ExceptT Error IO)) -> ServerFun IO
     handle e (ServerFun f) = ServerFun $ \req ->
       handleError <$> runExceptT (runReaderT (f req) e)
 
-    handleError :: Either (Error a) (Maybe Resp) -> Maybe Resp
+    handleError :: Either Error (Maybe Resp) -> Maybe Resp
     handleError = \case
       Right mResp -> mResp
       Left err -> Just $ setRespStatus err.status (text err.body)

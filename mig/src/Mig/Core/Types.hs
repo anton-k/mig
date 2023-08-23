@@ -9,6 +9,7 @@ module Mig.Core.Types (
   QueryMap,
   ToText (..),
   Error (..),
+  fromError,
   Response (..),
   fromResponse,
   okResponse,
@@ -80,11 +81,6 @@ instance ToTextResp TL.Text where
 instance ToTextResp Int where
   toTextResp = text
 
-instance (ToText err, ToTextResp a) => ToTextResp (Either (Error err) a) where
-  toTextResp = either fromError toTextResp
-    where
-      fromError err = setRespStatus err.status (text err.body)
-
 -- | Values convertible to Json
 class ToJsonResp a where
   toJsonResp :: a -> Resp
@@ -92,22 +88,12 @@ class ToJsonResp a where
 instance {-# OVERLAPPABLE #-} (ToJSON a) => ToJsonResp a where
   toJsonResp = json
 
-instance (ToJSON err, ToJsonResp a) => ToJsonResp (Either (Error err) a) where
-  toJsonResp = either fromError toJsonResp
-    where
-      fromError err = setRespStatus err.status (json err.body)
-
 -- | Values convertible to Html
 class ToHtmlResp a where
   toHtmlResp :: a -> Resp
 
 instance (ToMarkup a) => ToHtmlResp a where
   toHtmlResp = html
-
-instance (ToJSON err, ToHtmlResp a) => ToHtmlResp (Either (Error err) a) where
-  toHtmlResp = either fromError toHtmlResp
-    where
-      fromError err = setRespStatus err.status (json err.body)
 
 class ToByteStringResp a where
   toByteStringResp :: a -> Resp
@@ -142,7 +128,7 @@ data Req = Req
   -- ^ request headers
   , method :: Method
   -- ^ request method
-  , readBody :: IO (Either (Error Text) BL.ByteString)
+  , readBody :: IO (Either Error BL.ByteString)
   -- ^ lazy body reader. Error can happen if size is too big (configured on running the server)
   }
 
@@ -177,18 +163,20 @@ fromResponse f a = setRespStatus a.status $ addRespHeaders a.headers $ f a.body
 -- Errors
 
 -- | Errors
-data Error a = Error
+data Error = Error
   { status :: Status
   , -- error status
-    body :: a
+    body :: Text
     -- message or error details
   }
-  deriving (Show, Functor)
+  deriving (Show)
 
-instance (ToSchema a) => ToSchema (Error a) where
-  declareNamedSchema _ = declareNamedSchema (Proxy @a)
+instance Exception Error
 
-instance (Typeable a, Show a) => Exception (Error a)
+fromError :: (a -> Resp) -> Either Error a -> Resp
+fromError f = \case
+  Right a -> f a
+  Left err -> setRespStatus err.status $ toTextResp err.body
 
 -- | Map of query parameters for fast-access
 type QueryMap = Map ByteString ByteString

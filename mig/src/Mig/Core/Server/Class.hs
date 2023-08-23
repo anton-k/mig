@@ -17,7 +17,7 @@ import Mig.Core.Api qualified as Api
 import Mig.Core.Info (Json, RawMedia)
 import Mig.Core.Route
 import Mig.Core.Server (Server (..))
-import Mig.Core.Types (Response, ToByteStringResp, ToHtmlResp, ToJsonResp, ToTextResp)
+import Mig.Core.Types (Error, Response, ToByteStringResp, ToHtmlResp, ToJsonResp, ToTextResp)
 import Text.Blaze.Html (Html)
 import Web.FormUrlEncoded
 import Web.HttpApiData
@@ -55,12 +55,20 @@ instance (MonadIO m, ToTextResp a, IsMethod method) => ToServer (Send method Tex
   type ServerMonad (Send method Text m (Response a)) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
+instance (MonadIO m, ToTextResp a, IsMethod method) => ToServer (Send method Text m (Either Error a)) where
+  type ServerMonad (Send method Text m (Either Error a)) = m
+  toServer a = Server $ Api.HandleRoute (toRoute a)
+
 instance (MonadIO m, IsMethod method) => ToServer (Send method Json m Json.Value) where
   type ServerMonad (Send method Json m Json.Value) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 instance (MonadIO m, IsMethod method) => ToServer (Send method Json m (Response Json.Value)) where
   type ServerMonad (Send method Json m (Response Json.Value)) = m
+  toServer a = Server $ Api.HandleRoute (toRoute a)
+
+instance (MonadIO m, IsMethod method) => ToServer (Send method Json m (Either Error Json.Value)) where
+  type ServerMonad (Send method Json m (Either Error Json.Value)) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 instance {-# OVERLAPPABLE #-} (MonadIO m, ToSchema a, ToJsonResp a, IsMethod method) => ToServer (Send method Json m a) where
@@ -71,12 +79,20 @@ instance (MonadIO m, ToSchema a, ToJsonResp a, IsMethod method) => ToServer (Sen
   type ServerMonad (Send method Json m (Response a)) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
+instance (MonadIO m, ToSchema a, ToJsonResp a, IsMethod method) => ToServer (Send method Json m (Either Error a)) where
+  type ServerMonad (Send method Json m (Either Error a)) = m
+  toServer a = Server $ Api.HandleRoute (toRoute a)
+
 instance {-# OVERLAPPABLE #-} (MonadIO m, ToHtmlResp a, IsMethod method) => ToServer (Send method Html m a) where
   type ServerMonad (Send method Html m a) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 instance (MonadIO m, ToHtmlResp a, IsMethod method) => ToServer (Send method Html m (Response a)) where
   type ServerMonad (Send method Html m (Response a)) = m
+  toServer a = Server $ Api.HandleRoute (toRoute a)
+
+instance (MonadIO m, ToHtmlResp a, IsMethod method) => ToServer (Send method Html m (Either Error a)) where
+  type ServerMonad (Send method Html m (Either Error a)) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 instance {-# OVERLAPPABLE #-} (MonadIO m, ToByteStringResp a, IsMethod method) => ToServer (Send method BL.ByteString m a) where
@@ -87,12 +103,20 @@ instance (MonadIO m, ToByteStringResp a, IsMethod method) => ToServer (Send meth
   type ServerMonad (Send method BL.ByteString m (Response a)) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
+instance (MonadIO m, ToByteStringResp a, IsMethod method) => ToServer (Send method BL.ByteString m (Either Error a)) where
+  type ServerMonad (Send method BL.ByteString m (Either Error a)) = m
+  toServer a = Server $ Api.HandleRoute (toRoute a)
+
 instance {-# OVERLAPPABLE #-} (MonadIO m, KnownSymbol sym, ToByteStringResp a, IsMethod method) => ToServer (Send method (RawMedia sym) m a) where
   type ServerMonad (Send method (RawMedia sym) m a) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 instance (MonadIO m, KnownSymbol sym, ToByteStringResp a, IsMethod method) => ToServer (Send method (RawMedia sym) m (Response a)) where
   type ServerMonad (Send method (RawMedia sym) m (Response a)) = m
+  toServer a = Server $ Api.HandleRoute (toRoute a)
+
+instance (MonadIO m, KnownSymbol sym, ToByteStringResp a, IsMethod method) => ToServer (Send method (RawMedia sym) m (Either Error a)) where
+  type ServerMonad (Send method (RawMedia sym) m (Either Error a)) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 -- inputs

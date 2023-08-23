@@ -20,7 +20,6 @@ import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.Sequence (Seq (..), (|>))
 import Data.Sequence qualified as Seq
-import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Mig.Core.ServerFun (handleError)
@@ -83,10 +82,10 @@ fromRequest maxSize req =
       }
 
 -- | Read request body in chunks
-readRequestBody :: IO B.ByteString -> Maybe Kilobytes -> IO (Either (Error Text) [B.ByteString])
+readRequestBody :: IO B.ByteString -> Maybe Kilobytes -> IO (Either Error [B.ByteString])
 readRequestBody readChunk maxSize = loop 0 Seq.empty
   where
-    loop :: Kilobytes -> Seq B.ByteString -> IO (Either (Error Text) [B.ByteString])
+    loop :: Kilobytes -> Seq B.ByteString -> IO (Either Error [B.ByteString])
     loop !currentSize !result
       | isBigger currentSize = pure outOfSize
       | otherwise = do
@@ -95,7 +94,7 @@ readRequestBody readChunk maxSize = loop 0 Seq.empty
             then pure $ Right (toList result)
             else loop (currentSize + B.length chunk) (result |> chunk)
 
-    outOfSize :: Either (Error Text) a
+    outOfSize :: Either Error a
     outOfSize = Left (Error status413 (Text.pack $ "Request is too big Jim!"))
 
     isBigger = case maxSize of
