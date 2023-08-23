@@ -51,11 +51,11 @@ newtype TraceId = TraceId Text
 {-| Using several inputs: header argument and required query
 and using conditional output status
 -}
-handleSucc :: Header "Trace-Id" TraceId -> Query "value" Int -> Get (SetStatus Int)
+handleSucc :: Header "Trace-Id" TraceId -> Query "value" Int -> Get (Response Int)
 handleSucc (Header mTraceId) (Query n) = Send $ do
   logDebug "succ route call"
   mapM_ (logDebug . mappend "traceId: " . toText) mTraceId
-  pure $ SetStatus st (succ n)
+  pure $ setStatus st $ okResponse (succ n)
   where
     st
       | n <= 0 = status400
@@ -71,10 +71,10 @@ handleSuccOpt (Optional n) = Send $ do
 Note that function can have any number of arguments.
 We encode the input type with proper type-wrapper.
 -}
-handleAdd :: Query "a" Int -> Query "b" Int -> Get (AddHeaders Int)
+handleAdd :: Query "a" Int -> Query "b" Int -> Get (Response Int)
 handleAdd (Query a) (Query b) = Send $ do
   logDebug "add route call"
-  pure $ AddHeaders headers $ a + b
+  pure $ addHeaders headers $ okResponse $ a + b
   where
     headers = [("args", "a, b")]
 
@@ -89,10 +89,10 @@ handleMul (Capture a) (Capture b) = Send $ do
   pure (a * b)
 
 -- | Using JSON as input and setting status for response
-handleAddJson :: Body (Int, Int) -> Post (SetStatus Int)
+handleAddJson :: Body (Int, Int) -> Post (Response Int)
 handleAddJson (Body (a, b)) = Send $ do
   logDebug "add route call"
-  pure $ SetStatus ok200 $ a + b
+  pure $ setStatus ok200 $ okResponse $ a + b
 
 -- utils
 
