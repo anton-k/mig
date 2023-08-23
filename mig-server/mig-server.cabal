@@ -28,6 +28,10 @@ source-repository head
 library
   exposed-modules:
     Mig
+    Mig.Html
+    Mig.Html.IO
+    Mig.Json
+    Mig.Json.IO
     Mig.Server
     Mig.Server.Class
     Mig.Server.Common
@@ -50,6 +54,7 @@ library
   build-depends:
       aeson
     , base >=4.7 && <5
+    , blaze-html
     , blaze-markup
     , bytestring
     , containers
