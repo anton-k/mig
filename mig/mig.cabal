@@ -78,6 +78,7 @@ source-repository head
 
 library
   exposed-modules:
+    Mig.Core
     Mig.Core.Api
     Mig.Core.Api.NormalForm
     Mig.Core.Info

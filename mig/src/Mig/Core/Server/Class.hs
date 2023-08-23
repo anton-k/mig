@@ -45,58 +45,58 @@ instance ToServer (Api (Route m)) where
 
 instance (MonadIO m, ToTextResp a, IsMethod method) => ToServer (Send method Text m a) where
   type ServerMonad (Send method Text m a) = m
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)
 
 instance (MonadIO m, IsMethod method) => ToServer (Send method Json m Json.Value) where
   type ServerMonad (Send method Json m Json.Value) = m
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)
 
 instance {-# OVERLAPPABLE #-} (MonadIO m, ToSchema a, ToJsonResp a, IsMethod method) => ToServer (Send method Json m a) where
   type ServerMonad (Send method Json m a) = m
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)
 
 instance (MonadIO m, ToHtmlResp a, IsMethod method) => ToServer (Send method Html m a) where
   type ServerMonad (Send method Html m a) = m
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)
 
 instance (MonadIO m, ToByteStringResp a, IsMethod method) => ToServer (Send method BL.ByteString m a) where
   type ServerMonad (Send method BL.ByteString m a) = m
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)
 
 instance (MonadIO m, KnownSymbol sym, ToByteStringResp a, IsMethod method) => ToServer (Send method (RawMedia sym) m a) where
   type ServerMonad (Send method (RawMedia sym) m a) = m
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)
 
 -- inputs
 
 instance (ToSchema a, FromJSON a, ToRoute b) => ToServer (Body a -> b) where
   type ServerMonad (Body a -> b) = RouteMonad b
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)
 
 instance (ToRoute b) => ToServer (RawBody -> b) where
   type ServerMonad (RawBody -> b) = RouteMonad b
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Query sym a -> b) where
   type ServerMonad (Query sym a -> b) = RouteMonad b
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Optional sym a -> b) where
   type ServerMonad (Optional sym a -> b) = RouteMonad b
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Capture sym a -> b) where
   type ServerMonad (Capture sym a -> b) = RouteMonad b
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Header sym a -> b) where
   type ServerMonad (Header sym a -> b) = RouteMonad b
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)
 
 instance (ToSchema a, FromForm a, ToRoute b) => ToServer (FormBody a -> b) where
   type ServerMonad (FormBody a -> b) = RouteMonad b
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)
 
 instance (ToRoute b) => ToServer (PathInfo -> b) where
   type ServerMonad (PathInfo -> b) = RouteMonad b
-  toServer a = Api.Route (toRoute a)
+  toServer a = Api.HandleRoute (toRoute a)

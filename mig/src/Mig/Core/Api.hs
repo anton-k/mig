@@ -29,7 +29,7 @@ data Api a
   = Append (Api a) (Api a)
   | Empty
   | WithPath Path (Api a)
-  | Route a
+  | HandleRoute a
   deriving (Functor, Foldable, Traversable, Show, Eq)
 
 instance Monoid (Api a) where
@@ -40,7 +40,7 @@ instance Semigroup (Api a) where
 
 filterApi :: (a -> Bool) -> Api a -> Api a
 filterApi check = \case
-  Route a -> if check a then Route a else Empty
+  HandleRoute a -> if check a then HandleRoute a else Empty
   Append a b ->
     case rec a of
       Empty -> rec b
@@ -183,7 +183,7 @@ getPath mainPath = go mempty (filter (not . Text.null) mainPath)
     go !captureMap path api =
       case path of
         [] -> case api of
-          Route a -> Just (a, captureMap)
+          HandleRoute a -> Just (a, captureMap)
           Append a b -> maybe (go captureMap path b) Just (go captureMap path a)
           _ -> Nothing
         p : rest -> case api of
@@ -218,7 +218,7 @@ flatApi = go mempty
       Empty -> mempty
       Append a b -> go prefix a <> go prefix b
       WithPath path a -> go (prefix <> path) a
-      Route a -> [(prefix, a)]
+      HandleRoute a -> [(prefix, a)]
 
 fromFlatApi :: [(Path, a)] -> Api a
-fromFlatApi = foldMap (\(path, route) -> WithPath path (Route route))
+fromFlatApi = foldMap (\(path, route) -> WithPath path (HandleRoute route))
