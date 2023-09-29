@@ -2,6 +2,8 @@
 module Mig.Core.Info (
   RouteInfo (..),
   RouteInput (..),
+  Describe (..),
+  noDescription,
   getInputType,
   RouteOutput (..),
   IsRequired (..),
@@ -19,10 +21,12 @@ module Mig.Core.Info (
   Json,
   RawMedia,
   ToRouteInfo (..),
+  describeInfoInputs,
 ) where
 
 import Data.ByteString.Lazy qualified as BL
 import Data.List.Extra (firstJust)
+import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.OpenApi
 import Data.OpenApi.Declare (runDeclare)
@@ -36,7 +40,7 @@ import Text.Blaze.Html (Html)
 
 data RouteInfo = RouteInfo
   { method :: Maybe Method
-  , inputs :: [RouteInput]
+  , inputs :: [Describe RouteInput]
   , output :: RouteOutput
   , tags :: [Text]
   , description :: Text
@@ -47,6 +51,35 @@ data RouteInfo = RouteInfo
 newtype IsRequired = IsRequired Bool
   deriving newtype (Show, Eq)
 
+data Describe a = Describe
+  { description :: Maybe Text
+  , content :: a
+  }
+  deriving (Show, Eq)
+
+noDescription :: a -> Describe a
+noDescription = Describe Nothing
+
+{-| Appends descriptiton for the info
+special name request-body is dedicated to request body input
+nd raw-input is dedicated to raw input
+-}
+describeInfoInputs :: [(Text, Text)] -> RouteInfo -> RouteInfo
+describeInfoInputs descs routeInfo = routeInfo{inputs = fmap addDesc routeInfo.inputs}
+  where
+    addDesc inp =
+      Describe (Map.lookup (getInputName inp) descMap) inp.content
+
+    getInputName inp =
+      case inp.content of
+        ReqBodyInput _ _ -> "request-body"
+        RawBodyInput -> "raw-input"
+        CaptureInput captureName _ -> captureName
+        QueryInput _ queryName _ -> queryName
+        HeaderInput _ headerName _ -> headerName
+
+    descMap = Map.fromList descs
+
 data RouteInput
   = ReqBodyInput MediaType SchemaDefs
   | RawBodyInput
@@ -56,7 +89,7 @@ data RouteInput
   deriving (Show, Eq)
 
 getInputType :: RouteInfo -> MediaType
-getInputType route = fromMaybe (MediaType "*/*") $ firstJust fromInput route.inputs
+getInputType route = fromMaybe (MediaType "*/*") $ firstJust (fromInput . (.content)) route.inputs
   where
     fromInput = \case
       ReqBodyInput ty _ -> Just ty
@@ -119,7 +152,10 @@ instance (KnownSymbol sym) => ToMediaType (RawMedia sym) where
   toMediaType = MediaType (fromString (symbolVal (Proxy @sym)))
 
 addRouteInput :: RouteInput -> RouteInfo -> RouteInfo
-addRouteInput inp routeInfo =
+addRouteInput inp = addRouteInputWithDescriptiton (noDescription inp)
+
+addRouteInputWithDescriptiton :: Describe RouteInput -> RouteInfo -> RouteInfo
+addRouteInputWithDescriptiton inp routeInfo =
   routeInfo{inputs = inp : routeInfo.inputs}
 
 emptyRouteInfo :: RouteInfo

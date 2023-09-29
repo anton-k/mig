@@ -29,6 +29,7 @@ dependencies:
 - base >= 4.7 && < 5
 - bytestring
 - text
+- lens
 - mig
 - mig-server
 - file-embed-lzma
@@ -38,6 +39,7 @@ dependencies:
 - mtl
 - http-api-data
 - data-default
+- aeson-pretty
 
 ghc-options:
 - -Wall

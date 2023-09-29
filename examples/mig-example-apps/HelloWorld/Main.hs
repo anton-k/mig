@@ -7,16 +7,12 @@ module Main (
   bye',
 ) where
 
-import Control.Lens ((&), (.~), (?~))
-import Data.Aeson.Encode.Pretty
-import Data.ByteString.Lazy.Char8 qualified as BL
 import Mig
 import Mig.Core.Api (toNormalApi)
 import Mig.Core.Server (fillCaptures)
 import Mig.Swagger
 import Text.Show.Pretty
 
-import Data.OpenApi qualified as OA
 import Mig.Client
 
 {-| We can render the server and run it on port 8085.
@@ -26,38 +22,36 @@ main :: IO ()
 main = do
   putStrLn ("The hello world server listens on port: " <> show port)
   pPrint (fmap (.api) $ toNormalApi $ fillCaptures server.unServer)
-  BL.putStrLn $ encodePretty $ toOpenApi server
-  runServer port server
+  printSwagger server
+  runServer port (withSwagger swaggerConfig server)
   where
     port = 8085
+
+    swaggerConfig =
+      SwaggerConfig
+        { swaggerFile = "swagger.json"
+        , staticDir = "swagger-ui"
+        , mapSchema = pure . addDefaultInfo info
+        }
+
+    info =
+      DefaultInfo
+        { title = "Hello world app"
+        , description = "Demo application"
+        , version = "1.0"
+        }
 
 {-| Init simple hello world server which
 replies on a single route
 -}
 server :: Server IO
 server =
-  withSwagger swaggerConfig $
-    "api"
-      /. "v1"
-      /. mconcat
-        [ setDescription "Greeting action" $ "hello/*/*" /. hello
-        , "bye" /. bye
-        ]
-  where
-    swaggerConfig =
-      SwaggerConfig
-        { swaggerFile = "swagger.json"
-        , staticDir = "swagger-ui"
-        , mapSchema = pure . addInfo
-        }
-
-    addInfo =
-      OA.info
-        .~ ( mempty
-              & OA.title .~ "Hello world app"
-              & OA.description ?~ "Demo application"
-              & OA.version .~ "1.0"
-           )
+  "api"
+    /. "v1"
+    /. mconcat
+      [ setDescription "Greeting action" $ "hello/*/*" /. hello
+      , "bye" /. bye
+      ]
 
 type Hello m = Capture "who" Text -> Capture "suffix" Text -> Get Json m Text
 

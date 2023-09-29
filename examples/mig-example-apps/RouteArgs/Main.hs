@@ -52,9 +52,9 @@ newtype TraceId = TraceId Text
 and using conditional output status
 -}
 handleSucc :: Header "Trace-Id" TraceId -> Query "value" Int -> Get (Response Int)
-handleSucc (Header mTraceId) (Query n) = Send $ do
+handleSucc (Header traceId) (Query n) = Send $ do
   logDebug "succ route call"
-  mapM_ (logDebug . mappend "traceId: " . toText) mTraceId
+  logDebug $ "traceId: " <> toText traceId
   pure $ setStatus st $ okResponse (succ n)
   where
     st

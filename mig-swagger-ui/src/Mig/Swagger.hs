@@ -3,13 +3,21 @@ module Mig.Swagger (
   withSwagger,
   swagger,
   Default (..),
+  DefaultInfo (..),
+  addDefaultInfo,
+  writeSwagger,
+  printSwagger,
 ) where
 
+import Control.Lens ((&), (.~), (?~))
 import Control.Monad.IO.Class (MonadIO)
 import Data.Aeson qualified as Json
+import Data.Aeson.Encode.Pretty (encodePretty)
 import Data.ByteString (ByteString)
+import Data.ByteString.Lazy.Char8 qualified as BL
 import Data.Default
 import Data.OpenApi (OpenApi)
+import Data.OpenApi qualified as OA
 import Data.Text (Text)
 import Data.Text qualified as Text
 import FileEmbedLzma
@@ -28,6 +36,32 @@ withSwagger config server =
     ]
   where
     openApi = toOpenApi server
+
+-- | Prints openapi schema file to stdout
+printSwagger :: Server m -> IO ()
+printSwagger server = BL.putStrLn $ encodePretty $ toOpenApi server
+
+-- | Writes openapi schema to file
+writeSwagger :: FilePath -> Server m -> IO ()
+writeSwagger file server = BL.writeFile file $ encodePretty $ toOpenApi server
+
+data DefaultInfo = DefaultInfo
+  { title :: Text
+  , description :: Text
+  , version :: Text
+  }
+
+addDefaultInfo :: DefaultInfo -> OpenApi -> OpenApi
+addDefaultInfo appInfo =
+  OA.info
+    .~ ( mempty
+          & OA.title .~ appInfo.title
+          & OA.description ?~ appInfo.description
+          & OA.version .~ appInfo.version
+       )
+
+instance Default DefaultInfo where
+  def = DefaultInfo "" "" ""
 
 data SwaggerConfig m = SwaggerConfig
   { staticDir :: Path
