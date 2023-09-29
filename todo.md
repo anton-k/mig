@@ -17,6 +17,8 @@ Features, improvements and open problems for releases:
 
 * fill missing captures at the end
 
+-- after commit to main repo
+
 * update external handler and reader apps examples
 
 ## v2.2
@@ -59,5 +61,3 @@ add client support
    it will produce run time error if it does not work
 
    maybe we can generate clients as the next step from open api
-
-
