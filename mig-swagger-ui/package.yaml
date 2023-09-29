@@ -6,9 +6,6 @@ author:              "Anton Kholomiov"
 maintainer:          "example@example.com"
 copyright:           "2023 Anton Kholomiov"
 
-extra-source-files:
-- README.md
-
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
 # category:            Web
@@ -54,6 +51,7 @@ ghc-options:
 - -Wredundant-constraints
 
 extra-source-files:
+  - README.md
   - index.html.tmpl
   - swagger-ui-dist-5.0.0/favicon-16x16.png
   - swagger-ui-dist-5.0.0/favicon-32x32.png

@@ -8,13 +8,18 @@ Features, improvements and open problems for releases:
 
 * update / add docs
 
-* add Accept and Content-Type headers for client
+* fix Json example (auth token does not work)
 
-* test client 
+* go over Servant API and servant-openapi3 and collect cases 
+   which one to implement and update API  
+   for example maybe we don't need separate cases for BodyJsonInput or FormInput
+   they are both just RequestBody with different media-types
 
-* fix swagger on Json example 
-   * errors on missing components (use declareSchema and schemaName)
-   * [] - empty list schema on list output
+* add descriptions to inputs for swagger
+
+* refactor input type for RouteInfo
+
+* renamings according to Servant.API
 
 * check that all examples work
 
@@ -24,21 +29,29 @@ Features, improvements and open problems for releases:
 
 ### Normal
 
-* generate client for JsonExample
-
 * fill missing captures at the end
 
 * add swagger examples
-
-* add client examples 
-  * reuse JsonApi and hello-world
-  * client from scratch (without defined server) to test client-only apps
 
 * add static files for html example
 
 * update external handler and reader apps examples
 
 ## v2.2
+
+add client support
+
+* add Accept and Content-Type headers for client
+
+* test client 
+
+* generate client for JsonExample
+
+* add client examples 
+  * reuse JsonApi and hello-world
+  * client from scratch (without defined server) to test client-only apps
+
+## v2.3
 
 * RIO support (separate package mig-rio)
 
@@ -52,3 +65,17 @@ Features, improvements and open problems for releases:
 ## v4
 
 * generate Mig client and server from open-api yaml file. Useful for spec first approach
+
+### ideas
+
+* inport client from swagger
+
+   That might be super-useful for sketching API's we can download
+   swagger open-api file from API web-page trim it to needed methods
+   and provide type signatures for the client
+
+   it will produce run time error if it does not work
+
+   maybe we can generate clients as the next step from open api
+
+

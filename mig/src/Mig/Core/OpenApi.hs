@@ -2,16 +2,16 @@ module Mig.Core.OpenApi (
   toOpenApi,
 ) where
 
-import Control.Applicative (Alternative (..))
-import Control.Lens ((%~), (&), (.~), (?~))
-import Data.HashMap.Strict.InsOrd qualified as InsOrd
+import Control.Lens (at, (%~), (&), (.~), (?~))
+import Data.HashMap.Strict.InsOrd qualified as InsOrdHashMap
 import Data.HashSet.InsOrd qualified as Set
-import Data.Monoid (Endo (..))
 import Data.OpenApi hiding (Server (..))
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
+import Mig.Core.Api (Api)
 import Mig.Core.Api qualified as Api
+import Mig.Core.Info (RouteInfo)
 import Mig.Core.Info qualified as Info
 import Mig.Core.Route (Route (..))
 import Mig.Core.Server (Server (..), fillCaptures)
@@ -19,134 +19,124 @@ import Network.HTTP.Media.MediaType (MediaType)
 import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status (Status (..))
 
+addCapture :: Text -> OpenApi -> OpenApi
+addCapture captureName =
+  prependPath ("{" <> Text.unpack captureName <> "}")
+
 toOpenApi :: Server m -> OpenApi
-toOpenApi (Server x) = case fillCaptures x of
+toOpenApi (Server x) = fromApiInfo (fmap (.api) $ fillCaptures x)
+
+fromApiInfo :: Api RouteInfo -> OpenApi
+fromApiInfo = \case
   Api.Empty -> mempty
-  Api.Append a b -> toOpenApi (Server a) <> toOpenApi (Server b)
-  Api.WithPath (Api.Path path) a ->
-    case path of
-      [] -> toOpenApi (Server a)
-      Api.StaticPath p : rest -> prependPath (Text.unpack p) $ toOpenApi $ Server $ Api.WithPath (Api.Path rest) a
-      Api.CapturePath captureName : rest -> addCapture captureName $ toOpenApi $ Server $ Api.WithPath (Api.Path rest) a
-  Api.HandleRoute a -> addPathItem a.api mempty
-  where
-    addCapture :: Text -> OpenApi -> OpenApi
-    addCapture captureName =
-      prependPath capture
-        . addDefaultResponse404 tname
-      where
-        capture = "{" <> Text.unpack captureName <> "}"
-        tname = captureName
+  Api.Append a b -> fromApiInfo a <> fromApiInfo b
+  Api.WithPath (Api.Path path) a -> foldr withPath (fromApiInfo a) path
+  Api.HandleRoute route -> fromRoute route
 
-addPathItem :: Info.RouteInfo -> OpenApi -> OpenApi
-addPathItem routeInfo x =
-  x{_openApiPaths = InsOrd.singleton mempty (toPathItem routeInfo)}
-    <> (mempty & components .~ toComponents routeInfo)
+withPath :: Api.PathItem -> OpenApi -> OpenApi
+withPath = \case
+  Api.StaticPath pathName -> prependPath (Text.unpack pathName)
+  Api.CapturePath captureName -> addCapture captureName
 
-toComponents :: Info.RouteInfo -> Components
-toComponents routeInfo =
+fromRoute :: RouteInfo -> OpenApi
+fromRoute routeInfo =
   mconcat
-    [ outputComponents
-    , inputComponents
+    [ fromRouteOutput routeInfo
+    , foldMap (fromRouteInput routeInfo.inputType) routeInfo.inputs
     ]
-  where
-    outputComponents =
-      maybe mempty singleSchema routeInfo.output.schema
 
-    inputComponents =
-      foldMap fromInput routeInfo.inputs
-
-    fromInput :: Info.RouteInput -> Components
-    fromInput = \case
-      Info.BodyJsonInput sch -> singleSchema sch
-      Info.RawBodyInput -> mempty
-      Info.CaptureInput _captureName sch -> singleSchema (liftSchema sch)
-      Info.QueryInput _queryName sch -> singleSchema (liftSchema sch)
-      Info.OptionalInput _queryName sch -> singleSchema (liftSchema sch)
-      Info.HeaderInput _headerName sch -> singleSchema (liftSchema sch)
-      Info.FormBodyInput sch -> singleSchema sch
-
-    singleSchema :: NamedSchema -> Components
-    singleSchema sch =
-      ( case sch._namedSchemaName <|> sch._namedSchemaSchema._schemaTitle of
-          Just schName -> mempty & schemas .~ InsOrd.singleton schName sch._namedSchemaSchema
-          Nothing -> mempty
-      )
-        <> foldMap fromRef sch._namedSchemaSchema._schemaProperties
-      where
-        fromRef = \case
-          Inline a -> singleSchema (liftSchema a)
-          Ref _ -> mempty
-
-liftSchema :: Schema -> NamedSchema
-liftSchema sch = NamedSchema sch._schemaTitle sch
-
-toPathItem :: Info.RouteInfo -> PathItem
-toPathItem routeInfo =
-  case routeInfo.method of
-    Just method | method == methodGet -> mempty{_pathItemGet = Just op}
-    Just method | method == methodPost -> mempty{_pathItemPost = Just op}
-    Just method | method == methodPut -> mempty{_pathItemPut = Just op}
-    Just method | method == methodDelete -> mempty{_pathItemDelete = Just op}
-    Just method | method == methodOptions -> mempty{_pathItemOptions = Just op}
-    Just method | method == methodHead -> mempty{_pathItemHead = Just op}
-    Just method | method == methodPatch -> mempty{_pathItemPatch = Just op}
-    Just method | method == methodTrace -> mempty{_pathItemTrace = Just op}
-    _ -> mempty
-  where
-    op = toOperation routeInfo
-
-toOperation :: Info.RouteInfo -> Operation
-toOperation routeInfo =
+fromRouteOutput :: RouteInfo -> OpenApi
+fromRouteOutput routeInfo =
   mempty
-    & tags .~ Set.fromList routeInfo.tags
-    & summary .~ nonEmptyText routeInfo.summary
-    & description .~ nonEmptyText routeInfo.description
-    & appEndo (foldMap (Endo . addInput) routeInfo.inputs)
-    & addOutput routeInfo.output
+    & components . schemas .~ defs
+    & paths . at "/"
+      ?~ ( mempty
+            & method
+              ?~ ( mempty
+                    & at code
+                      ?~ Inline
+                        ( mempty
+                            & content
+                              .~ InsOrdHashMap.fromList
+                                [(t, mempty & schema .~ mref) | t <- responseContentTypes]
+                            & headers .~ responseHeaders
+                        )
+                    & tags .~ Set.fromList routeInfo.tags
+                    & summary .~ nonEmptyText routeInfo.summary
+                    & description .~ nonEmptyText routeInfo.description
+                 )
+         )
   where
-    addInput :: Info.RouteInput -> Operation -> Operation
-    addInput = \case
-      Info.QueryInput queryName querySchema ->
-        addParam $
-          mempty
-            & name .~ queryName
-            & required ?~ True
-            & in_ .~ ParamQuery
-            & schema ?~ Inline querySchema
-      Info.OptionalInput queryName querySchema ->
-        addParam $
-          mempty
-            & name .~ queryName
-            & required ?~ False
-            & in_ .~ ParamQuery
-            & schema ?~ Inline querySchema
-      Info.CaptureInput captureName captureSchema ->
-        addParam $
-          mempty
-            & name .~ captureName
-            & required ?~ True
-            & in_ .~ ParamPath
-            & schema ?~ Inline captureSchema
-      Info.BodyJsonInput bodySchema -> addBody (fromString "application/json") (Just bodySchema._namedSchemaSchema)
-      Info.RawBodyInput -> addBody (fromString "application/octet-stream") Nothing
-      Info.FormBodyInput _ -> addBody (fromString "application/x-www-form-urlencoded") Nothing
-      Info.HeaderInput headerName headerSchema ->
-        addParam $
-          mempty
-            & name .~ headerName
-            & required ?~ True
-            & in_ .~ ParamHeader
-            & schema ?~ Inline headerSchema
+    method = case routeInfo.method of
+      Just m | m == methodGet -> get
+      Just m | m == methodPost -> post
+      Just m | m == methodPut -> put
+      Just m | m == methodDelete -> delete
+      Just m | m == methodOptions -> options
+      Just m | m == methodHead -> head_
+      Just m | m == methodPatch -> patch
+      Just m | m == methodTrace -> trace
+      _ -> mempty
 
-    addOutput :: Info.RouteOutput -> Operation -> Operation
-    addOutput outp =
-      responses
-        .~ (mempty & responses .~ InsOrd.singleton outp.status.statusCode (Inline resp))
+    code = routeInfo.output.status.statusCode
+
+    responseContentTypes = [toMediaType routeInfo.output.media]
+
+    -- TODO: is it always empty?
+    responseHeaders = Inline <$> mempty
+
+    Info.OutputSchema defs mref = routeInfo.output.schema
+
+fromRouteInput :: Info.MediaType -> Info.RouteInput -> OpenApi
+fromRouteInput inputType = \case
+  Info.BodyJsonInput bodySchema -> onRequestBody inputType bodySchema
+  Info.RawBodyInput -> undefined
+  Info.CaptureInput captureName captureSchema -> onCapture captureName captureSchema
+  Info.QueryInput queryName querySchema -> onQuery True queryName querySchema
+  Info.OptionalInput queryName querySchema -> onQuery False queryName querySchema
+  Info.HeaderInput headerName headerSchema -> onHeader headerName headerSchema
+  Info.FormBodyInput formSchema -> onRequestBody inputType formSchema
+  where
+    onCapture = onParam addDefaultResponse404 ParamPath True
+
+    onQuery = onParam addDefaultResponse400 ParamQuery
+
+    onHeader = onParam addDefaultResponse400 ParamHeader True
+
+    onParam defResponse paramType isRequired paramName paramSchema =
+      mempty
+        & addParam param
+        & defResponse paramName
       where
-        resp =
+        param =
           mempty
-            & content .~ InsOrd.singleton (toMediaType outp.media) (mempty & schema .~ fmap (Inline . (._namedSchemaSchema)) outp.schema)
+            & name .~ paramName
+            -- & description .~ transDesc (reflectDescription (Proxy :: Proxy mods))
+            & required ?~ isRequired
+            & in_ .~ paramType
+            & schema ?~ (Inline paramSchema)
+    -- transDesc ""   = Nothing
+    -- transDesc desc = Just (Text.pack desc)
+
+    onRequestBody bodyInputType bodySchema =
+      mempty
+        & addRequestBody reqBody
+        & addDefaultResponse400 tname
+        & components . schemas %~ (<> defs)
+      where
+        tname = "body"
+        -- transDesc ""   = Nothing
+        -- transDesc desc = Just (Text.pack desc)
+        (defs, ref) = bodySchema
+        reqBody =
+          (mempty :: RequestBody)
+            -- & description .~ transDesc (reflectDescription (Proxy :: Proxy mods))
+            & content .~ InsOrdHashMap.fromList [(t, mempty & schema ?~ ref) | t <- [bodyContentType]]
+
+        bodyContentType = toMediaType bodyInputType
+
+-------------------------------------------------------------------------------------
+-- openapi utils
 
 toMediaType :: Info.MediaType -> MediaType
 toMediaType (Info.MediaType txt) = fromString $ Text.unpack txt
@@ -156,18 +146,13 @@ nonEmptyText txt
   | Text.null txt = Nothing
   | otherwise = Just txt
 
--- | Add parameter to every operation in the spec.
-addParam :: Param -> Operation -> Operation
-addParam param = parameters %~ (Inline param :)
+-- | Add RequestBody to every operations in the spec.
+addRequestBody :: RequestBody -> OpenApi -> OpenApi
+addRequestBody rb = allOperations . requestBody ?~ Inline rb
 
-addBody :: MediaType -> Maybe Schema -> Operation -> Operation
-addBody mediaType bodySchema =
-  requestBody .~ Just (Inline body)
-  where
-    body =
-      mempty
-        & content .~ InsOrd.singleton mediaType (mempty & schema .~ (fmap Inline bodySchema))
-        & required .~ Just True
+-- | Add parameter to every operation in the spec.
+addParam :: Param -> OpenApi -> OpenApi
+addParam param = allOperations . parameters %~ (Inline param :)
 
 addDefaultResponse404 :: ParamName -> OpenApi -> OpenApi
 addDefaultResponse404 pname = setResponseWith (\old _new -> alter404 old) 404 (return response404)
@@ -176,6 +161,14 @@ addDefaultResponse404 pname = setResponseWith (\old _new -> alter404 old) 404 (r
     description404 = sname <> " not found"
     alter404 = description %~ ((sname <> " or ") <>)
     response404 = mempty & description .~ description404
+
+addDefaultResponse400 :: ParamName -> OpenApi -> OpenApi
+addDefaultResponse400 pname = setResponseWith (\old _new -> alter400 old) 400 (return response400)
+  where
+    sname = markdownCode pname
+    description400 = "Invalid " <> sname
+    alter400 = description %~ (<> (" or " <> sname))
+    response400 = mempty & description .~ description400
 
 -- | Format given text as inline code in Markdown.
 markdownCode :: Text -> Text

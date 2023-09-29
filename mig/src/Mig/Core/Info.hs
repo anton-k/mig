@@ -3,6 +3,10 @@ module Mig.Core.Info (
   RouteInfo (..),
   RouteInput (..),
   RouteOutput (..),
+  OutputSchema (..),
+  emptyOutputSchema,
+  toOutputSchema,
+  toBodySchema,
   MediaType (..),
   addRouteInput,
   setMethod,
@@ -17,6 +21,7 @@ module Mig.Core.Info (
 
 import Data.ByteString.Lazy qualified as BL
 import Data.OpenApi
+import Data.OpenApi.Declare (runDeclare)
 import Data.Proxy
 import Data.String
 import Data.Text (Text)
@@ -37,21 +42,39 @@ data RouteInfo = RouteInfo
   deriving (Show, Eq)
 
 data RouteInput
-  = BodyJsonInput NamedSchema
+  = BodyJsonInput (Definitions Schema, Referenced Schema)
   | RawBodyInput
   | CaptureInput Text Schema
   | QueryInput Text Schema
   | OptionalInput Text Schema
   | HeaderInput Text Schema
-  | FormBodyInput NamedSchema
+  | FormBodyInput (Definitions Schema, Referenced Schema)
   deriving (Show, Eq)
+
+toBodySchema :: (ToSchema a) => Proxy a -> (Definitions Schema, Referenced Schema)
+toBodySchema proxy = runDeclare (declareSchemaRef proxy) mempty
 
 data RouteOutput = RouteOutput
   { status :: Status
   , media :: MediaType
-  , schema :: Maybe NamedSchema
+  , schema :: OutputSchema
   }
   deriving (Show, Eq)
+
+data OutputSchema = OutputSchema
+  { defs :: Definitions Schema
+  , ref :: Maybe (Referenced Schema)
+  }
+  deriving (Show, Eq)
+
+toOutputSchema :: (ToSchema a) => Proxy a -> OutputSchema
+toOutputSchema proxy =
+  OutputSchema defs (Just ref)
+  where
+    (defs, ref) = runDeclare (declareSchemaRef proxy) mempty
+
+emptyOutputSchema :: OutputSchema
+emptyOutputSchema = OutputSchema mempty Nothing
 
 newtype MediaType = MediaType Text
   deriving (Show, Eq, Ord, IsString)
@@ -75,6 +98,11 @@ instance ToMediaType Json where
 
 data RawMedia (sym :: Symbol)
 
+data Form
+
+instance ToMediaType Form where
+  toMediaType = MediaType ""
+
 instance (KnownSymbol sym) => ToMediaType (RawMedia sym) where
   toMediaType = MediaType (fromString (symbolVal (Proxy @sym)))
 
@@ -84,20 +112,20 @@ addRouteInput inp routeInfo =
 
 emptyRouteInfo :: RouteInfo
 emptyRouteInfo =
-  RouteInfo Nothing (MediaType "*/*") [] (RouteOutput ok200 (MediaType "*/*") Nothing) [] "" ""
+  RouteInfo Nothing (MediaType "*/*") [] (RouteOutput ok200 (MediaType "*/*") emptyOutputSchema) [] "" ""
 
 setMethod :: Method -> MediaType -> RouteInfo -> RouteInfo
 setMethod method mediaType routeInfo =
   routeInfo
     { method = Just method
-    , output = RouteOutput routeInfo.output.status mediaType Nothing
+    , output = RouteOutput routeInfo.output.status mediaType emptyOutputSchema
     }
 
-setJsonMethod :: Method -> MediaType -> NamedSchema -> RouteInfo -> RouteInfo
+setJsonMethod :: Method -> MediaType -> OutputSchema -> RouteInfo -> RouteInfo
 setJsonMethod method mediaType apiSchema routeInfo =
   routeInfo
     { method = Just method
-    , output = RouteOutput routeInfo.output.status mediaType (Just apiSchema)
+    , output = RouteOutput routeInfo.output.status mediaType apiSchema
     }
 
 setMediaInputType :: MediaType -> RouteInfo -> RouteInfo
