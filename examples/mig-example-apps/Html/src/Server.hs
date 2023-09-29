@@ -57,8 +57,8 @@ server site =
     -- default main page
     defaultPage =
       mconcat
-        [ "index.html" /. handleGreeting site
-        , toServer (handleGreeting site)
+        [ "/" /. handleGreeting site
+        , "index.html" /. handleGreeting site
         ]
 
     logRoutes :: Server IO -> Server IO

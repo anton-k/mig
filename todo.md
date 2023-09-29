@@ -35,10 +35,6 @@ add client support
   * reuse JsonApi and hello-world
   * client from scratch (without defined server) to test client-only apps
 
-## v2.3
-
-* RIO support (separate package mig-rio)
-
 ## v3
 
 * add support for (Either Error (Response a))
@@ -52,7 +48,7 @@ add client support
 
 ### ideas
 
-* inport client from swagger
+* import client from swagger
 
    That might be super-useful for sketching API's we can download
    swagger open-api file from API web-page trim it to needed methods
