@@ -7,7 +7,7 @@ test:
 	stack test
 
 run:
-	stack run hello-world-mig-example-app	
+	stack run html-mig-example-app
 	
 run-hello-wrold:
 	stack run hello-world-mig-example-app	

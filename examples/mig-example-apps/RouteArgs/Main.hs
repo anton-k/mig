@@ -11,11 +11,12 @@ module Main (
 
 import Data.Text.IO qualified as Text
 import Mig.Json.IO
+import Mig.Swagger
 
 main :: IO ()
 main = do
   putStrLn ("The route args server listens on port: " <> show port)
-  runServer port routeArgs
+  runServer port (withSwagger def routeArgs)
   where
     port = 8085
 
@@ -65,7 +66,7 @@ handleSucc (Header traceId) (Query n) = Send $ do
 handleSuccOpt :: Optional "value" Int -> Get (Either Error Int)
 handleSuccOpt (Optional n) = Send $ do
   logDebug "succ optional route call"
-  pure $ maybe (Left $ Error status400 "error") Right (succ <$> n)
+  pure $ maybe (Left $ Error status400 "error: no input") Right (succ <$> n)
 
 {-| Using custom headers in response and several input query parameters.
 Note that function can have any number of arguments.
@@ -88,9 +89,15 @@ handleMul (Capture a) (Capture b) = Send $ do
   logDebug "mul route call"
   pure (a * b)
 
+data AddInput = AddInput
+  { a :: Int
+  , b :: Int
+  }
+  deriving (Generic, ToJSON, FromJSON, ToSchema)
+
 -- | Using JSON as input and setting status for response
-handleAddJson :: Body (Int, Int) -> Post (Response Int)
-handleAddJson (Body (a, b)) = Send $ do
+handleAddJson :: Body AddInput -> Post (Response Int)
+handleAddJson (Body (AddInput a b)) = Send $ do
   logDebug "add route call"
   pure $ setStatus ok200 $ okResponse $ a + b
 

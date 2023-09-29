@@ -54,7 +54,8 @@ import Data.Text.Encoding qualified as Text
 import GHC.TypeLits
 import Mig.Core.Info
 import Mig.Core.ServerFun
-import Mig.Core.Types (Error, Resp, Response (..), ToByteStringResp (..), ToHtmlResp (..), ToJsonResp (..), ToTextResp (..), addRespHeaders, fromError, fromResponse)
+import Mig.Core.Types (Error, Resp, ToByteStringResp (..), ToHtmlResp (..), ToJsonResp (..), ToTextResp (..), addRespHeaders, fromError)
+import Mig.Core.Types.Response (Response (..), fromResponse)
 import Network.HTTP.Types.Method
 import Text.Blaze.Html (Html)
 import Web.FormUrlEncoded

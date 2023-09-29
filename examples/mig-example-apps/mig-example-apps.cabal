@@ -19,6 +19,7 @@ license-file:       LICENSE
 build-type:         Simple
 extra-source-files:
   CHANGELOG.md
+  Html/resources/milligram.min.css
   README.md
 
 source-repository head
@@ -53,7 +54,6 @@ executable counter-mig-example-app
     , aeson-pretty
     , base >=4.7 && <5
     , bytestring
-    , lens
     , mig
     , mig-client
     , mig-server
@@ -62,6 +62,7 @@ executable counter-mig-example-app
     , openapi3
     , pretty-show
     , random
+    , safe
     , text
     , time
 
@@ -96,7 +97,6 @@ executable hello-client-mig-example-app
     , base >=4.7 && <5
     , bytestring
     , http-client
-    , lens
     , mig
     , mig-client
     , mig-server
@@ -104,6 +104,7 @@ executable hello-client-mig-example-app
     , openapi3
     , pretty-show
     , random
+    , safe
     , text
     , time
 
@@ -137,7 +138,6 @@ executable hello-world-mig-example-app
     , aeson-pretty
     , base >=4.7 && <5
     , bytestring
-    , lens
     , mig
     , mig-client
     , mig-server
@@ -145,6 +145,7 @@ executable hello-world-mig-example-app
     , openapi3
     , pretty-show
     , random
+    , safe
     , text
     , time
 
@@ -188,7 +189,7 @@ executable html-mig-example-app
     , base >=4.7 && <5
     , blaze-html
     , bytestring
-    , lens
+    , file-embed-lzma
     , mig
     , mig-client
     , mig-server
@@ -196,6 +197,7 @@ executable html-mig-example-app
     , openapi3
     , pretty-show
     , random
+    , safe
     , text
     , time
 
@@ -237,7 +239,6 @@ executable json-api-mig-example-app
     , base >=4.7 && <5
     , bytestring
     , containers
-    , lens
     , mig
     , mig-client
     , mig-server
@@ -245,6 +246,7 @@ executable json-api-mig-example-app
     , openapi3
     , pretty-show
     , random
+    , safe
     , text
     , time
 
@@ -278,7 +280,6 @@ executable route-args-mig-example-app
     , aeson-pretty
     , base >=4.7 && <5
     , bytestring
-    , lens
     , mig
     , mig-client
     , mig-server
@@ -286,6 +287,7 @@ executable route-args-mig-example-app
     , openapi3
     , pretty-show
     , random
+    , safe
     , text
     , time
 

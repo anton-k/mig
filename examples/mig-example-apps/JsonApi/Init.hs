@@ -1,4 +1,4 @@
--- Implements interfaces
+-- Implements interfaces and state constants
 module Init (
   initEnv,
 ) where
@@ -10,6 +10,7 @@ import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text qualified as Text
 import Data.Text.IO qualified as Text
+import Data.Time
 import System.Random
 
 import Interface
@@ -22,7 +23,7 @@ atomicModify ref f = atomicModifyIORef' ref (\st -> (f st, ()))
 -- | allocate site interfaces
 initEnv :: IO Env
 initEnv = do
-  st <- initSt
+  st <- initSt =<< initStateConfig
   pure $
     Env
       { weather = initWeather st
@@ -70,3 +71,32 @@ initLogger _st =
     }
   where
     logBy level msg = Text.putStrLn $ mconcat ["[", level, "]: ", msg]
+
+initStateConfig :: IO InitSt
+initStateConfig = do
+  now <- (.utctDay) <$> getCurrentTime
+  InitSt users <$> initWeatherData now
+  where
+    users = Map.fromList [("john", "123"), ("mary", "456")]
+
+    initWeatherData now = do
+      fmap Map.fromList $ mapM (\loc -> (loc,) <$> getWeatherMap) locations
+      where
+        days = toDaySpan now (DayInterval 60)
+
+        getWeatherMap = do
+          baseTemperature <- randomRIO (0, 30)
+          fmap Map.fromList $ mapM (\d -> (d,) <$> genWeather baseTemperature) days
+
+-- | test locations
+locations :: [Location]
+locations = Location <$> ["moscow", "berlin", "sochi", "amsterdam", "oslo", "maykop"]
+
+-- | Generate random weather data
+genWeather :: Int -> IO WeatherData
+genWeather baseTemperature = do
+  temperature <- (baseTemperature +) <$> randomRIO (-5, 5)
+  windSpeed <- randomRIO (0, 20)
+  sunRainRatio <- randomRIO (0, 100)
+  pressure <- randomRIO (720, 740)
+  pure WeatherData{..}

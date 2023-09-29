@@ -10,11 +10,6 @@ module Mig.Core.Types (
   ToText (..),
   Error (..),
   fromError,
-  Response (..),
-  fromResponse,
-  okResponse,
-  addHeaders,
-  setStatus,
 
   -- * classes
   ToTextResp (..),
@@ -42,13 +37,11 @@ import Data.Aeson qualified as Json
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BL
 import Data.Map.Strict (Map)
-import Data.OpenApi (ToSchema (..))
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Data.Text.Lazy qualified as TL
-import Data.Typeable
 import Network.HTTP.Types.Header (HeaderName, ResponseHeaders)
 import Network.HTTP.Types.Method (Method)
 import Network.HTTP.Types.Status (Status, ok200, status500)
@@ -135,30 +128,6 @@ data Req = Req
 type HeaderMap = Map HeaderName ByteString
 
 type CaptureMap = Map Text Text
-
--- Generic response
-
-data Response a = Response
-  { status :: Status
-  , headers :: ResponseHeaders
-  , body :: a
-  }
-  deriving (Show, Functor)
-
-okResponse :: a -> Response a
-okResponse = Response ok200 []
-
-addHeaders :: ResponseHeaders -> Response a -> Response a
-addHeaders hs x = x{headers = x.headers <> hs}
-
-setStatus :: Status -> Response a -> Response a
-setStatus st x = x{status = st}
-
-instance (ToSchema a) => ToSchema (Response a) where
-  declareNamedSchema _ = declareNamedSchema (Proxy @a)
-
-fromResponse :: (a -> Resp) -> Response a -> Resp
-fromResponse f a = setRespStatus a.status $ addRespHeaders a.headers $ f a.body
 
 -- Errors
 

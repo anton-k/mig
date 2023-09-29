@@ -5,6 +5,7 @@ module Server (
 
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad
+import Data.Text qualified as Text
 import Data.Time
 import Mig.Json.IO
 import Mig.Swagger
@@ -14,7 +15,7 @@ import Types
 
 server :: Env -> Server IO
 server env =
-  withSwagger def $
+  withSwagger config $
     "api/v1/weather"
       /. mconcat
         [ "get"
@@ -24,6 +25,25 @@ server env =
               ]
         , "update" /. handleUpdateWeather env
         ]
+  where
+    config =
+      (def :: SwaggerConfig IO)
+        { mapSchema = pure . addDefaultInfo info
+        }
+
+    info =
+      def
+        { title = "Weather forecast"
+        , description =
+            Text.unlines
+              [ "JSON API example for mig library which shows how to forecast weather to authorized users"
+              , ""
+              , "Registered users to get token: \"john\" with password \"123\" or \"mary\" with \"456\""
+              , ""
+              , "locations: \"moscow\", \"berlin\", \"sochi\", \"amsterdam\", \"oslo\", \"maykop\""
+              ]
+        , version = "0.1.0"
+        }
 
 handleAuthToken :: Env -> Body User -> Post (Either Error AuthToken)
 handleAuthToken env (Body user) = Send $ do
