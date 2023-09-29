@@ -11,7 +11,7 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import Mig.Core.Api (Api)
 import Mig.Core.Api qualified as Api
-import Mig.Core.Info (RouteInfo)
+import Mig.Core.Info (IsRequired (..), RouteInfo)
 import Mig.Core.Info qualified as Info
 import Mig.Core.Route (Route (..))
 import Mig.Core.Server (Server (..), fillCaptures)
@@ -42,7 +42,7 @@ fromRoute :: RouteInfo -> OpenApi
 fromRoute routeInfo =
   mconcat
     [ fromRouteOutput routeInfo
-    , foldMap (fromRouteInput routeInfo.inputType) routeInfo.inputs
+    , foldMap fromRouteInput routeInfo.inputs
     ]
 
 fromRouteOutput :: RouteInfo -> OpenApi
@@ -85,25 +85,23 @@ fromRouteOutput routeInfo =
     -- TODO: is it always empty?
     responseHeaders = Inline <$> mempty
 
-    Info.OutputSchema defs mref = routeInfo.output.schema
+    Info.SchemaDefs defs mref = routeInfo.output.schema
 
-fromRouteInput :: Info.MediaType -> Info.RouteInput -> OpenApi
-fromRouteInput inputType = \case
-  Info.BodyJsonInput bodySchema -> onRequestBody inputType bodySchema
-  Info.RawBodyInput -> undefined
+fromRouteInput :: Info.RouteInput -> OpenApi
+fromRouteInput = \case
+  Info.ReqBodyInput inputType bodySchema -> onRequestBody inputType bodySchema
+  Info.RawBodyInput -> mempty
   Info.CaptureInput captureName captureSchema -> onCapture captureName captureSchema
-  Info.QueryInput queryName querySchema -> onQuery True queryName querySchema
-  Info.OptionalInput queryName querySchema -> onQuery False queryName querySchema
-  Info.HeaderInput headerName headerSchema -> onHeader headerName headerSchema
-  Info.FormBodyInput formSchema -> onRequestBody inputType formSchema
+  Info.QueryInput isRequired queryName querySchema -> onQuery isRequired queryName querySchema
+  Info.HeaderInput isRequired headerName headerSchema -> onHeader isRequired headerName headerSchema
   where
-    onCapture = onParam addDefaultResponse404 ParamPath True
+    onCapture = onParam addDefaultResponse404 ParamPath (IsRequired True)
 
     onQuery = onParam addDefaultResponse400 ParamQuery
 
-    onHeader = onParam addDefaultResponse400 ParamHeader True
+    onHeader = onParam addDefaultResponse400 ParamHeader
 
-    onParam defResponse paramType isRequired paramName paramSchema =
+    onParam defResponse paramType (IsRequired isRequired) paramName paramSchema =
       mempty
         & addParam param
         & defResponse paramName
@@ -118,7 +116,7 @@ fromRouteInput inputType = \case
     -- transDesc ""   = Nothing
     -- transDesc desc = Just (Text.pack desc)
 
-    onRequestBody bodyInputType bodySchema =
+    onRequestBody bodyInputType (Info.SchemaDefs defs ref) =
       mempty
         & addRequestBody reqBody
         & addDefaultResponse400 tname
@@ -127,11 +125,10 @@ fromRouteInput inputType = \case
         tname = "body"
         -- transDesc ""   = Nothing
         -- transDesc desc = Just (Text.pack desc)
-        (defs, ref) = bodySchema
         reqBody =
           (mempty :: RequestBody)
             -- & description .~ transDesc (reflectDescription (Proxy :: Proxy mods))
-            & content .~ InsOrdHashMap.fromList [(t, mempty & schema ?~ ref) | t <- [bodyContentType]]
+            & content .~ InsOrdHashMap.fromList [(t, mempty & schema .~ ref) | t <- [bodyContentType]]
 
         bodyContentType = toMediaType bodyInputType
 

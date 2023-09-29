@@ -14,6 +14,7 @@ module Mig.Core.Route (
   Optional (..),
   Capture (..),
   Header (..),
+  OptionalHeader (..),
   FormBody (..),
   PathInfo (..),
 
@@ -107,7 +108,7 @@ instance (MonadIO m) => ToRoute (ServerFun m) where
 newtype Body a = Body a
 
 instance (ToSchema a, ToRouteInfo b) => ToRouteInfo (Body a -> b) where
-  toRouteInfo = setMediaInputType (toMediaType @Json) . addRouteInput (BodyJsonInput (toBodySchema (Proxy @a))) . toRouteInfo @b
+  toRouteInfo = addRouteInput (ReqBodyInput (toMediaType @Json) (toSchemaDefs @a)) . toRouteInfo @b
 
 instance (ToSchema a, FromJSON a, ToRoute b) => ToRoute (Body a -> b) where
   type RouteMonad (Body a -> b) = RouteMonad b
@@ -131,7 +132,7 @@ instance (ToRoute b) => ToRoute (RawBody -> b) where
 newtype Query (sym :: Symbol) a = Query a
 
 instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Query sym a -> b) where
-  toRouteInfo = addRouteInput (QueryInput name (toParamSchema (Proxy @a))) . toRouteInfo @b
+  toRouteInfo = addRouteInput (QueryInput (IsRequired True) name (toParamSchema (Proxy @a))) . toRouteInfo @b
     where
       name = fromString (symbolVal (Proxy @sym))
 
@@ -147,7 +148,7 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToR
 newtype Optional (sym :: Symbol) a = Optional (Maybe a)
 
 instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Optional sym a -> b) where
-  toRouteInfo = addRouteInput (QueryInput name (toParamSchema (Proxy @a))) . toRouteInfo @b
+  toRouteInfo = addRouteInput (QueryInput (IsRequired False) name (toParamSchema (Proxy @a))) . toRouteInfo @b
     where
       name = fromString (symbolVal (Proxy @sym))
 
@@ -176,10 +177,10 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToR
 
   emptyRoute = const emptyRoute
 
-newtype Header (sym :: Symbol) a = Header (Maybe a)
+newtype Header (sym :: Symbol) a = Header a
 
 instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Header sym a -> b) where
-  toRouteInfo = addRouteInput (HeaderInput name (toParamSchema (Proxy @a))) . toRouteInfo @b
+  toRouteInfo = addRouteInput (HeaderInput (IsRequired True) name (toParamSchema (Proxy @a))) . toRouteInfo @b
     where
       name = fromString (symbolVal (Proxy @sym))
 
@@ -192,10 +193,26 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToR
 
   emptyRoute = const emptyRoute
 
+newtype OptionalHeader (sym :: Symbol) a = OptionalHeader (Maybe a)
+
+instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (OptionalHeader sym a -> b) where
+  toRouteInfo = addRouteInput (HeaderInput (IsRequired False) name (toParamSchema (Proxy @a))) . toRouteInfo @b
+    where
+      name = fromString (symbolVal (Proxy @sym))
+
+instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (OptionalHeader sym a -> b) where
+  type RouteMonad (OptionalHeader sym a -> b) = RouteMonad b
+
+  toRouteFun f = withOptionalHeader name (toRouteFun . f . OptionalHeader)
+    where
+      name = fromString (symbolVal (Proxy @sym))
+
+  emptyRoute = const emptyRoute
+
 newtype FormBody a = FormBody a
 
 instance (ToSchema a, ToRouteInfo b) => ToRouteInfo (FormBody a -> b) where
-  toRouteInfo = setMediaInputType (MediaType "application/x-www-form-urlencoded") . addRouteInput (FormBodyInput (toBodySchema (Proxy @a))) . toRouteInfo @b
+  toRouteInfo = addRouteInput (ReqBodyInput (MediaType "application/x-www-form-urlencoded") (toSchemaDefs @a)) . toRouteInfo @b
 
 instance (ToSchema a, FromForm a, ToRoute b) => ToRoute (FormBody a -> b) where
   type RouteMonad (FormBody a -> b) = RouteMonad b
@@ -275,13 +292,13 @@ instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToSchema a) => ToRouteInfo (Send method Json m a) where
-  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toOutputSchema (Proxy @a))
+  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toSchemaDefs @a)
 
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToSchema a) => ToRouteInfo (Send method Json m (Response a)) where
-  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toOutputSchema (Proxy @a))
+  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toSchemaDefs @a)
 
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToSchema a) => ToRouteInfo (Send method Json m (Either Error a)) where
-  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toOutputSchema (Proxy @a))
+  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toSchemaDefs @a)
 
 instance (IsMethod method) => ToRouteInfo (Send method Json m Json.Value) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @Json)

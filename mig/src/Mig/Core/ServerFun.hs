@@ -10,6 +10,7 @@ module Mig.Core.ServerFun (
   withOptional,
   withCapture,
   withHeader,
+  withOptionalHeader,
   withFormBody,
   withPathInfo,
   handleError,
@@ -19,9 +20,11 @@ import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Data.Aeson (FromJSON)
 import Data.Aeson qualified as Json
+import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BL
 import Data.CaseInsensitive qualified as CI
 import Data.Either (fromRight)
+import Data.Either.Extra (eitherToMaybe)
 import Data.Map.Strict qualified as Map
 import Data.Text (Text)
 import Data.Text qualified as Text
@@ -108,17 +111,22 @@ withCapture name act = withQueryBy getVal processResp
 
     errorMessage = "Failed to parse capture: " <> name
 
-withHeader :: (Monad m, FromHttpApiData a) => HeaderName -> (Maybe a -> ServerFun m) -> ServerFun m
-withHeader name act = ServerFun $ \req ->
-  case Map.lookup name req.headers of
-    Just bs ->
-      case parseHeader bs of
-        Right val -> unServerFun (act (Just val)) req
-        Left err -> pure $ Just $ badRequest (errMessage err)
-    Nothing -> unServerFun (act Nothing) req
+withHeader :: (Monad m, FromHttpApiData a) => HeaderName -> (a -> ServerFun m) -> ServerFun m
+withHeader name act = withQueryBy getVal processResp
   where
-    errMessage :: Text -> Text
-    errMessage err = "Failed to parse header " <> (fromRight "" $ Text.decodeUtf8' $ CI.original name) <> ": " <> err
+    getVal req = eitherToMaybe . parseHeader =<< Map.lookup name req.headers
+
+    processResp = handleMaybeInput errorMessage act
+
+    errorMessage = "Failed to parse header: " <> headerNameToText name
+
+headerNameToText :: CI.CI ByteString -> Text
+headerNameToText name = fromRight "" $ Text.decodeUtf8' $ CI.original name
+
+withOptionalHeader :: (FromHttpApiData a) => HeaderName -> (Maybe a -> ServerFun m) -> ServerFun m
+withOptionalHeader name act = withQueryBy getVal act
+  where
+    getVal req = eitherToMaybe . parseHeader =<< Map.lookup name req.headers
 
 withFormBody :: (MonadIO m, FromForm a) => (a -> ServerFun m) -> ServerFun m
 withFormBody act = withRawBody $ \body -> ServerFun $ \req -> do
