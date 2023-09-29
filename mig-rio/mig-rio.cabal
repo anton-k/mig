@@ -1,0 +1,47 @@
+cabal-version:      1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:               mig-rio
+version:            0.1.0.0
+synopsis:           To use RIO with mig library
+description:
+  Please see the README on GitHub at <https://github.com/githubuser/mig-rio#readme>
+
+category:           Web
+homepage:           https://github.com/githubuser/mig-rio#readme
+bug-reports:        https://github.com/githubuser/mig-rio/issues
+author:             Author name here
+maintainer:         example@example.com
+copyright:          2023 Author name here
+license:            BSD3
+build-type:         Simple
+extra-source-files:
+  CHANGELOG.md
+  README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/mig-rio
+
+library
+  exposed-modules:
+    Lib
+    Mig.RIO
+
+  other-modules:      Paths_mig_rio
+  hs-source-dirs:     src
+  default-extensions: DerivingStrategies
+  ghc-options:
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wmissing-export-lists
+    -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+
+  build-depends:
+      base >=4.7 && <5
+    , mig-server
+    , rio
+
+  default-language:   GHC2021
