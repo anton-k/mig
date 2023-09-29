@@ -22,7 +22,7 @@ main :: IO ()
 main = do
   putStrLn ("The hello world server listens on port: " <> show port)
   pPrint (fmap (.api) $ toNormalApi $ fillCaptures server.unServer)
-  printSwagger server
+  printOpenApi server
   runServer port (withSwagger swaggerConfig server)
   where
     port = 8085

@@ -1,12 +1,13 @@
 module Mig.Swagger (
   SwaggerConfig (..),
   withSwagger,
-  swagger,
+
+  -- * utils
   Default (..),
   DefaultInfo (..),
   addDefaultInfo,
-  writeSwagger,
-  printSwagger,
+  writeOpenApi,
+  printOpenApi,
 ) where
 
 import Control.Lens ((&), (.~), (?~))
@@ -27,7 +28,7 @@ import Text.Blaze (ToMarkup (..))
 import Text.Blaze.Html (Html)
 import Web.HttpApiData
 
--- | Appends swagger UI to server with path swagger-ui
+-- | Appends swagger UI to server
 withSwagger :: (MonadIO m) => SwaggerConfig m -> Server m -> Server m
 withSwagger config server =
   mconcat
@@ -38,13 +39,14 @@ withSwagger config server =
     openApi = toOpenApi server
 
 -- | Prints openapi schema file to stdout
-printSwagger :: Server m -> IO ()
-printSwagger server = BL.putStrLn $ encodePretty $ toOpenApi server
+printOpenApi :: Server m -> IO ()
+printOpenApi server = BL.putStrLn $ encodePretty $ toOpenApi server
 
 -- | Writes openapi schema to file
-writeSwagger :: FilePath -> Server m -> IO ()
-writeSwagger file server = BL.writeFile file $ encodePretty $ toOpenApi server
+writeOpenApi :: FilePath -> Server m -> IO ()
+writeOpenApi file server = BL.writeFile file $ encodePretty $ toOpenApi server
 
+-- | Default info that is often added to OpenApi schema
 data DefaultInfo = DefaultInfo
   { title :: Text
   , description :: Text
@@ -63,10 +65,16 @@ addDefaultInfo appInfo =
 instance Default DefaultInfo where
   def = DefaultInfo "" "" ""
 
+-- | Swagger config
 data SwaggerConfig m = SwaggerConfig
   { staticDir :: Path
+  -- ^ path to server swagger (default is "/swagger-ui")
   , swaggerFile :: Path
+  -- ^ swagger file name (default is "swaggger.json")
   , mapSchema :: OpenApi -> m OpenApi
+  -- ^ apply transformation to OpenApi schema on serving OpenApi schema.
+  -- it is useful to add additional info or set current date in the examples
+  -- or apply any real-time transformation.
   }
 
 instance (Applicative m) => Default (SwaggerConfig m) where
@@ -77,6 +85,7 @@ instance (Applicative m) => Default (SwaggerConfig m) where
       , mapSchema = pure
       }
 
+-- | Swagger server. It serves static files and injects OpenApi schema
 swagger :: forall m. (MonadIO m) => SwaggerConfig m -> m OpenApi -> Server m
 swagger config getOpenApi =
   mconcat
@@ -84,7 +93,7 @@ swagger config getOpenApi =
     , config.staticDir
         /. mconcat
           [ "index.html" /. getIndex
-          , staticFiles swaggerFiles ""
+          , staticFiles swaggerFiles
           , toServer getIndex
           ]
     ]

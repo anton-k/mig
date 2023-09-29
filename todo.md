@@ -14,19 +14,15 @@ Features, improvements and open problems for releases:
    they are both just RequestBody with different media-types
 
 * check that all examples work
-    * fix Json example (auth token does not work in swagger)
-
-* html example:
-  * write post produces nothing (bug)
-  * use UUID as post ids
+  * html example:
+    * write post produces nothing (bug)
+    * use UUID as post ids
 
 ### Normal
 
 * fill missing captures at the end
 
 * add swagger examples
-
-* add static files for html example
 
 * update external handler and reader apps examples
 

@@ -9,6 +9,7 @@ copyright:           "2023 Author name here"
 extra-source-files:
 - README.md
 - CHANGELOG.md
+- Html/resources/milligram.min.css
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -62,7 +63,7 @@ dependencies:
   - time
   - pretty-show
   - openapi3
-  - lens
+  - safe
 
 executables:
   hello-world-mig-example-app:
@@ -120,4 +121,6 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - blaze-html
+    - file-embed-lzma
+
 

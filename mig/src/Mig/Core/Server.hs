@@ -25,17 +25,19 @@ import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding as Text
+import Network.HTTP.Types.Header (ResponseHeaders)
+import Safe (atMay)
+import System.FilePath (takeExtension)
+import Text.Read (readMaybe)
+
 import Mig.Core.Api (Api, fromNormalApi, toNormalApi)
 import Mig.Core.Api qualified as Api
 import Mig.Core.Info (MediaType (..), RouteInfo (..), RouteInput (..), describeInfoInputs)
 import Mig.Core.Info qualified as Describe (Describe (..))
 import Mig.Core.Route
 import Mig.Core.ServerFun (MapServerFun (..))
-import Mig.Core.Types (Req (..), Response (..), addHeaders, okResponse)
-import Network.HTTP.Types.Header (ResponseHeaders)
-import Safe (atMay)
-import System.FilePath (takeExtension, (</>))
-import Text.Read (readMaybe)
+import Mig.Core.Types (Req (..))
+import Mig.Core.Types.Response (Response (..), addHeaders, okResponse)
 
 -- import Debug.Trace
 
@@ -195,12 +197,12 @@ describeInputs :: [(Text, Text)] -> Server m -> Server m
 describeInputs descs = mapRouteInfo (describeInfoInputs descs)
 
 -- | Serves static files
-staticFiles :: forall m. (MonadIO m) => [(FilePath, ByteString)] -> FilePath -> Server m
-staticFiles files root =
+staticFiles :: forall m. (MonadIO m) => [(FilePath, ByteString)] -> Server m
+staticFiles files =
   Server $ foldMap (uncurry serveFile) files
   where
     serveFile path content =
-      (fromString $ withRoot path) `Api.WithPath` (Api.HandleRoute (toRoute (getFile path content)))
+      (fromString path) `Api.WithPath` (Api.HandleRoute (toRoute (getFile path content)))
 
     getFile :: FilePath -> ByteString -> Get BL.ByteString m (Response BL.ByteString)
     getFile path fileContent = Send $ pure $ addHeaders contentHeaders $ okResponse $ BL.fromStrict fileContent
@@ -212,10 +214,6 @@ staticFiles files root =
             Nothing -> []
 
         mimeType = Map.lookup (takeExtension path) extToMimeMap
-
-    withRoot path
-      | null root = path
-      | otherwise = root </> path
 
 extToMimeMap :: Map String ByteString
 extToMimeMap =

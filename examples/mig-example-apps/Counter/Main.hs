@@ -18,11 +18,12 @@ module Main (
 import Control.Monad.Reader
 import Data.IORef
 import Mig.Json
+import Mig.Swagger
 
 main :: IO ()
 main = do
   putStrLn ("The counter server listens on port: " <> show port)
-  runServer port =<< counter
+  runServer port . withSwagger def =<< counter
   where
     port = 8085
 

@@ -17,7 +17,8 @@ import Mig.Core.Api qualified as Api
 import Mig.Core.Info (Json, RawMedia)
 import Mig.Core.Route
 import Mig.Core.Server (Server (..))
-import Mig.Core.Types (Error, Response, ToByteStringResp, ToHtmlResp, ToJsonResp, ToTextResp)
+import Mig.Core.Types (Error, ToByteStringResp, ToHtmlResp, ToJsonResp, ToTextResp)
+import Mig.Core.Types.Response (Response)
 import Text.Blaze.Html (Html)
 import Web.FormUrlEncoded
 import Web.HttpApiData

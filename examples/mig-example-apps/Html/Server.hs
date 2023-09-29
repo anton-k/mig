@@ -1,11 +1,16 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 -- server
 module Server (
   server,
 ) where
 
 import Control.Monad
+import Data.ByteString (ByteString)
 import Data.Text qualified as Text
 import Data.Time
+import FileEmbedLzma
+import Safe (headMay)
 
 import Mig.Core.Server.Class ()
 import Mig.Html.IO
@@ -26,6 +31,7 @@ server site =
             , writeServer
             ]
       , defaultPage
+      , "static" /. staticFiles resourceFiles
       ]
   where
     -- server to read info.
@@ -61,7 +67,7 @@ server site =
         go :: ServerFun IO -> ServerFun IO
         go f = toRouteFun $ \(PathInfo path) ->
           prependServerAction f $ do
-            when (path /= ["favicon.ico"]) $ do
+            when (path /= ["favicon.ico"] && headMay path /= Just "static") $ do
               logRoute site (Text.intercalate "/" path)
 
 -------------------------------------------------------------------------------------
@@ -110,6 +116,12 @@ logRoute site route = do
 randomBlogPost :: Site -> IO BlogPost
 randomBlogPost site =
   oneOf =<< site.listBlogPosts
+
+-------------------------------------------------------------------------------------
+-- utils
+
+resourceFiles :: [(FilePath, ByteString)]
+resourceFiles = $(embedRecursiveDir "Html/resources")
 
 -------------------------------------------------------------------------------------
 -- utils

@@ -20,13 +20,15 @@ instance (ToMarkup a) => ToMarkup (Page a) where
 siteTemplate :: Html -> Html
 siteTemplate content = H.html $ do
   H.head $ do
-    H.style H.! HA.type_ "text/css" $ H.text "a { text-decoration: none } "
-  H.body $ H.div H.! HA.style "margin-left:4%; margin-top: 3%; font-size: 120%" $ do
-    H.div menu
-    H.div content
+    H.link H.! HA.rel "stylesheet" H.! HA.href "https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic"
+    H.link H.! HA.rel "stylesheet" H.! HA.href "/static/milligram.min.css"
+  H.body $ H.div H.! HA.style "margin-left:4%; margin-top: 3%; font-size: 110%" $ do
+    H.div H.! HA.class_ "container" $ do
+      H.div H.! HA.class_ "row" $ do
+        H.div H.! HA.class_ "column column-20" $ menu
+        H.div H.! HA.class_ "column column-75 column-offset-5" $ content
   where
     menu = do
-      H.div (H.h2 "Menu:")
       H.div $
         H.ul H.! HA.style "list-style: none" $ do
           item "/index.html" "main page"
@@ -89,7 +91,6 @@ instance ToMarkup ListPosts where
       H.ul $ mapM_ (\p -> H.li $ toPostSummary p) $ List.sortOn (.createdAt) posts
     where
       toPostSummary post =
-        H.p $
-          H.a H.! HA.href (H.toValue $ "/blog/read/post?id=" <> post.id.unBlogPostId) $
-            H.text $
-              post.title
+        H.a H.! HA.href (H.toValue $ "/blog/read/post?id=" <> post.id.unBlogPostId) $
+          H.text $
+            post.title
