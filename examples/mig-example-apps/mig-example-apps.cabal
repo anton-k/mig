@@ -19,6 +19,7 @@ license-file:       LICENSE
 build-type:         Simple
 extra-source-files:
   CHANGELOG.md
+  Html/resources/haskell-logo.png
   Html/resources/milligram.min.css
   README.md
 
@@ -163,7 +164,7 @@ executable html-mig-example-app
     Types
     View
 
-  hs-source-dirs:     Html
+  hs-source-dirs:     Html/src
   default-extensions:
     DataKinds
     DeriveAnyClass
@@ -190,6 +191,7 @@ executable html-mig-example-app
     , blaze-html
     , bytestring
     , file-embed-lzma
+    , http-api-data
     , mig
     , mig-client
     , mig-server
@@ -200,6 +202,7 @@ executable html-mig-example-app
     , safe
     , text
     , time
+    , uuid
 
   default-language:   GHC2021
 

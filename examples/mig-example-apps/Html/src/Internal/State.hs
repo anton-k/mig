@@ -42,4 +42,4 @@ poemToBlogPost poem = do
 
 -- | allocates fresh id for blog post
 randomBlogPostId :: IO BlogPostId
-randomBlogPostId = BlogPostId . Text.pack . show @Int <$> randomIO
+randomBlogPostId = BlogPostId <$> randomIO

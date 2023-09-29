@@ -5,10 +5,11 @@ module View () where
 
 import Data.List qualified as List
 import Data.Text (Text)
-import Text.Blaze.Html (Html, ToMarkup)
+import Text.Blaze.Html (Html, ToMarkup (..))
 import Text.Blaze.Html5 qualified as H
 import Text.Blaze.Html5.Attributes qualified as HA
 import Types
+import Web.HttpApiData (toUrlPiece)
 
 -- writes the template for main page
 instance (ToMarkup a) => ToMarkup (Page a) where
@@ -29,7 +30,8 @@ siteTemplate content = H.html $ do
         H.div H.! HA.class_ "column column-75 column-offset-5" $ content
   where
     menu = do
-      H.div $
+      H.div $ do
+        H.img H.! HA.src "/static/haskell-logo.png" H.! HA.alt "blog logo" H.! HA.width "100pt" H.! HA.style "margin-bottom: 15pt"
         H.ul H.! HA.style "list-style: none" $ do
           item "/index.html" "main page"
           item "/blog/read/post" "next post"
@@ -42,10 +44,11 @@ siteTemplate content = H.html $ do
 
 -- Rendering of the greeting page
 instance ToMarkup Greeting where
-  toMarkup Greeting = do
+  toMarkup (Greeting posts) = do
     H.div $ do
       H.h2 "Welcome to blog site example"
       H.p "You can get random poem or random quote from menu bar"
+      toMarkup (ListPosts posts)
 
 -- Rendering of the form to submit the post
 instance ToMarkup WritePost where
@@ -91,6 +94,6 @@ instance ToMarkup ListPosts where
       H.ul $ mapM_ (\p -> H.li $ toPostSummary p) $ List.sortOn (.createdAt) posts
     where
       toPostSummary post =
-        H.a H.! HA.href (H.toValue $ "/blog/read/post?id=" <> post.id.unBlogPostId) $
+        H.a H.! HA.href (H.toValue $ "/blog/read/post?id=" <> toUrlPiece post.id) $
           H.text $
             post.title

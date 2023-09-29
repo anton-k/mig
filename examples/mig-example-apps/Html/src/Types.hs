@@ -13,8 +13,9 @@ module Types (
 import Data.Aeson (FromJSON)
 import Data.Text (Text)
 import Data.Time
+import Data.UUID
 import GHC.Generics
-import Mig (FromForm, FromHttpApiData, ToParamSchema, ToSchema)
+import Mig (FromForm, FromHttpApiData, ToHttpApiData, ToParamSchema, ToSchema)
 
 -- | Web-page for our site
 data Page a
@@ -24,7 +25,7 @@ data Page a
     PostNotFound BlogPostId
 
 -- | Greeting page
-data Greeting = Greeting
+data Greeting = Greeting [BlogPost]
 
 -- | Form to submit new post
 data WritePost = WritePost
@@ -33,8 +34,8 @@ data WritePost = WritePost
 newtype ListPosts = ListPosts [BlogPost]
 
 -- | Blog post id
-newtype BlogPostId = BlogPostId {unBlogPostId :: Text}
-  deriving newtype (FromHttpApiData, Eq, Show, FromJSON, ToParamSchema)
+newtype BlogPostId = BlogPostId {unBlogPostId :: UUID}
+  deriving newtype (FromHttpApiData, ToHttpApiData, Eq, Show, FromJSON, ToParamSchema)
 
 -- | Blog post
 data BlogPost = BlogPost

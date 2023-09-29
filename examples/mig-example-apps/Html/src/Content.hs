@@ -76,7 +76,7 @@ dream =
 pie :: Text
 pie =
   Text.unlines
-    [ "Cottleston Cottleston Cottleston Pie,"
+    [ "Cottleston Cottleston Cottleston Pie"
     , "A fly can't bird, but a bird can fly."
     , "Ask me a riddle and I reply"
     , "Cottleston Cottleston Cottleston Pie."
