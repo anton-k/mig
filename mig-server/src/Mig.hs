@@ -146,14 +146,16 @@ import Mig.Core.Types (
   Error (..),
   Req,
   Resp,
-  Response (..),
   ToByteStringResp (..),
   ToHtmlResp (..),
   ToJsonResp (..),
   ToText (..),
   ToTextResp (..),
-  addHeaders,
   badRequest,
+ )
+import Mig.Core.Types.Response (
+  Response (..),
+  addHeaders,
   okResponse,
   setStatus,
  )

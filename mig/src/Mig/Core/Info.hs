@@ -14,6 +14,7 @@ module Mig.Core.Info (
   toSchemaDefs,
   MediaType (..),
   addRouteInput,
+  setOutputMedia,
   setMethod,
   setJsonMethod,
   emptyRouteInfo,
@@ -168,6 +169,12 @@ setMethod method mediaType routeInfo =
     { method = Just method
     , output = RouteOutput routeInfo.output.status mediaType emptySchemaDefs
     }
+
+setOutputMedia :: MediaType -> RouteInfo -> RouteInfo
+setOutputMedia mediaType routeInfo =
+  routeInfo{output = setMedia routeInfo.output}
+  where
+    setMedia outp = outp{media = mediaType}
 
 setJsonMethod :: Method -> MediaType -> OutputSchema -> RouteInfo -> RouteInfo
 setJsonMethod method mediaType apiSchema routeInfo =

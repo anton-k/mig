@@ -22,8 +22,6 @@ Features, improvements and open problems for releases:
 
 * fill missing captures at the end
 
-* add swagger examples
-
 * update external handler and reader apps examples
 
 ## v2.2
