@@ -46,7 +46,6 @@ import Data.Aeson qualified as Json
 import Data.ByteString.Lazy qualified as BL
 import Data.Kind
 import Data.OpenApi (ToParamSchema (..), ToSchema (..))
-import Data.OpenApi.Internal.Schema (toNamedSchema)
 import Data.Proxy
 import Data.String
 import Data.Text (Text)
@@ -108,7 +107,7 @@ instance (MonadIO m) => ToRoute (ServerFun m) where
 newtype Body a = Body a
 
 instance (ToSchema a, ToRouteInfo b) => ToRouteInfo (Body a -> b) where
-  toRouteInfo = setMediaInputType (toMediaType @Json) . addRouteInput (BodyJsonInput (toNamedSchema (Proxy @a))) . toRouteInfo @b
+  toRouteInfo = setMediaInputType (toMediaType @Json) . addRouteInput (BodyJsonInput (toBodySchema (Proxy @a))) . toRouteInfo @b
 
 instance (ToSchema a, FromJSON a, ToRoute b) => ToRoute (Body a -> b) where
   type RouteMonad (Body a -> b) = RouteMonad b
@@ -196,7 +195,7 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToR
 newtype FormBody a = FormBody a
 
 instance (ToSchema a, ToRouteInfo b) => ToRouteInfo (FormBody a -> b) where
-  toRouteInfo = setMediaInputType (MediaType "application/x-www-form-urlencoded") . addRouteInput (FormBodyInput (toNamedSchema (Proxy @a))) . toRouteInfo @b
+  toRouteInfo = setMediaInputType (MediaType "application/x-www-form-urlencoded") . addRouteInput (FormBodyInput (toBodySchema (Proxy @a))) . toRouteInfo @b
 
 instance (ToSchema a, FromForm a, ToRoute b) => ToRoute (FormBody a -> b) where
   type RouteMonad (FormBody a -> b) = RouteMonad b
@@ -276,13 +275,13 @@ instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToSchema a) => ToRouteInfo (Send method Json m a) where
-  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toNamedSchema (Proxy @a))
+  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toOutputSchema (Proxy @a))
 
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToSchema a) => ToRouteInfo (Send method Json m (Response a)) where
-  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toNamedSchema (Proxy @a))
+  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toOutputSchema (Proxy @a))
 
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToSchema a) => ToRouteInfo (Send method Json m (Either Error a)) where
-  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toNamedSchema (Proxy @a))
+  toRouteInfo = setJsonMethod (toMethod @method) (toMediaType @Json) (toOutputSchema (Proxy @a))
 
 instance (IsMethod method) => ToRouteInfo (Send method Json m Json.Value) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @Json)

@@ -16,9 +16,7 @@ maintainer:         anton.kholomiov@gmail.com
 copyright:          2023 Anton Kholomiov
 license:            BSD3
 build-type:         Simple
-extra-source-files:
-  CHANGELOG.md
-  README.md
+extra-source-files: README.md
 
 source-repository head
   type:     git

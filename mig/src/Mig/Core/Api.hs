@@ -168,6 +168,7 @@ instance IsString Path where
         | path == "*" = CapturePath path
         | otherwise = StaticPath path
 
+-- | Path can be a static item or capture with a name
 data PathItem
   = StaticPath Text
   | CapturePath Text

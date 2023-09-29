@@ -18,6 +18,7 @@ license:            BSD3
 build-type:         Simple
 extra-source-files:
   index.html.tmpl
+  README.md
   swagger-ui-dist-5.0.0/favicon-16x16.png
   swagger-ui-dist-5.0.0/favicon-32x32.png
   swagger-ui-dist-5.0.0/index.css
