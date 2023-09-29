@@ -26,9 +26,12 @@ import Web.HttpApiData
 infixr 4 /.
 
 (/.) :: (ToServer a) => Api.Path -> a -> Server (ServerMonad a)
-(/.) path api = case unServer (toServer api) of
-  Api.WithPath rest a -> go rest a
-  other -> go mempty other
+(/.) path api
+  | null path.unPath = toServer api
+  | otherwise =
+      case unServer (toServer api) of
+        Api.WithPath rest a -> go rest a
+        other -> go mempty other
   where
     go rest a = Server $ Api.WithPath (path <> rest) a
 
