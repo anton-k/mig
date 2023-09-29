@@ -31,14 +31,14 @@ module Mig.Core.Route (
 
   -- ** Method tags
   IsMethod (..),
-  GetMethod,
-  PostMethod,
-  PutMethod,
-  DeleteMethod,
-  OptionsMethod,
-  HeadMethod,
-  PatchMethod,
-  TraceMethod,
+  GET,
+  POST,
+  PUT,
+  DELETE,
+  OPTIONS,
+  HEAD,
+  PATCH,
+  TRACE,
 ) where
 
 import Control.Monad.IO.Class
@@ -235,49 +235,49 @@ instance (ToRoute b) => ToRoute (PathInfo -> b) where
 -------------------------------------------------------------------------------------
 -- outputs
 
-data GetMethod
-data PostMethod
-data PutMethod
-data DeleteMethod
-data OptionsMethod
-data HeadMethod
-data PatchMethod
-data TraceMethod
+data GET
+data POST
+data PUT
+data DELETE
+data OPTIONS
+data HEAD
+data PATCH
+data TRACE
 
-type Get ty m a = Send GetMethod ty m a
-type Post ty m a = Send PostMethod ty m a
-type Put ty m a = Send PutMethod ty m a
-type Delete ty m a = Send DeleteMethod ty m a
-type Options ty m a = Send OptionsMethod ty m a
-type Head ty m a = Send HeadMethod ty m a
-type Patch ty m a = Send PatchMethod ty m a
-type Trace ty m a = Send TraceMethod ty m a
+type Get ty m a = Send GET ty m a
+type Post ty m a = Send POST ty m a
+type Put ty m a = Send PUT ty m a
+type Delete ty m a = Send DELETE ty m a
+type Options ty m a = Send OPTIONS ty m a
+type Head ty m a = Send HEAD ty m a
+type Patch ty m a = Send PATCH ty m a
+type Trace ty m a = Send TRACE ty m a
 
 class IsMethod a where
   toMethod :: Method
 
-instance IsMethod GetMethod where
+instance IsMethod GET where
   toMethod = methodGet
 
-instance IsMethod PostMethod where
+instance IsMethod POST where
   toMethod = methodPost
 
-instance IsMethod PutMethod where
+instance IsMethod PUT where
   toMethod = methodPut
 
-instance IsMethod DeleteMethod where
+instance IsMethod DELETE where
   toMethod = methodDelete
 
-instance IsMethod OptionsMethod where
+instance IsMethod OPTIONS where
   toMethod = methodOptions
 
-instance IsMethod HeadMethod where
+instance IsMethod HEAD where
   toMethod = methodHead
 
-instance IsMethod PatchMethod where
+instance IsMethod PATCH where
   toMethod = methodPatch
 
-instance IsMethod TraceMethod where
+instance IsMethod TRACE where
   toMethod = methodTrace
 
 newtype Send method ty m a = Send {unSend :: m a}
