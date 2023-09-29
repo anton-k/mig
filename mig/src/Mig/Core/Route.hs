@@ -212,8 +212,12 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToR
 
 newtype FormBody a = FormBody a
 
+-- on form url encoded we should set media types for both input and output
+-- to the value of "application/x-www-form-urlencoded"
 instance (ToSchema a, ToRouteInfo b) => ToRouteInfo (FormBody a -> b) where
-  toRouteInfo = addRouteInput (ReqBodyInput (MediaType "application/x-www-form-urlencoded") (toSchemaDefs @a)) . toRouteInfo @b
+  toRouteInfo = setOutputMedia mediaType . addRouteInput (ReqBodyInput mediaType (toSchemaDefs @a)) . toRouteInfo @b
+    where
+      mediaType = MediaType "application/x-www-form-urlencoded"
 
 instance (ToSchema a, FromForm a, ToRoute b) => ToRoute (FormBody a -> b) where
   type RouteMonad (FormBody a -> b) = RouteMonad b
