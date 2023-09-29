@@ -75,10 +75,6 @@ module Mig.Server.Common (
   fromReader,
 
   -- * Convertes
-  ToTextResp (..),
-  ToJsonResp (..),
-  ToHtmlResp (..),
-  ToByteStringResp (..),
   ToText (..),
 
   -- * utils

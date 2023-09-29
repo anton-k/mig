@@ -7,6 +7,7 @@ module Mig.Server.Class (
 import Control.Monad.Except
 import Control.Monad.Reader
 import Data.Kind
+import Data.Text (Text)
 import Mig.Core.Route
 import Mig.Core.Server
 import Mig.Core.ServerFun (MapServerFun (..))
@@ -63,4 +64,4 @@ fromReaderExcept env server =
     handleError :: Either Error (Maybe Resp) -> Maybe Resp
     handleError = \case
       Right mResp -> mResp
-      Left err -> Just $ setRespStatus err.status (text err.body)
+      Left err -> Just $ setRespStatus err.status (ok @Text err.body)

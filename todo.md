@@ -6,12 +6,14 @@ Features, improvements and open problems for releases:
 
 ### Major
 
-* update / add docs
-
 * go over Servant API and servant-openapi3 and collect cases 
    which one to implement and update API  
    for example maybe we don't need separate cases for BodyJsonInput or FormInput
    they are both just RequestBody with different media-types
+
+  * study for mime types: https://hackage.haskell.org/package/servant-0.20/docs/Servant-API-ContentTypes.html#t:MimeRender 
+
+* update / add docs
 
 ### Normal
 
@@ -41,6 +43,7 @@ add client support
 * add capture all case
 * add XML support
 * add docs (build separate site on github pages)
+* support for LRU cache for routes (research on efficient route/api representation)
 
 ## v4
 
