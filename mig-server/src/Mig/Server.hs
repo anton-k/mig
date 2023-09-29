@@ -12,7 +12,6 @@ import Mig.Core.Server as X
 import Mig.Core.Server.Class as X
 
 import Control.Monad.Catch
-import Data.Aeson qualified as Json
 import Data.ByteString qualified as B
 import Data.ByteString.Lazy qualified as BL
 import Data.Foldable
@@ -21,13 +20,11 @@ import Data.Maybe
 import Data.Sequence (Seq (..), (|>))
 import Data.Sequence qualified as Seq
 import Data.Text qualified as Text
-import Data.Text.Encoding qualified as Text
 import Mig.Core.ServerFun (handleError)
 import Mig.Core.Types (Error (..), Req (..), Resp (..), RespBody (..), ToText (..), badRequest)
 import Network.HTTP.Types.Status (status413)
 import Network.Wai qualified as Wai
 import Network.Wai.Handler.Warp qualified as Warp
-import Text.Blaze.Renderer.Utf8 qualified as Html
 
 -- | Size of the input body
 type Kilobytes = Int
@@ -57,11 +54,8 @@ toApplication config server req processResponse = do
 toResponse :: Resp -> Wai.Response
 toResponse resp =
   case resp.body of
-    TextResp textResp -> lbs $ BL.fromStrict (Text.encodeUtf8 textResp)
-    HtmlResp htmlResp -> lbs (Html.renderMarkup htmlResp)
-    JsonResp jsonResp -> lbs (Json.encode jsonResp)
     FileResp file -> Wai.responseFile resp.status resp.headers file Nothing
-    RawResp str -> lbs str
+    RawResp _ str -> lbs str
     StreamResp -> undefined -- TODO
   where
     lbs = Wai.responseLBS resp.status resp.headers

@@ -6,20 +6,16 @@ module Mig.Core.Server.Class (
 
 import Control.Monad.IO.Class
 import Data.Aeson (FromJSON)
-import Data.Aeson qualified as Json (Value)
-import Data.ByteString.Lazy qualified as BL
 import Data.Kind
 import Data.OpenApi (ToParamSchema, ToSchema)
-import Data.Text (Text)
 import GHC.TypeLits
 import Mig.Core.Api (Api)
 import Mig.Core.Api qualified as Api
-import Mig.Core.Info (Json, RawMedia)
+import Mig.Core.Info (MimeRender (..))
 import Mig.Core.Route
 import Mig.Core.Server (Server (..))
-import Mig.Core.Types (Error, ToByteStringResp, ToHtmlResp, ToJsonResp, ToTextResp)
+import Mig.Core.Types (Error)
 import Mig.Core.Types.Response (Response)
-import Text.Blaze.Html (Html)
 import Web.FormUrlEncoded
 import Web.HttpApiData
 
@@ -51,76 +47,16 @@ instance ToServer (Server m) where
 
 -- outputs
 
-instance {-# OVERLAPPABLE #-} (MonadIO m, ToTextResp a, IsMethod method) => ToServer (Send method Text m a) where
-  type ServerMonad (Send method Text m a) = m
+instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToServer (Send method ty m a) where
+  type ServerMonad (Send method ty m a) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
-instance (MonadIO m, ToTextResp a, IsMethod method) => ToServer (Send method Text m (Response a)) where
-  type ServerMonad (Send method Text m (Response a)) = m
+instance (MonadIO m, MimeRender ty a, IsMethod method) => ToServer (Send method ty m (Response a)) where
+  type ServerMonad (Send method ty m (Response a)) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
-instance (MonadIO m, ToTextResp a, IsMethod method) => ToServer (Send method Text m (Either Error a)) where
-  type ServerMonad (Send method Text m (Either Error a)) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, IsMethod method) => ToServer (Send method Json m Json.Value) where
-  type ServerMonad (Send method Json m Json.Value) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, IsMethod method) => ToServer (Send method Json m (Response Json.Value)) where
-  type ServerMonad (Send method Json m (Response Json.Value)) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, IsMethod method) => ToServer (Send method Json m (Either Error Json.Value)) where
-  type ServerMonad (Send method Json m (Either Error Json.Value)) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance {-# OVERLAPPABLE #-} (MonadIO m, ToSchema a, ToJsonResp a, IsMethod method) => ToServer (Send method Json m a) where
-  type ServerMonad (Send method Json m a) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, ToSchema a, ToJsonResp a, IsMethod method) => ToServer (Send method Json m (Response a)) where
-  type ServerMonad (Send method Json m (Response a)) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, ToSchema a, ToJsonResp a, IsMethod method) => ToServer (Send method Json m (Either Error a)) where
-  type ServerMonad (Send method Json m (Either Error a)) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance {-# OVERLAPPABLE #-} (MonadIO m, ToHtmlResp a, IsMethod method) => ToServer (Send method Html m a) where
-  type ServerMonad (Send method Html m a) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, ToHtmlResp a, IsMethod method) => ToServer (Send method Html m (Response a)) where
-  type ServerMonad (Send method Html m (Response a)) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, ToHtmlResp a, IsMethod method) => ToServer (Send method Html m (Either Error a)) where
-  type ServerMonad (Send method Html m (Either Error a)) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance {-# OVERLAPPABLE #-} (MonadIO m, ToByteStringResp a, IsMethod method) => ToServer (Send method BL.ByteString m a) where
-  type ServerMonad (Send method BL.ByteString m a) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, ToByteStringResp a, IsMethod method) => ToServer (Send method BL.ByteString m (Response a)) where
-  type ServerMonad (Send method BL.ByteString m (Response a)) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, ToByteStringResp a, IsMethod method) => ToServer (Send method BL.ByteString m (Either Error a)) where
-  type ServerMonad (Send method BL.ByteString m (Either Error a)) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance {-# OVERLAPPABLE #-} (MonadIO m, KnownSymbol sym, ToByteStringResp a, IsMethod method) => ToServer (Send method (RawMedia sym) m a) where
-  type ServerMonad (Send method (RawMedia sym) m a) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, KnownSymbol sym, ToByteStringResp a, IsMethod method) => ToServer (Send method (RawMedia sym) m (Response a)) where
-  type ServerMonad (Send method (RawMedia sym) m (Response a)) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, KnownSymbol sym, ToByteStringResp a, IsMethod method) => ToServer (Send method (RawMedia sym) m (Either Error a)) where
-  type ServerMonad (Send method (RawMedia sym) m (Either Error a)) = m
+instance (MonadIO m, MimeRender ty a, IsMethod method) => ToServer (Send method ty m (Either Error a)) where
+  type ServerMonad (Send method ty m (Either Error a)) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 -- inputs

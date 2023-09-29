@@ -35,8 +35,8 @@ import Mig.Core.Types (
   Req (..),
   Resp (..),
   badRequest,
+  ok,
   setRespStatus,
-  text,
  )
 import Network.HTTP.Types.Header (HeaderName)
 import Network.HTTP.Types.Status (status413)
@@ -68,7 +68,7 @@ withRawBody act = ServerFun $ \req -> do
   eBody <- liftIO req.readBody
   case eBody of
     Right body -> unServerFun (act body) req
-    Left err -> pure $ Just $ setRespStatus err.status (text err.body)
+    Left err -> pure $ Just $ setRespStatus err.status (ok @Text err.body)
 
 withQuery :: (Monad m, FromHttpApiData a) => Text -> (a -> ServerFun m) -> ServerFun m
 withQuery name act = withQueryBy (getQuery name) processResp

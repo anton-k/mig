@@ -104,10 +104,6 @@ module Mig (
   fromReader,
 
   -- * Convertes
-  ToTextResp (..),
-  ToJsonResp (..),
-  ToHtmlResp (..),
-  ToByteStringResp (..),
   ToText (..),
 
   -- * utils
@@ -146,11 +142,7 @@ import Mig.Core.Types (
   Error (..),
   Req,
   Resp,
-  ToByteStringResp (..),
-  ToHtmlResp (..),
-  ToJsonResp (..),
   ToText (..),
-  ToTextResp (..),
   badRequest,
  )
 import Mig.Core.Types.Response (
