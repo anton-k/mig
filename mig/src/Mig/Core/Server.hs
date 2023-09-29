@@ -39,7 +39,7 @@ import Mig.Core.ServerFun (MapServerFun (..))
 import Mig.Core.Types (Req (..))
 import Mig.Core.Types.Response (Response (..), addHeaders, okResponse)
 
-import Debug.Trace
+-- import Debug.Trace
 
 {-| Server type. It is a function fron request to response.
 Some servers does not return valid value. We use it to find right path.
@@ -102,7 +102,8 @@ fromServer (Server server) = ServerFun $ \req -> do
   where
     serverNormal = toNormalApi (fillCaptures server)
 
-    getRoute req = trace
+    getRoute req =
+      {- trace
       ( unlines
           [ "path"
           , show req.path
@@ -113,8 +114,8 @@ fromServer (Server server) = ServerFun $ \req -> do
           , "method"
           , show req.method
           ]
-      )
-      $ do
+      ) $ -}
+      do
         api <- firstJust (\outMedia -> fromNormalApi req.method outMedia inputMedia serverNormal) outputMedia
         Api.getPath req.path api
       where

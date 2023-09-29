@@ -13,11 +13,6 @@ Features, improvements and open problems for releases:
    for example maybe we don't need separate cases for BodyJsonInput or FormInput
    they are both just RequestBody with different media-types
 
-* check that all examples work
-  * html example:
-    * write post produces nothing (bug)
-    * use UUID as post ids
-
 ### Normal
 
 * fill missing captures at the end

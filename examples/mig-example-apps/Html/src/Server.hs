@@ -75,7 +75,8 @@ server site =
 
 -- | Greet the user on main page
 handleGreeting :: Site -> Get (Page Greeting)
-handleGreeting _site = Send $ pure (Page Greeting)
+handleGreeting site =
+  Send $ Page . Greeting <$> site.listBlogPosts
 
 -- | Read blog post by id
 handleBlogPost :: Site -> Optional "id" BlogPostId -> Get (Page BlogPost)
