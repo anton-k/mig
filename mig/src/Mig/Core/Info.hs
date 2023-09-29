@@ -2,16 +2,18 @@
 module Mig.Core.Info (
   RouteInfo (..),
   RouteInput (..),
+  getInputType,
   RouteOutput (..),
-  OutputSchema (..),
-  emptyOutputSchema,
-  toOutputSchema,
-  toBodySchema,
+  IsRequired (..),
+  OutputSchema,
+  InputSchema,
+  SchemaDefs (..),
+  emptySchemaDefs,
+  toSchemaDefs,
   MediaType (..),
   addRouteInput,
   setMethod,
   setJsonMethod,
-  setMediaInputType,
   emptyRouteInfo,
   ToMediaType (..),
   Json,
@@ -20,6 +22,8 @@ module Mig.Core.Info (
 ) where
 
 import Data.ByteString.Lazy qualified as BL
+import Data.List.Extra (firstJust)
+import Data.Maybe
 import Data.OpenApi
 import Data.OpenApi.Declare (runDeclare)
 import Data.Proxy
@@ -32,7 +36,6 @@ import Text.Blaze.Html (Html)
 
 data RouteInfo = RouteInfo
   { method :: Maybe Method
-  , inputType :: MediaType
   , inputs :: [RouteInput]
   , output :: RouteOutput
   , tags :: [Text]
@@ -41,18 +44,25 @@ data RouteInfo = RouteInfo
   }
   deriving (Show, Eq)
 
+newtype IsRequired = IsRequired Bool
+  deriving newtype (Show, Eq)
+
 data RouteInput
-  = BodyJsonInput (Definitions Schema, Referenced Schema)
+  = ReqBodyInput MediaType SchemaDefs
   | RawBodyInput
   | CaptureInput Text Schema
-  | QueryInput Text Schema
-  | OptionalInput Text Schema
-  | HeaderInput Text Schema
-  | FormBodyInput (Definitions Schema, Referenced Schema)
+  | QueryInput IsRequired Text Schema
+  | HeaderInput IsRequired Text Schema
   deriving (Show, Eq)
 
-toBodySchema :: (ToSchema a) => Proxy a -> (Definitions Schema, Referenced Schema)
-toBodySchema proxy = runDeclare (declareSchemaRef proxy) mempty
+getInputType :: RouteInfo -> MediaType
+getInputType route = fromMaybe (MediaType "*/*") $ firstJust fromInput route.inputs
+  where
+    fromInput = \case
+      ReqBodyInput ty _ -> Just ty
+      _ -> Nothing
+
+type InputSchema = SchemaDefs
 
 data RouteOutput = RouteOutput
   { status :: Status
@@ -61,20 +71,22 @@ data RouteOutput = RouteOutput
   }
   deriving (Show, Eq)
 
-data OutputSchema = OutputSchema
+type OutputSchema = SchemaDefs
+
+data SchemaDefs = SchemaDefs
   { defs :: Definitions Schema
   , ref :: Maybe (Referenced Schema)
   }
   deriving (Show, Eq)
 
-toOutputSchema :: (ToSchema a) => Proxy a -> OutputSchema
-toOutputSchema proxy =
-  OutputSchema defs (Just ref)
+toSchemaDefs :: forall a. (ToSchema a) => SchemaDefs
+toSchemaDefs =
+  SchemaDefs defs (Just ref)
   where
-    (defs, ref) = runDeclare (declareSchemaRef proxy) mempty
+    (defs, ref) = runDeclare (declareSchemaRef (Proxy @a)) mempty
 
-emptyOutputSchema :: OutputSchema
-emptyOutputSchema = OutputSchema mempty Nothing
+emptySchemaDefs :: SchemaDefs
+emptySchemaDefs = SchemaDefs mempty Nothing
 
 newtype MediaType = MediaType Text
   deriving (Show, Eq, Ord, IsString)
@@ -112,13 +124,13 @@ addRouteInput inp routeInfo =
 
 emptyRouteInfo :: RouteInfo
 emptyRouteInfo =
-  RouteInfo Nothing (MediaType "*/*") [] (RouteOutput ok200 (MediaType "*/*") emptyOutputSchema) [] "" ""
+  RouteInfo Nothing [] (RouteOutput ok200 (MediaType "*/*") emptySchemaDefs) [] "" ""
 
 setMethod :: Method -> MediaType -> RouteInfo -> RouteInfo
 setMethod method mediaType routeInfo =
   routeInfo
     { method = Just method
-    , output = RouteOutput routeInfo.output.status mediaType emptyOutputSchema
+    , output = RouteOutput routeInfo.output.status mediaType emptySchemaDefs
     }
 
 setJsonMethod :: Method -> MediaType -> OutputSchema -> RouteInfo -> RouteInfo
@@ -127,9 +139,6 @@ setJsonMethod method mediaType apiSchema routeInfo =
     { method = Just method
     , output = RouteOutput routeInfo.output.status mediaType apiSchema
     }
-
-setMediaInputType :: MediaType -> RouteInfo -> RouteInfo
-setMediaInputType ty routeInfo = routeInfo{inputType = ty}
 
 class ToRouteInfo a where
   toRouteInfo :: RouteInfo -> RouteInfo

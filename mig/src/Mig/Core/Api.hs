@@ -19,7 +19,7 @@ import Data.Map.Strict qualified as Map
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Mig.Core.Info (MediaType (..), RouteInfo (..), RouteOutput (..))
+import Mig.Core.Info (MediaType (..), RouteInfo (..), RouteOutput (..), getInputType)
 import Mig.Core.Route qualified as Route
 import Network.HTTP.Types.Method
 import System.FilePath
@@ -96,9 +96,9 @@ toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (to
         m : [] -> SingleMedia m a
         other -> MultiMedia $ filterEmpty $ Map.fromList $ fmap toMediaApi other
       where
-        medias = List.nub $ foldMap (\r -> [r.api.inputType]) a
+        medias = List.nub $ foldMap (\r -> [getInputType r.api]) a
 
-        toMediaApi media = (media, filterApi (\r -> r.api.inputType == media) a)
+        toMediaApi media = (media, filterApi (\r -> getInputType r.api == media) a)
 
 insertCategoryCases :: forall m. Map MediaType (Api (Route.Route m)) -> Map MediaType (Api (Route.Route m))
 insertCategoryCases a =
