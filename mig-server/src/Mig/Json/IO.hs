@@ -16,11 +16,11 @@ module Mig.Json.IO (
 
 import Mig.Server.Common as X
 
-type Get a = Send GetMethod Json IO a
-type Post a = Send PostMethod Json IO a
-type Put a = Send PutMethod Json IO a
-type Delete a = Send DeleteMethod Json IO a
-type Patch a = Send PatchMethod Json IO a
-type Options a = Send OptionsMethod Json IO a
-type Head a = Send HeadMethod Json IO a
-type Trace a = Send TraceMethod Json IO a
+type Get a = Send GET Json IO a
+type Post a = Send POST Json IO a
+type Put a = Send PUT Json IO a
+type Delete a = Send DELETE Json IO a
+type Patch a = Send PATCH Json IO a
+type Options a = Send OPTIONS Json IO a
+type Head a = Send HEAD Json IO a
+type Trace a = Send TRACE Json IO a

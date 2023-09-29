@@ -9,6 +9,7 @@ module Mig.Core.Server (
   setSummary,
   mapRouteInfo,
   staticFiles,
+  describeInputs,
 ) where
 
 import Control.Monad.IO.Class
@@ -26,7 +27,8 @@ import Data.Text qualified as Text
 import Data.Text.Encoding as Text
 import Mig.Core.Api (Api, fromNormalApi, toNormalApi)
 import Mig.Core.Api qualified as Api
-import Mig.Core.Info (MediaType (..), RouteInfo (..), RouteInput (..))
+import Mig.Core.Info (MediaType (..), RouteInfo (..), RouteInput (..), describeInfoInputs)
+import Mig.Core.Info qualified as Describe (Describe (..))
 import Mig.Core.Route
 import Mig.Core.ServerFun (MapServerFun (..))
 import Mig.Core.Types (Req (..), Response (..), addHeaders, okResponse)
@@ -87,6 +89,9 @@ newtype Server m = Server {unServer :: Api (Route m)}
 instance MapServerFun Server where
   mapServerFun f (Server server) = Server $ fmap (\x -> Route x.api (f x.run)) server
 
+{-| Converts server to server function. Server function can be used to implement low-level handlers
+in various server-libraries.
+-}
 fromServer :: (Monad m) => Server m -> ServerFun m
 fromServer (Server server) = ServerFun $ \req ->
   case Api.getPath req.path =<< firstJust (\outputMedia -> fromNormalApi req.method outputMedia (getInputMediaType req) serverNormal) (getOutputMediaType req) of
@@ -130,7 +135,7 @@ getCaptureName index = \case
   Api.Append a _b -> rec a
   Api.Empty -> Nothing
   Api.WithPath _ a -> rec a
-  Api.HandleRoute a -> mapMaybe toCapture a.api.inputs `atMay` index
+  Api.HandleRoute a -> mapMaybe (toCapture . Describe.content) a.api.inputs `atMay` index
   where
     rec = getCaptureName index
 
@@ -164,12 +169,15 @@ getOutputMediaType req =
           | Text.isPrefixOf "q=" weightTxt = readMaybe $ Text.unpack $ Text.drop 2 weightTxt
           | otherwise = Nothing
 
+-- | Adds tag to the route
 addTag :: Text -> Server m -> Server m
 addTag tag = mapRouteInfo (insertTag tag)
 
+-- | Sets description of the route
 setDescription :: Text -> Server m -> Server m
 setDescription desc = mapRouteInfo $ \info -> info{description = desc}
 
+-- | Sets summary of the route
 setSummary :: Text -> Server m -> Server m
 setSummary val = mapRouteInfo $ \info -> info{summary = val}
 
@@ -179,6 +187,14 @@ mapRouteInfo f (Server srv) = Server $ fmap (\x -> x{api = f x.api}) srv
 insertTag :: Text -> RouteInfo -> RouteInfo
 insertTag tag info = info{tags = tag : info.tags}
 
+{-| Appends descriptiton for the inputs. It passes pairs for @(input-name, input-description)@.
+special name request-body is dedicated to request body input
+nd raw-input is dedicated to raw input
+-}
+describeInputs :: [(Text, Text)] -> Server m -> Server m
+describeInputs descs = mapRouteInfo (describeInfoInputs descs)
+
+-- | Serves static files
 staticFiles :: forall m. (MonadIO m) => [(FilePath, ByteString)] -> FilePath -> Server m
 staticFiles files root =
   Server $ foldMap (uncurry serveFile) files

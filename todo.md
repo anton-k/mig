@@ -8,20 +8,13 @@ Features, improvements and open problems for releases:
 
 * update / add docs
 
-* fix Json example (auth token does not work)
-
 * go over Servant API and servant-openapi3 and collect cases 
    which one to implement and update API  
    for example maybe we don't need separate cases for BodyJsonInput or FormInput
    they are both just RequestBody with different media-types
 
-* add descriptions to inputs for swagger
-
-* refactor input type for RouteInfo
-
-* renamings according to Servant.API
-
 * check that all examples work
+    * fix Json example (auth token does not work in swagger)
 
 * html example:
   * write post produces nothing (bug)

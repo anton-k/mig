@@ -44,14 +44,14 @@ module Mig (
   Head,
   Trace,
   IsMethod (..),
-  GetMethod,
-  PostMethod,
-  PutMethod,
-  DeleteMethod,
-  PatchMethod,
-  OptionsMethod,
-  HeadMethod,
-  TraceMethod,
+  GET,
+  POST,
+  PUT,
+  DELETE,
+  PATCH,
+  OPTIONS,
+  HEAD,
+  TRACE,
 
   -- ** path and query
 

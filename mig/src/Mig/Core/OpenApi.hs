@@ -5,6 +5,7 @@ module Mig.Core.OpenApi (
 import Control.Lens (at, (%~), (&), (.~), (?~))
 import Data.HashMap.Strict.InsOrd qualified as InsOrdHashMap
 import Data.HashSet.InsOrd qualified as Set
+import Data.Monoid (Endo (..))
 import Data.OpenApi hiding (Server (..))
 import Data.String
 import Data.Text (Text)
@@ -40,10 +41,9 @@ withPath = \case
 
 fromRoute :: RouteInfo -> OpenApi
 fromRoute routeInfo =
-  mconcat
-    [ fromRouteOutput routeInfo
-    , foldMap fromRouteInput routeInfo.inputs
-    ]
+  appEndo
+    (foldMap (Endo . fromRouteInput) routeInfo.inputs)
+    (fromRouteOutput routeInfo)
 
 fromRouteOutput :: RouteInfo -> OpenApi
 fromRouteOutput routeInfo =
@@ -87,10 +87,10 @@ fromRouteOutput routeInfo =
 
     Info.SchemaDefs defs mref = routeInfo.output.schema
 
-fromRouteInput :: Info.RouteInput -> OpenApi
-fromRouteInput = \case
+fromRouteInput :: Info.Describe Info.RouteInput -> OpenApi -> OpenApi
+fromRouteInput descInput base = case descInput.content of
   Info.ReqBodyInput inputType bodySchema -> onRequestBody inputType bodySchema
-  Info.RawBodyInput -> mempty
+  Info.RawBodyInput -> base
   Info.CaptureInput captureName captureSchema -> onCapture captureName captureSchema
   Info.QueryInput isRequired queryName querySchema -> onQuery isRequired queryName querySchema
   Info.HeaderInput isRequired headerName headerSchema -> onHeader isRequired headerName headerSchema
@@ -102,32 +102,28 @@ fromRouteInput = \case
     onHeader = onParam addDefaultResponse400 ParamHeader
 
     onParam defResponse paramType (IsRequired isRequired) paramName paramSchema =
-      mempty
+      base
         & addParam param
         & defResponse paramName
       where
         param =
           mempty
             & name .~ paramName
-            -- & description .~ transDesc (reflectDescription (Proxy :: Proxy mods))
+            & description .~ (nonEmptyText =<< descInput.description)
             & required ?~ isRequired
             & in_ .~ paramType
             & schema ?~ (Inline paramSchema)
-    -- transDesc ""   = Nothing
-    -- transDesc desc = Just (Text.pack desc)
 
     onRequestBody bodyInputType (Info.SchemaDefs defs ref) =
-      mempty
+      base
         & addRequestBody reqBody
         & addDefaultResponse400 tname
         & components . schemas %~ (<> defs)
       where
         tname = "body"
-        -- transDesc ""   = Nothing
-        -- transDesc desc = Just (Text.pack desc)
         reqBody =
           (mempty :: RequestBody)
-            -- & description .~ transDesc (reflectDescription (Proxy :: Proxy mods))
+            & description .~ (nonEmptyText =<< descInput.description)
             & content .~ InsOrdHashMap.fromList [(t, mempty & schema .~ ref) | t <- [bodyContentType]]
 
         bodyContentType = toMediaType bodyInputType
