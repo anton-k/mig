@@ -65,9 +65,6 @@ class (MonadIO (RouteMonad a), ToRouteInfo a) => ToRoute a where
   -- | Convert to route
   toRouteFun :: a -> ServerFun (RouteMonad a)
 
-  -- | route that produce nothing
-  emptyRoute :: a
-
 -- | Route contains API-info and how to run it
 data Route m = Route
   { api :: RouteInfo
@@ -93,12 +90,10 @@ instance ToRouteInfo (Route m) where
 instance (MonadIO m) => ToRoute (Route m) where
   type RouteMonad (Route m) = m
   toRouteFun = (.run)
-  emptyRoute = Route emptyRouteInfo emptyRoute
 
 instance (MonadIO m) => ToRoute (ServerFun m) where
   type RouteMonad (ServerFun m) = m
   toRouteFun = id
-  emptyRoute = ServerFun $ const $ pure Nothing
 
 -------------------------------------------------------------------------------------
 -- request inputs
@@ -113,8 +108,6 @@ instance (ToSchema a, FromJSON a, ToRoute b) => ToRoute (Body a -> b) where
 
   toRouteFun f = withBody (toRouteFun . f . Body)
 
-  emptyRoute = const emptyRoute
-
 newtype RawBody = RawBody BL.ByteString
 
 instance (ToRouteInfo b) => ToRouteInfo (RawBody -> b) where
@@ -124,8 +117,6 @@ instance (ToRoute b) => ToRoute (RawBody -> b) where
   type RouteMonad (RawBody -> b) = RouteMonad b
 
   toRouteFun f = withRawBody (toRouteFun . f . RawBody)
-
-  emptyRoute = const emptyRoute
 
 newtype Query (sym :: Symbol) a = Query a
 
@@ -141,8 +132,6 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToR
     where
       name = fromString (symbolVal (Proxy @sym))
 
-  emptyRoute = const emptyRoute
-
 newtype Optional (sym :: Symbol) a = Optional (Maybe a)
 
 instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Optional sym a -> b) where
@@ -156,8 +145,6 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToR
   toRouteFun f = withOptional name (toRouteFun . f . Optional)
     where
       name = fromString (symbolVal (Proxy @sym))
-
-  emptyRoute = const emptyRoute
 
 newtype Capture (sym :: Symbol) a = Capture a
 
@@ -173,8 +160,6 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToR
     where
       name = fromString (symbolVal (Proxy @sym))
 
-  emptyRoute = const emptyRoute
-
 newtype Header (sym :: Symbol) a = Header a
 
 instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Header sym a -> b) where
@@ -188,8 +173,6 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToR
   toRouteFun f = withHeader name (toRouteFun . f . Header)
     where
       name = fromString (symbolVal (Proxy @sym))
-
-  emptyRoute = const emptyRoute
 
 newtype OptionalHeader (sym :: Symbol) a = OptionalHeader (Maybe a)
 
@@ -205,8 +188,6 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToR
     where
       name = fromString (symbolVal (Proxy @sym))
 
-  emptyRoute = const emptyRoute
-
 newtype FormBody a = FormBody a
 
 -- on form url encoded we should set media types for both input and output
@@ -221,8 +202,6 @@ instance (ToSchema a, FromForm a, ToRoute b) => ToRoute (FormBody a -> b) where
 
   toRouteFun f = withFormBody (toRouteFun . f . FormBody)
 
-  emptyRoute = const emptyRoute
-
 -- | Reads current path info
 newtype PathInfo = PathInfo [Text]
 
@@ -232,7 +211,6 @@ instance (ToRouteInfo b) => ToRouteInfo (PathInfo -> b) where
 instance (ToRoute b) => ToRoute (PathInfo -> b) where
   type RouteMonad (PathInfo -> b) = RouteMonad b
   toRouteFun f = withPathInfo (toRouteFun . f . PathInfo)
-  emptyRoute = const emptyRoute
 
 -------------------------------------------------------------------------------------
 -- outputs
@@ -296,7 +274,6 @@ instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (
 instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m a) where
   type RouteMonad (Send method ty m a) = m
   toRouteFun (Send a) = sendResp $ ok @ty <$> a
-  emptyRoute = Send (pure (error "No implementation"))
 
 instance (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (Response a)) where
   type RouteMonad (Send method ty m (Response a)) = m
@@ -304,9 +281,6 @@ instance (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method t
     where
       media = toMediaType @ty
 
-  emptyRoute = Send (pure (error "No implementation"))
-
 instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (Either Error a)) where
   type RouteMonad (Send method ty m (Either Error a)) = m
   toRouteFun (Send a) = sendResp $ fromError (ok @ty) <$> a
-  emptyRoute = Send (pure (error "No implementation"))
