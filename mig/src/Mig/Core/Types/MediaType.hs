@@ -34,6 +34,7 @@ import GHC.TypeLits
 import Network.HTTP.Media.MediaType
 import Text.Blaze.Html (Html, ToMarkup (..))
 import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
+import Web.FormUrlEncoded (FromForm, ToForm, urlDecodeAsForm, urlEncodeAsForm)
 
 class ToMediaType a where
   toMediaType :: MediaType
@@ -91,6 +92,9 @@ instance MimeRender OctetStream BL.ByteString where
 instance MimeRender OctetStream ByteString where
   mimeRender = BL.fromStrict
 
+instance (ToForm a) => MimeRender FormUrlEncoded a where
+  mimeRender = urlEncodeAsForm
+
 -------------------------------------------------------------------------------------
 -- mime unrender (everything that can be parsed from HTTP-input)
 
@@ -98,7 +102,7 @@ class (ToMediaType ty) => MimeUnrender ty b where
   mimeUnrender :: BL.ByteString -> Either Text b
 
 instance MimeUnrender Text Text where
-  mimeUnrender = bimap (Text.pack . show) id . Text.decodeUtf8' . BL.toStrict
+  mimeUnrender = first (Text.pack . show) . Text.decodeUtf8' . BL.toStrict
 
 instance MimeUnrender OctetStream BL.ByteString where
   mimeUnrender = Right
@@ -108,6 +112,9 @@ instance MimeUnrender OctetStream ByteString where
 
 instance (FromJSON a) => MimeUnrender Json a where
   mimeUnrender = eitherDecodeLenient
+
+instance (FromForm a) => MimeUnrender FormUrlEncoded a where
+  mimeUnrender = urlDecodeAsForm
 
 {-| Like 'Data.Aeson.eitherDecode' but allows all JSON values instead of just
 objects and arrays.
@@ -122,7 +129,7 @@ Left "trailing junk after valid JSON: endOfInput"
 -}
 eitherDecodeLenient :: (FromJSON a) => BL.ByteString -> Either Text a
 eitherDecodeLenient input =
-  bimap Text.pack id $
+  first Text.pack $
     parseOnly parser (BL.toStrict input) >>= parseEither Json.parseJSON
   where
     parser =

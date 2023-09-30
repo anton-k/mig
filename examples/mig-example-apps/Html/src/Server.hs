@@ -97,8 +97,8 @@ handleWriteForm _site =
       Page WritePost
 
 -- | Submit form with data provided by the user
-handleWriteSubmit :: Site -> FormBody SubmitBlogPost -> Post (Page BlogPost)
-handleWriteSubmit site (FormBody (SubmitBlogPost title content)) = Send $ do
+handleWriteSubmit :: Site -> ReqBody FormUrlEncoded SubmitBlogPost -> Post (Page BlogPost)
+handleWriteSubmit site (ReqBody (SubmitBlogPost title content)) = Send $ do
   pid <- site.writeBlogPost title content
   maybe (PostNotFound pid) Page <$> site.readBlogPost pid
 

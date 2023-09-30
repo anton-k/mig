@@ -10,10 +10,11 @@ module Mig.Server.Common (
   -- * DSL
   Json,
   OctetStream,
+  FormUrlEncoded,
   ToServer (..),
   ToRoute (..),
   ToRouteInfo (..),
-  MediaType (..),
+  MediaType,
   ToMediaType (..),
   MimeRender (..),
 
@@ -41,7 +42,6 @@ module Mig.Server.Common (
   Body (..),
   ReqBody (..),
   Header (..),
-  FormBody (..),
   PathInfo (..),
 
   -- ** response
