@@ -53,7 +53,7 @@ import GHC.TypeLits
 import Mig.Core.Info
 import Mig.Core.ServerFun
 import Mig.Core.Types (Error, Resp (..), RespBody (..), fromError, ok, setContent)
-import Mig.Core.Types.MediaType (Json, MediaType (..), MimeRender (..), MimeUnrender (..), ToMediaType (..))
+import Mig.Core.Types.MediaType (FormUrlEncoded, Json, MimeRender (..), MimeUnrender (..), ToMediaType (..))
 import Mig.Core.Types.Response (Response (..))
 import Network.HTTP.Types.Method
 import Web.FormUrlEncoded
@@ -188,7 +188,7 @@ newtype FormBody a = FormBody a
 instance (ToSchema a, ToRouteInfo b) => ToRouteInfo (FormBody a -> b) where
   toRouteInfo = setOutputMedia mediaType . addRouteInput (ReqBodyInput mediaType (toSchemaDefs @a)) . toRouteInfo @b
     where
-      mediaType = MediaType "application/x-www-form-urlencoded"
+      mediaType = toMediaType @FormUrlEncoded
 
 instance (ToSchema a, FromForm a, ToRoute b) => ToRoute (FormBody a -> b) where
   type RouteMonad (FormBody a -> b) = RouteMonad b
