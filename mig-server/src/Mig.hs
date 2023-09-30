@@ -68,7 +68,6 @@ module Mig (
   Query (..),
   QueryFlag (..),
   Optional (..),
-  Body (..),
   ReqBody (..),
   Header (..),
   PathInfo (..),

@@ -145,11 +145,11 @@ instance (KnownSymbol sym, ToHttpApiData a, ToClient b) => ToClient (Capture sym
   toClient api = \capture -> mapCapture (addCapture capture) $ toClient @b api
   clientArity = clientArity @b
 
+{- TODO
 instance (ToJSON a, ToClient b) => ToClient (Body a -> b) where
   toClient api = \(Body body) -> mapRequest (addJsonBody body) $ toClient @b api
   clientArity = clientArity @b
 
-{- TODO
 instance (ToClient b) => ToClient (RawBody -> b) where
   toClient api = \(RawBody body) -> mapRequest (addRawBody body) $ toClient @b api
   clientArity = clientArity @b
@@ -174,10 +174,10 @@ addCapture :: forall sym a. (KnownSymbol sym, ToHttpApiData a) => Capture sym a 
 addCapture (Capture a) =
   Map.insert (fromString (symbolVal (Proxy @sym))) (toUrlPiece a)
 
+{- TODO
 addJsonBody :: (ToJSON a) => a -> Request -> Request
 addJsonBody body req = req{requestBody = RequestBodyLBS (Json.encode body)}
 
-{- TODO
 addRawBody :: BL.ByteString -> Request -> Request
 addRawBody body req = req{requestBody = RequestBodyLBS body}
 -}
