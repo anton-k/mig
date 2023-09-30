@@ -25,6 +25,7 @@ import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding as Text
+import Network.HTTP.Media (mapContentMedia)
 import Network.HTTP.Types.Header (ResponseHeaders)
 import Safe (atMay)
 import System.FilePath (takeExtension)
@@ -38,7 +39,7 @@ import Mig.Core.Info qualified as Describe (Describe (..))
 import Mig.Core.Route
 import Mig.Core.ServerFun (MapServerFun (..))
 import Mig.Core.Types (Req (..))
-import Mig.Core.Types.MediaType (MediaType (..), OctetStream)
+import Mig.Core.Types.MediaType (MediaType, OctetStream)
 import Mig.Core.Types.Response (Response (..), addHeaders, okResponse)
 
 -- import Debug.Trace
@@ -118,11 +119,10 @@ fromServer (Server server) = ServerFun $ \req -> do
           ]
       ) $ -}
       do
-        api <- firstJust (\outMedia -> fromNormalApi req.method outMedia inputMedia serverNormal) outputMedia
+        api <- fromNormalApi req.method inputContentType serverNormal
         Api.getPath req.path api
       where
-        inputMedia = getInputMediaType req
-        outputMedia = getOutputMediaType req
+        inputContentType = getContentType req
 
 {-| Substitutes all stars * for corresponding names in captures
 if there are more captures in the route than in the path it adds
@@ -192,30 +192,8 @@ getCaptureName index = \case
       CaptureInput name _ -> Just name
       _ -> Nothing
 
-getInputMediaType :: Req -> MediaType
-getInputMediaType req =
-  maybe (MediaType "*/*") (MediaType . Text.strip . Text.takeWhile (/= ';')) $
-    eitherToMaybe . Text.decodeUtf8' =<< Map.lookup "Content-Type" req.headers
-
-getOutputMediaType :: Req -> [MediaType]
-getOutputMediaType req =
-  fromMaybe [MediaType "*/*"] $
-    parseMedias =<< eitherToMaybe . Text.decodeUtf8' =<< Map.lookup "Content-Type" req.headers
-  where
-    parseMedias :: Text -> Maybe [MediaType]
-    parseMedias txt =
-      fmap (fmap snd . List.sortOn fst) $ mapM (toMediaWithWeight . Text.strip) $ Text.splitOn "," txt
-
-    toMediaWithWeight :: Text -> Maybe (Float, MediaType)
-    toMediaWithWeight txt =
-      case Text.splitOn ";" txt of
-        [name] -> Just (1, MediaType name)
-        name : weightTxt : [] -> (,MediaType name) <$> parseWeight weightTxt
-        _ -> Nothing
-      where
-        parseWeight weightTxt
-          | Text.isPrefixOf "q=" weightTxt = readMaybe $ Text.unpack $ Text.drop 2 weightTxt
-          | otherwise = Nothing
+getContentType :: Req -> ByteString
+getContentType req = fromMaybe "*/*" $ Map.lookup "Content-Type" req.headers
 
 -- | Adds tag to the route
 addTag :: Text -> Server m -> Server m

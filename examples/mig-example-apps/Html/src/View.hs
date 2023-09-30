@@ -21,6 +21,7 @@ instance (ToMarkup a) => ToMarkup (Page a) where
 siteTemplate :: Html -> Html
 siteTemplate content = H.html $ do
   H.head $ do
+    H.meta H.! HA.charset "UTF-8"
     H.link H.! HA.rel "stylesheet" H.! HA.href "https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic"
     H.link H.! HA.rel "stylesheet" H.! HA.href "/static/milligram.min.css"
   H.body $ H.div H.! HA.style "margin-left:4%; margin-top: 3%; font-size: 110%" $ do

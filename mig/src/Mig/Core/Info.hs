@@ -85,7 +85,7 @@ data RouteInput
   deriving (Show, Eq)
 
 getInputType :: RouteInfo -> MediaType
-getInputType route = fromMaybe (MediaType "*/*") $ firstJust (fromInput . (.content)) route.inputs
+getInputType route = fromMaybe "*/*" $ firstJust (fromInput . (.content)) route.inputs
   where
     fromInput = \case
       ReqBodyInput ty _ -> Just ty
@@ -126,7 +126,7 @@ addRouteInputWithDescriptiton inp routeInfo =
 
 emptyRouteInfo :: RouteInfo
 emptyRouteInfo =
-  RouteInfo Nothing [] (RouteOutput ok200 (MediaType "*/*") emptySchemaDefs) [] "" ""
+  RouteInfo Nothing [] (RouteOutput ok200 "*/*" emptySchemaDefs) [] "" ""
 
 setMethod :: Method -> MediaType -> RouteInfo -> RouteInfo
 setMethod method mediaType routeInfo =

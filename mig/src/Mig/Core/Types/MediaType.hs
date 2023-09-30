@@ -1,5 +1,5 @@
 module Mig.Core.Types.MediaType (
-  MediaType (..),
+  MediaType,
   ToMediaType (..),
   MimeRender (..),
   Json,
@@ -31,43 +31,41 @@ import Data.Text.Encoding qualified as Text
 import Data.Text.Lazy qualified as TextLazy
 import Data.Text.Lazy.Encoding qualified as TextLazy
 import GHC.TypeLits
+import Network.HTTP.Media.MediaType
 import Text.Blaze.Html (Html, ToMarkup (..))
 import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
-
-newtype MediaType = MediaType Text
-  deriving (Show, Eq, Ord, IsString)
 
 class ToMediaType a where
   toMediaType :: MediaType
 
 instance ToMediaType Text where
-  toMediaType = MediaType "text/plain"
+  toMediaType = "text/plain"
 
 instance ToMediaType Html where
-  toMediaType = MediaType "text/html"
+  toMediaType = "text/html"
 
 data OctetStream
 
 instance ToMediaType OctetStream where
-  toMediaType = MediaType "application/octet-stream"
+  toMediaType = "application/octet-stream"
 
 instance ToMediaType BL.ByteString where
-  toMediaType = MediaType "application/octet-stream"
+  toMediaType = "application/octet-stream"
 
 data Json
 
 instance ToMediaType Json where
-  toMediaType = MediaType "application/json"
+  toMediaType = "application/json"
 
 data RawMedia (sym :: Symbol)
 
 data FormUrlEncoded
 
 instance ToMediaType FormUrlEncoded where
-  toMediaType = MediaType ""
+  toMediaType = "application/x-www-form-urlencoded"
 
 instance (KnownSymbol sym) => ToMediaType (RawMedia sym) where
-  toMediaType = MediaType (fromString (symbolVal (Proxy @sym)))
+  toMediaType = fromString (symbolVal (Proxy @sym))
 
 -------------------------------------------------------------------------------------
 -- mime render (everything that can be rendered as HTTP-output)
