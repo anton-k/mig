@@ -13,7 +13,7 @@ module Mig.Core.Api (
 ) where
 
 import Data.ByteString (ByteString)
-import Data.List qualified as List
+import Data.Containers.ListUtils qualified as List
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.String
@@ -81,7 +81,7 @@ toNormalApi api = ApiNormal $ fmap toInputMediaMap (toMethodMap api)
     toInputMediaMap a =
       fmap toMediaApi medias
       where
-        medias = List.nub $ foldMap (\r -> [getInputType r.api]) a
+        medias = List.nubOrd $ foldMap (\r -> [getInputType r.api]) a
 
         toMediaApi media = (media, filterApi (\r -> getInputType r.api == media) a)
 
