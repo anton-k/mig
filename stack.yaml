@@ -69,3 +69,8 @@ packages:
 #
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
+
+
+# uncomment to use weeder:
+# ghc-options:
+#  "$locals": -fwrite-ide-info
