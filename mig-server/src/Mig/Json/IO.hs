@@ -10,10 +10,14 @@ module Mig.Json.IO (
   Head,
   Trace,
 
+  -- * Json request body
+  Body (..),
+
   -- * re-exports
   module X,
 ) where
 
+import Mig.Json (Body (..))
 import Mig.Server.Common as X
 
 type Get a = Send GET Json IO a

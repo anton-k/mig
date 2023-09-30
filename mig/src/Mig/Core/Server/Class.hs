@@ -5,7 +5,6 @@ module Mig.Core.Server.Class (
 ) where
 
 import Control.Monad.IO.Class
-import Data.Aeson (FromJSON)
 import Data.Kind
 import Data.OpenApi (ToParamSchema, ToSchema)
 import GHC.TypeLits
@@ -16,7 +15,6 @@ import Mig.Core.Server (Server (..))
 import Mig.Core.Types (Error)
 import Mig.Core.Types.MediaType (MimeRender (..), MimeUnrender (..))
 import Mig.Core.Types.Response (Response)
-import Web.FormUrlEncoded
 import Web.HttpApiData
 
 infixr 4 /.
@@ -60,10 +58,6 @@ instance (MonadIO m, MimeRender ty a, IsMethod method) => ToServer (Send method 
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 -- inputs
-
-instance (ToSchema a, FromJSON a, ToRoute b) => ToServer (Body a -> b) where
-  type ServerMonad (Body a -> b) = RouteMonad b
-  toServer a = Server $ Api.HandleRoute (toRoute a)
 
 instance (ToSchema a, MimeUnrender media a, ToRoute b) => ToServer (ReqBody media a -> b) where
   type ServerMonad (ReqBody media a -> b) = RouteMonad b

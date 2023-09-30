@@ -15,21 +15,16 @@ module Mig.Core.Server (
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BL
-import Data.Either.Extra
 import Data.List qualified as List
-import Data.List.Extra (firstJust)
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Data.Text.Encoding as Text
-import Network.HTTP.Media (mapContentMedia)
 import Network.HTTP.Types.Header (ResponseHeaders)
 import Safe (atMay)
 import System.FilePath (takeExtension)
-import Text.Read (readMaybe)
 import Web.HttpApiData
 
 import Mig.Core.Api (Api, fromNormalApi, toNormalApi)
@@ -39,7 +34,7 @@ import Mig.Core.Info qualified as Describe (Describe (..))
 import Mig.Core.Route
 import Mig.Core.ServerFun (MapServerFun (..))
 import Mig.Core.Types (Req (..))
-import Mig.Core.Types.MediaType (MediaType, OctetStream)
+import Mig.Core.Types.MediaType (OctetStream)
 import Mig.Core.Types.Response (Response (..), addHeaders, okResponse)
 
 -- import Debug.Trace

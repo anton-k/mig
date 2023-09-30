@@ -8,7 +8,6 @@ module Mig.Core.Route (
   ServerFun (..),
 
   -- * Inputs
-  Body (..),
   ReqBody (..),
   Query (..),
   QueryFlag (..),
@@ -42,7 +41,6 @@ module Mig.Core.Route (
 ) where
 
 import Control.Monad.IO.Class
-import Data.Aeson (FromJSON)
 import Data.Kind
 import Data.OpenApi (ToParamSchema (..), ToSchema (..))
 import Data.Proxy
@@ -52,10 +50,9 @@ import GHC.TypeLits
 import Mig.Core.Info
 import Mig.Core.ServerFun
 import Mig.Core.Types (Error, Resp (..), RespBody (..), fromError, ok, setContent)
-import Mig.Core.Types.MediaType (Json, MimeRender (..), MimeUnrender (..), ToMediaType (..))
+import Mig.Core.Types.MediaType (MimeRender (..), MimeUnrender (..), ToMediaType (..))
 import Mig.Core.Types.Response (Response (..))
 import Network.HTTP.Types.Method
-import Web.FormUrlEncoded
 import Web.HttpApiData
 
 class (MonadIO (RouteMonad a), ToRouteInfo a) => ToRoute a where
@@ -97,17 +94,6 @@ instance (MonadIO m) => ToRoute (ServerFun m) where
 
 -------------------------------------------------------------------------------------
 -- request inputs
-
--- | Special case for ReqBody with JSON.
-newtype Body a = Body a
-
-instance (ToSchema a, ToRouteInfo b) => ToRouteInfo (Body a -> b) where
-  toRouteInfo = addRouteInput (ReqBodyInput (toMediaType @Json) (toSchemaDefs @a)) . toRouteInfo @b
-
-instance (ToSchema a, FromJSON a, ToRoute b) => ToRoute (Body a -> b) where
-  type RouteMonad (Body a -> b) = RouteMonad b
-
-  toRouteFun f = withBody @Json (toRouteFun . f . Body)
 
 -- | Generic case for request body
 newtype ReqBody media a = ReqBody a
