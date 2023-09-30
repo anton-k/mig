@@ -12,8 +12,8 @@ import Data.Typeable
 import Network.HTTP.Types.Header (ResponseHeaders)
 import Network.HTTP.Types.Status (Status, ok200)
 
-import Mig.Core.Types (Resp)
-import Mig.Core.Types qualified as Types
+import Mig.Core.Types.Http (Resp)
+import Mig.Core.Types.Http qualified as Types
 
 data Response a = Response
   { status :: Status
