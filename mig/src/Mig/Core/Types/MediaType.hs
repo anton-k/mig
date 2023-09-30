@@ -3,7 +3,7 @@ module Mig.Core.Types.MediaType (
   ToMediaType (..),
   MimeRender (..),
   Json,
-  Form,
+  FormUrlEncoded,
   OctetStream,
   MimeUnrender (..),
 ) where
@@ -28,6 +28,8 @@ import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
+import Data.Text.Lazy qualified as TextLazy
+import Data.Text.Lazy.Encoding qualified as TextLazy
 import GHC.TypeLits
 import Text.Blaze.Html (Html, ToMarkup (..))
 import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
@@ -59,9 +61,9 @@ instance ToMediaType Json where
 
 data RawMedia (sym :: Symbol)
 
-data Form
+data FormUrlEncoded
 
-instance ToMediaType Form where
+instance ToMediaType FormUrlEncoded where
   toMediaType = MediaType ""
 
 instance (KnownSymbol sym) => ToMediaType (RawMedia sym) where
@@ -79,6 +81,9 @@ instance (ToJSON a) => MimeRender Json a where
 instance MimeRender Text Text where
   mimeRender = BL.fromStrict . Text.encodeUtf8
 
+instance MimeRender Text TextLazy.Text where
+  mimeRender = TextLazy.encodeUtf8
+
 instance (ToMarkup a) => MimeRender Html a where
   mimeRender = renderHtml . toMarkup
 
@@ -87,9 +92,6 @@ instance MimeRender OctetStream BL.ByteString where
 
 instance MimeRender OctetStream ByteString where
   mimeRender = BL.fromStrict
-
-instance MimeRender BL.ByteString BL.ByteString where
-  mimeRender = id
 
 -------------------------------------------------------------------------------------
 -- mime unrender (everything that can be parsed from HTTP-input)

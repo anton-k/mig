@@ -16,7 +16,6 @@ import Data.Aeson qualified as Json
 import Data.Bifunctor
 import Data.ByteString (ByteString)
 import Data.ByteString qualified as B
-import Data.ByteString.Lazy qualified as BL
 import Data.Map.Strict qualified as Map
 import Data.Proxy
 import Data.String

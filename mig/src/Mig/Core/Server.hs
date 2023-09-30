@@ -38,7 +38,7 @@ import Mig.Core.Info qualified as Describe (Describe (..))
 import Mig.Core.Route
 import Mig.Core.ServerFun (MapServerFun (..))
 import Mig.Core.Types (Req (..))
-import Mig.Core.Types.MediaType (MediaType (..))
+import Mig.Core.Types.MediaType (MediaType (..), OctetStream)
 import Mig.Core.Types.Response (Response (..), addHeaders, okResponse)
 
 -- import Debug.Trace
@@ -250,7 +250,7 @@ staticFiles files =
     serveFile path content =
       (fromString path) `Api.WithPath` (Api.HandleRoute (toRoute (getFile path content)))
 
-    getFile :: FilePath -> ByteString -> Get BL.ByteString m (Response BL.ByteString)
+    getFile :: FilePath -> ByteString -> Get OctetStream m (Response BL.ByteString)
     getFile path fileContent = Send $ pure $ addHeaders contentHeaders $ okResponse $ BL.fromStrict fileContent
       where
         contentHeaders :: ResponseHeaders
