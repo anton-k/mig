@@ -23,6 +23,7 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import FileEmbedLzma
 import Mig.Core.OpenApi
+import Mig.Core.Types.MediaType (Json)
 import Mig.Server
 import Text.Blaze (ToMarkup (..))
 import Text.Blaze.Html (Html)

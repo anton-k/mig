@@ -29,9 +29,13 @@ module Mig (
 
   -- * DSL
   Json,
+  OctetStream,
   ToServer (..),
   ToRoute (..),
   ToRouteInfo (..),
+  MediaType (..),
+  ToMediaType (..),
+  MimeRender (..),
 
   -- ** methods
   Send (..),
@@ -117,6 +121,7 @@ module Mig (
   -- ** OpenApi
   toOpenApi,
   setDescription,
+  describeInputs,
   setSummary,
   module X,
 ) where
@@ -145,6 +150,7 @@ import Mig.Core.Types (
   ToText (..),
   badRequest,
  )
+import Mig.Core.Types.MediaType
 import Mig.Core.Types.Response (
   Response (..),
   addHeaders,

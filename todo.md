@@ -17,8 +17,6 @@ Features, improvements and open problems for releases:
 
 ### Normal
 
-* fill missing captures at the end
-
 -- after commit to main repo
 
 * update external handler and reader apps examples

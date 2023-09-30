@@ -9,9 +9,13 @@ module Mig.Server.Common (
 
   -- * DSL
   Json,
+  OctetStream,
   ToServer (..),
   ToRoute (..),
   ToRouteInfo (..),
+  MediaType (..),
+  ToMediaType (..),
+  MimeRender (..),
 
   -- ** methods
   Send (..),
@@ -89,6 +93,7 @@ module Mig.Server.Common (
   -- ** OpenApi
   toOpenApi,
   setDescription,
+  describeInputs,
   setSummary,
   module X,
 ) where

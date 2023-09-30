@@ -53,6 +53,7 @@ import GHC.TypeLits
 import Mig.Core.Info
 import Mig.Core.ServerFun
 import Mig.Core.Types (Error, Resp (..), RespBody (..), fromError, ok, setContent)
+import Mig.Core.Types.MediaType (Json, MediaType (..), MimeRender (..), ToMediaType (..))
 import Mig.Core.Types.Response (Response (..))
 import Network.HTTP.Types.Method
 import Web.FormUrlEncoded

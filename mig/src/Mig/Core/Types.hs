@@ -30,7 +30,7 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Data.Text.Lazy qualified as TL
-import Mig.Core.Info (MediaType (..), MimeRender (..), ToMediaType (..))
+import Mig.Core.Types.MediaType (MediaType (..), MimeRender (..), ToMediaType (..))
 import Network.HTTP.Types.Header (HeaderName, ResponseHeaders)
 import Network.HTTP.Types.Method (Method)
 import Network.HTTP.Types.Status (Status, ok200, status500)
