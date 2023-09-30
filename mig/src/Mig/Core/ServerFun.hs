@@ -7,6 +7,7 @@ module Mig.Core.ServerFun (
   withBody,
   withRawBody,
   withQuery,
+  withQueryFlag,
   withOptional,
   withCapture,
   withHeader,
@@ -16,6 +17,7 @@ module Mig.Core.ServerFun (
   handleError,
 ) where
 
+import Control.Monad
 import Control.Monad.Catch
 import Control.Monad.IO.Class
 import Data.Aeson (FromJSON)
@@ -71,16 +73,38 @@ withRawBody act = ServerFun $ \req -> do
     Left err -> pure $ Just $ setRespStatus err.status (ok @Text err.body)
 
 withQuery :: (Monad m, FromHttpApiData a) => Text -> (a -> ServerFun m) -> ServerFun m
-withQuery name act = withQueryBy (getQuery name) processResp
+withQuery name act = withQueryBy (join . getQuery name) processResp
   where
     processResp = handleMaybeInput errorMessage act
 
     errorMessage = "Failed to parse arg: " <> name
 
-getQuery :: Text -> Req -> Maybe Text
-getQuery name req = do
-  bs <- Map.lookup (Text.encodeUtf8 name) req.query
-  either (pure Nothing) Just $ Text.decodeUtf8' bs
+withQueryFlag :: Text -> (Bool -> ServerFun m) -> ServerFun m
+withQueryFlag name act = ServerFun $ \req ->
+  let
+    val =
+      case getQuery name req of
+        Just (Just "") -> True
+        Just (Just arg) ->
+          case parseQueryParam @Bool arg of
+            Right flag -> flag
+            Left _ -> False
+        Just Nothing -> True -- we interpret empty value as True for a flag
+        Nothing -> False
+   in
+    unServerFun (act val) req
+
+{-| The first maybe means that query with that name is missing
+the second maybe is weather value is present or empty in the query
+-}
+getQuery :: Text -> Req -> Maybe (Maybe Text)
+getQuery name req =
+  case Map.lookup (Text.encodeUtf8 name) req.query of
+    Just mBs ->
+      case mBs of
+        Just bs -> either (pure Nothing) (Just . Just) $ Text.decodeUtf8' bs
+        Nothing -> Just Nothing
+    Nothing -> Nothing
 
 handleMaybeInput :: (Applicative m) => Text -> (a -> ServerFun m) -> (Maybe a -> ServerFun m)
 handleMaybeInput message act = \case
@@ -88,7 +112,7 @@ handleMaybeInput message act = \case
   Nothing -> ServerFun $ const $ pure $ Just $ badRequest message
 
 withOptional :: (FromHttpApiData a) => Text -> (Maybe a -> ServerFun m) -> ServerFun m
-withOptional name act = withQueryBy (getQuery name) act
+withOptional name act = withQueryBy (join . getQuery name) act
 
 withQueryBy ::
   (FromHttpApiData a) =>

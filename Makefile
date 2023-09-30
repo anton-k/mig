@@ -1,7 +1,7 @@
 .PHONY: build test run
 
 build:
-	stack build mig-rio
+	stack build mig
 
 test:
 	stack test

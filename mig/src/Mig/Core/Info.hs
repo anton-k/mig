@@ -70,6 +70,7 @@ describeInfoInputs descs routeInfo = routeInfo{inputs = fmap addDesc routeInfo.i
         RawBodyInput -> "raw-input"
         CaptureInput captureName _ -> captureName
         QueryInput _ queryName _ -> queryName
+        QueryFlagInput queryName -> queryName
         HeaderInput _ headerName _ -> headerName
 
     descMap = Map.fromList descs
@@ -79,6 +80,7 @@ data RouteInput
   | RawBodyInput
   | CaptureInput Text Schema
   | QueryInput IsRequired Text Schema
+  | QueryFlagInput Text
   | HeaderInput IsRequired Text Schema
   deriving (Show, Eq)
 
