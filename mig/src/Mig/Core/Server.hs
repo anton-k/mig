@@ -29,14 +29,16 @@ import Network.HTTP.Types.Header (ResponseHeaders)
 import Safe (atMay)
 import System.FilePath (takeExtension)
 import Text.Read (readMaybe)
+import Web.HttpApiData
 
 import Mig.Core.Api (Api, fromNormalApi, toNormalApi)
 import Mig.Core.Api qualified as Api
-import Mig.Core.Info (MediaType (..), RouteInfo (..), RouteInput (..), describeInfoInputs)
+import Mig.Core.Info (RouteInfo (..), RouteInput (..), describeInfoInputs)
 import Mig.Core.Info qualified as Describe (Describe (..))
 import Mig.Core.Route
 import Mig.Core.ServerFun (MapServerFun (..))
 import Mig.Core.Types (Req (..))
+import Mig.Core.Types.MediaType (MediaType (..))
 import Mig.Core.Types.Response (Response (..), addHeaders, okResponse)
 
 -- import Debug.Trace
@@ -122,35 +124,59 @@ fromServer (Server server) = ServerFun $ \req -> do
         inputMedia = getInputMediaType req
         outputMedia = getOutputMediaType req
 
--- | Substitutes all stars * for corresponding names in captures
+{-| Substitutes all stars * for corresponding names in captures
+if there are more captures in the route than in the path it adds
+additional captures from the route to the path
+-}
 fillCaptures :: Api (Route m) -> Api (Route m)
-fillCaptures = go 0
+fillCaptures = go mempty 0
   where
-    go n = \case
+    go pathSoFar n = \case
       Api.WithPath path api ->
         let
-          (pathNext, m) = goPath n path api
+          (pathNext, m) = goPath (pathSoFar <> path) n path api
          in
-          Api.WithPath pathNext (go m api)
-      Api.Append a b -> Api.Append (go n a) (go n b)
+          Api.WithPath pathNext (go (pathSoFar <> path) m api)
+      Api.Append a b -> Api.Append (go pathSoFar n a) (go pathSoFar n b)
       Api.Empty -> Api.Empty
-      Api.HandleRoute a -> Api.HandleRoute a
+      Api.HandleRoute a -> goRoute pathSoFar n a
 
-    goPath :: Int -> Api.Path -> Api (Route m) -> (Api.Path, Int)
-    goPath n (Api.Path path) api = case path of
+    goPath :: Api.Path -> Int -> Api.Path -> Api (Route m) -> (Api.Path, Int)
+    goPath pathSoFar n (Api.Path path) api = case path of
       [] -> (Api.Path path, n)
       Api.CapturePath "*" : rest ->
         let
-          (nextRest, m) = goPath (n + 1) (Api.Path rest) api
+          (nextRest, m) = goPath pathSoFar (n + 1) (Api.Path rest) api
          in
           case getCaptureName n api of
             Just name -> (Api.Path [Api.CapturePath name] <> nextRest, m)
-            Nothing -> error $ "No capture argument for start in path at the index: " <> show n
+            Nothing -> error $ "No capture argument for start in path " <> Text.unpack (toUrlPiece pathSoFar) <> " at the index: " <> show n
       a : rest ->
         let
-          (nextRest, m) = goPath n (Api.Path rest) api
+          (nextRest, m) = goPath pathSoFar n (Api.Path rest) api
          in
           (Api.Path [a] <> nextRest, m)
+
+    goRoute pathSoFar pathCaptureCount route
+      | missingCapturesCount > 0 = withMissingCaptures pathSoFar [pathCaptureCount .. routeCaptureCount - 1] (Api.HandleRoute route)
+      | otherwise = Api.HandleRoute route
+      where
+        missingCapturesCount = routeCaptureCount - pathCaptureCount
+
+        routeCaptureCount = captureCount route.api
+
+    withMissingCaptures pathSoFar indexes route =
+      Api.WithPath (Api.Path $ Api.CapturePath <$> names) route
+      where
+        names =
+          fromMaybe (error $ "Not enough captures at path: " <> Text.unpack (toUrlPiece pathSoFar)) $
+            mapM (\index -> getCaptureName index route) indexes
+
+    captureCount routeInfo = List.foldl' count 0 routeInfo.inputs
+      where
+        count res inp = case inp.content of
+          CaptureInput _ _ -> 1 + res
+          _ -> res
 
 getCaptureName :: Int -> Api (Route m) -> Maybe Text
 getCaptureName index = \case

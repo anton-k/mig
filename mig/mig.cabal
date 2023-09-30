@@ -34,6 +34,7 @@ library
     Mig.Core.Server.Class
     Mig.Core.ServerFun
     Mig.Core.Types
+    Mig.Core.Types.MediaType
     Mig.Core.Types.Response
 
   other-modules:      Paths_mig

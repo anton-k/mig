@@ -25,9 +25,9 @@ import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import GHC.TypeLits
 import Mig.Core.Api
-import Mig.Core.Info (Json)
 import Mig.Core.Route
 import Mig.Core.Server
+import Mig.Core.Types.MediaType (Json)
 import Network.HTTP.Client hiding (Proxy)
 import Network.HTTP.Types.Method
 import Web.HttpApiData

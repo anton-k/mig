@@ -2,9 +2,8 @@ module Main (
   main,
 ) where
 
-import Data.Text (Text)
+import Mig
 import Mig.Client
-import Mig.Server
 import Network.HTTP.Client
 
 type Hello m = Capture "who" Text -> Capture "suffix" Text -> Get Json m Text

@@ -19,8 +19,9 @@ import Data.Map.Strict qualified as Map
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Mig.Core.Info (MediaType (..), RouteInfo (..), RouteOutput (..), getInputType)
+import Mig.Core.Info (RouteInfo (..), RouteOutput (..), getInputType)
 import Mig.Core.Route qualified as Route
+import Mig.Core.Types.MediaType (MediaType (..))
 import Network.HTTP.Types.Method
 import System.FilePath
 import Web.HttpApiData

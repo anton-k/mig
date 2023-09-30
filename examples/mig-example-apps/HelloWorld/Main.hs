@@ -49,9 +49,16 @@ server =
   "api"
     /. "v1"
     /. mconcat
-      [ setDescription "Greeting action" $ "hello/*/*" /. hello
+      [ helloDescription $ "hello" /. hello
       , "bye" /. bye
       ]
+  where
+    helloDescription =
+      setDescription "Greeting action"
+        . describeInputs
+          [ ("who", "whom to greet")
+          , ("suffix", "suffix to use on greeting")
+          ]
 
 type Hello m = Capture "who" Text -> Capture "suffix" Text -> Get Json m Text
 

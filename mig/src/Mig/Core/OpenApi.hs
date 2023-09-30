@@ -16,6 +16,7 @@ import Mig.Core.Info (IsRequired (..), RouteInfo)
 import Mig.Core.Info qualified as Info
 import Mig.Core.Route (Route (..))
 import Mig.Core.Server (Server (..), fillCaptures)
+import Mig.Core.Types.MediaType qualified as Media
 import Network.HTTP.Media.MediaType (MediaType)
 import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status (Status (..))
@@ -131,8 +132,8 @@ fromRouteInput descInput base = case descInput.content of
 -------------------------------------------------------------------------------------
 -- openapi utils
 
-toMediaType :: Info.MediaType -> MediaType
-toMediaType (Info.MediaType txt) = fromString $ Text.unpack txt
+toMediaType :: Media.MediaType -> MediaType
+toMediaType (Media.MediaType txt) = fromString $ Text.unpack txt
 
 nonEmptyText :: Text -> Maybe Text
 nonEmptyText txt

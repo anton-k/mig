@@ -11,10 +11,10 @@ import Data.OpenApi (ToParamSchema, ToSchema)
 import GHC.TypeLits
 import Mig.Core.Api (Api)
 import Mig.Core.Api qualified as Api
-import Mig.Core.Info (MimeRender (..))
 import Mig.Core.Route
 import Mig.Core.Server (Server (..))
 import Mig.Core.Types (Error)
+import Mig.Core.Types.MediaType (MimeRender (..))
 import Mig.Core.Types.Response (Response)
 import Web.FormUrlEncoded
 import Web.HttpApiData
