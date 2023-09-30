@@ -12,16 +12,17 @@ module Mig.Core.Api (
   fromFlatApi,
 ) where
 
-import Data.Foldable (fold)
+import Data.ByteString (ByteString)
 import Data.List qualified as List
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Mig.Core.Info (RouteInfo (..), RouteOutput (..), getInputType)
+import Mig.Core.Info (RouteInfo (..), getInputType)
 import Mig.Core.Route qualified as Route
-import Mig.Core.Types.MediaType (MediaType (..))
+import Network.HTTP.Media (mapContentMedia)
+import Network.HTTP.Media.MediaType (MediaType)
 import Network.HTTP.Types.Method
 import System.FilePath
 import Web.HttpApiData
@@ -57,7 +58,7 @@ filterApi check = \case
     rec = filterApi check
 
 toNormalApi :: forall m. Api (Route.Route m) -> ApiNormal (Route.Route m)
-toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (toMethodMap api)
+toNormalApi api = ApiNormal $ fmap toInputMediaMap (toMethodMap api)
   where
     filterEmpty :: Map key (Api val) -> Map key (Api val)
     filterEmpty = Map.filter $ \case
@@ -76,77 +77,26 @@ toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (to
       where
         methods = foldMap (\r -> maybe [] pure r.api.method) a
 
-    toOutputMediaMap :: Api (Route.Route m) -> OutputMediaMap (Api (Route.Route m))
-    toOutputMediaMap a =
-      OutputMediaMap $ insertAllCase $ insertCategoryCases $ splitByMediaMap
-      where
-        insertAllCase :: Map MediaType (Api (Route.Route m)) -> Map MediaType (Api (Route.Route m))
-        insertAllCase = Map.insert (MediaType "*/*") a
-
-        medias :: [MediaType]
-        medias = List.nub $ foldMap (\r -> [r.api.output.media]) a
-
-        toMediaApi media = (media, filterApi (\r -> r.api.output.media == media) a)
-
-        splitByMediaMap = filterEmpty $ Map.fromList $ fmap toMediaApi medias
-
     toInputMediaMap :: Api (Route.Route m) -> InputMediaMap (Api (Route.Route m))
-    toInputMediaMap a = InputMediaMap $
-      case medias of
-        [] -> MultiMedia mempty
-        m : [] -> SingleMedia m a
-        other -> MultiMedia $ filterEmpty $ Map.fromList $ fmap toMediaApi other
+    toInputMediaMap a =
+      fmap toMediaApi medias
       where
         medias = List.nub $ foldMap (\r -> [getInputType r.api]) a
 
         toMediaApi media = (media, filterApi (\r -> getInputType r.api == media) a)
 
-insertCategoryCases :: forall m. Map MediaType (Api (Route.Route m)) -> Map MediaType (Api (Route.Route m))
-insertCategoryCases a =
-  Map.union a (Map.fromList $ fmap toGroupApi groups)
-  where
-    groups :: [Text]
-    groups = List.nub $ getMediaPrefix <$> Map.keys a
+fromNormalApi :: Method -> ByteString -> ApiNormal a -> Maybe (Api a)
+fromNormalApi method inputContentType (ApiNormal methodMap) = do
+  inputMediaMap <- Map.lookup method methodMap
+  mapContentMedia inputMediaMap inputContentType
 
-    getMediaPrefix :: MediaType -> Text
-    getMediaPrefix (MediaType name) = Text.takeWhile (/= '/') name
-
-    hasGroup :: Text -> MediaType -> Bool
-    hasGroup group (MediaType name) = Text.isPrefixOf (group <> "/") name
-
-    toGroupApi :: Text -> (MediaType, Api (Route.Route m))
-    toGroupApi group = (MediaType (group <> "/*"), filterApi (\r -> hasGroup group r.api.output.media) api)
-
-    api = fold a
-
-fromNormalApi :: Method -> MediaType -> MediaType -> ApiNormal a -> Maybe (Api a)
-fromNormalApi method outputMediaType inputMediaType (ApiNormal methodMap) = do
-  OutputMediaMap outputMediaMap <- Map.lookup method methodMap
-  InputMediaMap inputMediaMap <- Map.lookup outputMediaType outputMediaMap
-  lookupMedia inputMediaType inputMediaMap
-
-data ApiNormal a = ApiNormal (MethodMap (OutputMediaMap (InputMediaMap (Api a))))
+data ApiNormal a = ApiNormal (MethodMap (InputMediaMap (Api a)))
   deriving (Show, Eq, Functor)
 
 type MethodMap a = Map Method a
 
 -- | filter by Content-Type header
-newtype InputMediaMap a = InputMediaMap (MediaMap a)
-  deriving newtype (Functor, Show, Eq)
-
--- | filter by Accept header
-newtype OutputMediaMap a = OutputMediaMap (Map MediaType a)
-  deriving newtype (Functor, Show, Eq)
-
-data MediaMap a
-  = SingleMedia MediaType a
-  | MultiMedia (Map MediaType a)
-  deriving (Functor, Show, Eq)
-
-lookupMedia :: MediaType -> MediaMap a -> Maybe a
-lookupMedia mediaType = \case
-  SingleMedia ty a -> if ty == mediaType then Just a else Nothing
-  MultiMedia as -> Map.lookup mediaType as
+type InputMediaMap a = [(MediaType, a)]
 
 newtype Path = Path {unPath :: [PathItem]}
   deriving newtype (Show, Eq, Ord, Semigroup, Monoid)

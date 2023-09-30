@@ -9,7 +9,6 @@ import Data.HashSet.InsOrd qualified as Set
 import Data.Monoid (Endo (..))
 import Data.OpenApi hiding (Server (..))
 import Data.Proxy
-import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Mig.Core.Api (Api)
@@ -18,8 +17,6 @@ import Mig.Core.Info (IsRequired (..), RouteInfo)
 import Mig.Core.Info qualified as Info
 import Mig.Core.Route (Route (..))
 import Mig.Core.Server (Server (..), fillCaptures)
-import Mig.Core.Types.MediaType qualified as Media
-import Network.HTTP.Media.MediaType (MediaType)
 import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status (Status (..))
 
@@ -83,7 +80,7 @@ fromRouteOutput routeInfo =
 
     code = routeInfo.output.status.statusCode
 
-    responseContentTypes = [toMediaType routeInfo.output.media]
+    responseContentTypes = [routeInfo.output.media]
 
     -- TODO: is it always empty?
     responseHeaders = Inline <$> mempty
@@ -129,7 +126,7 @@ fromRouteInput descInput base = case descInput.content of
             & description .~ (nonEmptyText =<< descInput.description)
             & content .~ InsOrdHashMap.fromList [(t, mempty & schema .~ ref) | t <- [bodyContentType]]
 
-        bodyContentType = toMediaType bodyInputType
+        bodyContentType = bodyInputType
 
     onQueryFlag queryName =
       base
@@ -149,9 +146,6 @@ fromRouteInput descInput base = case descInput.content of
 
 -------------------------------------------------------------------------------------
 -- openapi utils
-
-toMediaType :: Media.MediaType -> MediaType
-toMediaType (Media.MediaType txt) = fromString $ Text.unpack txt
 
 nonEmptyText :: Text -> Maybe Text
 nonEmptyText txt

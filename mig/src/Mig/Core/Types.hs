@@ -28,9 +28,9 @@ import Data.Map.Strict (Map)
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Data.Text.Encoding qualified as Text
 import Data.Text.Lazy qualified as TL
-import Mig.Core.Types.MediaType (MediaType (..), MimeRender (..), ToMediaType (..))
+import Mig.Core.Types.MediaType (MediaType, MimeRender (..), ToMediaType (..))
+import Network.HTTP.Media.RenderHeader
 import Network.HTTP.Types.Header (HeaderName, ResponseHeaders)
 import Network.HTTP.Types.Method (Method)
 import Network.HTTP.Types.Status (Status, ok200, status500)
@@ -122,8 +122,8 @@ instance ToText String where
 
 -- | Headers to set content type
 setContent :: MediaType -> ResponseHeaders
-setContent (MediaType contentType) =
-  [("Content-Type", Text.encodeUtf8 contentType <> "; charset=utf-8")]
+setContent media =
+  [("Content-Type", renderHeader media)]
 
 -- | Sets response status
 setRespStatus :: Status -> Resp -> Resp
