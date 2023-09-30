@@ -26,7 +26,6 @@ library
   exposed-modules:
     Mig.Core
     Mig.Core.Api
-    Mig.Core.Api.NormalForm
     Mig.Core.Info
     Mig.Core.OpenApi
     Mig.Core.Route
