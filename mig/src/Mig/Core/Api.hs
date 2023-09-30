@@ -90,7 +90,7 @@ fromNormalApi method inputContentType (ApiNormal methodMap) = do
   inputMediaMap <- Map.lookup method methodMap
   mapContentMedia inputMediaMap inputContentType
 
-data ApiNormal a = ApiNormal (MethodMap (InputMediaMap (Api a)))
+newtype ApiNormal a = ApiNormal (MethodMap (InputMediaMap (Api a)))
   deriving (Show, Eq, Functor)
 
 type MethodMap a = Map Method a
