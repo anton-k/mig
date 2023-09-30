@@ -9,7 +9,7 @@ module Mig.Core.Route (
 
   -- * Inputs
   Body (..),
-  RawBody (..),
+  ReqBody (..),
   Query (..),
   QueryFlag (..),
   Optional (..),
@@ -44,7 +44,6 @@ module Mig.Core.Route (
 
 import Control.Monad.IO.Class
 import Data.Aeson (FromJSON)
-import Data.ByteString.Lazy qualified as BL
 import Data.Kind
 import Data.OpenApi (ToParamSchema (..), ToSchema (..))
 import Data.Proxy
@@ -54,7 +53,7 @@ import GHC.TypeLits
 import Mig.Core.Info
 import Mig.Core.ServerFun
 import Mig.Core.Types (Error, Resp (..), RespBody (..), fromError, ok, setContent)
-import Mig.Core.Types.MediaType (Json, MediaType (..), MimeRender (..), ToMediaType (..))
+import Mig.Core.Types.MediaType (Json, MediaType (..), MimeRender (..), MimeUnrender (..), ToMediaType (..))
 import Mig.Core.Types.Response (Response (..))
 import Network.HTTP.Types.Method
 import Web.FormUrlEncoded
@@ -100,6 +99,7 @@ instance (MonadIO m) => ToRoute (ServerFun m) where
 -------------------------------------------------------------------------------------
 -- request inputs
 
+-- | Special case for ReqBody with JSON.
 newtype Body a = Body a
 
 instance (ToSchema a, ToRouteInfo b) => ToRouteInfo (Body a -> b) where
@@ -108,17 +108,18 @@ instance (ToSchema a, ToRouteInfo b) => ToRouteInfo (Body a -> b) where
 instance (ToSchema a, FromJSON a, ToRoute b) => ToRoute (Body a -> b) where
   type RouteMonad (Body a -> b) = RouteMonad b
 
-  toRouteFun f = withBody (toRouteFun . f . Body)
+  toRouteFun f = withBody @Json (toRouteFun . f . Body)
 
-newtype RawBody = RawBody BL.ByteString
+-- | Generic case for request body
+newtype ReqBody media a = ReqBody a
 
-instance (ToRouteInfo b) => ToRouteInfo (RawBody -> b) where
-  toRouteInfo = addRouteInput RawBodyInput . toRouteInfo @b
+instance (ToSchema a, ToMediaType ty, ToRouteInfo b) => ToRouteInfo (ReqBody ty a -> b) where
+  toRouteInfo = addRouteInput (ReqBodyInput (toMediaType @ty) (toSchemaDefs @a)) . toRouteInfo @b
 
-instance (ToRoute b) => ToRoute (RawBody -> b) where
-  type RouteMonad (RawBody -> b) = RouteMonad b
+instance (ToSchema a, MimeUnrender media a, ToRoute b) => ToRoute (ReqBody media a -> b) where
+  type RouteMonad (ReqBody media a -> b) = RouteMonad b
 
-  toRouteFun f = withRawBody (toRouteFun . f . RawBody)
+  toRouteFun f = withBody @media (toRouteFun . f . ReqBody)
 
 newtype Query (sym :: Symbol) a = Query a
 

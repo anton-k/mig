@@ -14,8 +14,6 @@ Features, improvements and open problems for releases:
   * study for mime types: https://hackage.haskell.org/package/servant-0.20/docs/Servant-API-ContentTypes.html#t:MimeRender 
 
   * ReqBody - generic requests
-  * QueryFlag
-  * Queries 
   * Stream
 
 * update / add docs
@@ -44,6 +42,7 @@ add client support
 
 * add support for (Either Error (Response a))
 * add capture all case
+* add Queries case
 * add XML support
 * add docs (build separate site on github pages)
 * support for LRU cache for routes (research on efficient route/api representation)

@@ -39,7 +39,7 @@ module Mig.Server.Common (
   QueryFlag (..),
   Optional (..),
   Body (..),
-  RawBody (..),
+  ReqBody (..),
   Header (..),
   FormBody (..),
   PathInfo (..),

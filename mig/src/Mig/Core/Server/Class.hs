@@ -14,7 +14,7 @@ import Mig.Core.Api qualified as Api
 import Mig.Core.Route
 import Mig.Core.Server (Server (..))
 import Mig.Core.Types (Error)
-import Mig.Core.Types.MediaType (MimeRender (..))
+import Mig.Core.Types.MediaType (MimeRender (..), MimeUnrender (..))
 import Mig.Core.Types.Response (Response)
 import Web.FormUrlEncoded
 import Web.HttpApiData
@@ -65,8 +65,8 @@ instance (ToSchema a, FromJSON a, ToRoute b) => ToServer (Body a -> b) where
   type ServerMonad (Body a -> b) = RouteMonad b
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
-instance (ToRoute b) => ToServer (RawBody -> b) where
-  type ServerMonad (RawBody -> b) = RouteMonad b
+instance (ToSchema a, MimeUnrender media a, ToRoute b) => ToServer (ReqBody media a -> b) where
+  type ServerMonad (ReqBody media a -> b) = RouteMonad b
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Query sym a -> b) where

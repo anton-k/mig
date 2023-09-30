@@ -39,6 +39,7 @@ dependencies:
 - extra
 - insert-ordered-containers
 - lens
+- attoparsec
 
 default-extensions:
   - OverloadedStrings
