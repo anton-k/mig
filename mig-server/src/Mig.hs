@@ -64,6 +64,7 @@ module Mig (
   (/.),
   Capture (..),
   Query (..),
+  QueryFlag (..),
   Optional (..),
   Body (..),
   RawBody (..),

@@ -34,6 +34,8 @@ routeArgs =
         "succ-opt" /. handleSuccOpt
       , -- several query params
         "add" /. handleAdd
+      , -- query flag
+        "add-if" /. handleAddIf
       , -- capture
         "mul" /. "*" /. "*" /. handleMul
       , -- json body as input
@@ -78,6 +80,15 @@ handleAdd (Query a) (Query b) = Send $ do
   pure $ addHeaders headers $ okResponse $ a + b
   where
     headers = [("args", "a, b")]
+
+-- | Using query flag if flag is false returns 0
+handleAddIf :: Query "a" Int -> Query "b" Int -> QueryFlag "perform" -> Get Int
+handleAddIf (Query a) (Query b) (QueryFlag addFlag) = Send $ do
+  logDebug "add-if route call"
+  pure $
+    if addFlag
+      then (a + b)
+      else 0
 
 {-| Using capture as arguments. This route expects two arguments
 captured in URL. For example:

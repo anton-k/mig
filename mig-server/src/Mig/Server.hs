@@ -68,7 +68,7 @@ fromRequest maxSize req =
   pure $
     Req
       { path = Wai.pathInfo req
-      , query = Map.fromList $ mapMaybe (\(key, mVal) -> (key,) <$> mVal) (Wai.queryString req)
+      , query = Map.fromList (Wai.queryString req)
       , headers = Map.fromList $ Wai.requestHeaders req
       , method = Wai.requestMethod req
       , readBody = fmap (fmap BL.fromChunks) $ readRequestBody (Wai.getRequestBodyChunk req) maxSize

@@ -93,7 +93,7 @@ fromError f = \case
   Left err -> setRespStatus err.status $ ok @Text err.body
 
 -- | Map of query parameters for fast-access
-type QueryMap = Map ByteString ByteString
+type QueryMap = Map ByteString (Maybe ByteString)
 
 -- | Bad request response
 badRequest :: Text -> Resp

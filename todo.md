@@ -13,6 +13,11 @@ Features, improvements and open problems for releases:
 
   * study for mime types: https://hackage.haskell.org/package/servant-0.20/docs/Servant-API-ContentTypes.html#t:MimeRender 
 
+  * ReqBody - generic requests
+  * QueryFlag
+  * Queries 
+  * Stream
+
 * update / add docs
 
 ### Normal

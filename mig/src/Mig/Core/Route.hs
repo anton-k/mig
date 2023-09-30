@@ -11,6 +11,7 @@ module Mig.Core.Route (
   Body (..),
   RawBody (..),
   Query (..),
+  QueryFlag (..),
   Optional (..),
   Capture (..),
   Header (..),
@@ -122,72 +123,62 @@ instance (ToRoute b) => ToRoute (RawBody -> b) where
 newtype Query (sym :: Symbol) a = Query a
 
 instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Query sym a -> b) where
-  toRouteInfo = addRouteInput (QueryInput (IsRequired True) name (toParamSchema (Proxy @a))) . toRouteInfo @b
-    where
-      name = fromString (symbolVal (Proxy @sym))
+  toRouteInfo = addRouteInput (QueryInput (IsRequired True) (getName @sym) (toParamSchema (Proxy @a))) . toRouteInfo @b
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (Query sym a -> b) where
   type RouteMonad (Query sym a -> b) = RouteMonad b
 
-  toRouteFun f = withQuery name (toRouteFun . f . Query)
-    where
-      name = fromString (symbolVal (Proxy @sym))
+  toRouteFun f = withQuery (getName @sym) (toRouteFun . f . Query)
 
 newtype Optional (sym :: Symbol) a = Optional (Maybe a)
 
 instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Optional sym a -> b) where
-  toRouteInfo = addRouteInput (QueryInput (IsRequired False) name (toParamSchema (Proxy @a))) . toRouteInfo @b
-    where
-      name = fromString (symbolVal (Proxy @sym))
+  toRouteInfo = addRouteInput (QueryInput (IsRequired False) (getName @sym) (toParamSchema (Proxy @a))) . toRouteInfo @b
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (Optional sym a -> b) where
   type RouteMonad (Optional sym a -> b) = RouteMonad b
 
-  toRouteFun f = withOptional name (toRouteFun . f . Optional)
-    where
-      name = fromString (symbolVal (Proxy @sym))
+  toRouteFun f = withOptional (getName @sym) (toRouteFun . f . Optional)
+
+newtype QueryFlag (sym :: Symbol) = QueryFlag Bool
+
+instance (KnownSymbol sym, ToRouteInfo b) => ToRouteInfo (QueryFlag sym -> b) where
+  toRouteInfo = addRouteInput (QueryFlagInput (getName @sym)) . toRouteInfo @b
+
+instance (ToRoute b, KnownSymbol sym) => ToRoute (QueryFlag sym -> b) where
+  type RouteMonad (QueryFlag sym -> b) = RouteMonad b
+
+  toRouteFun f = withQueryFlag (getName @sym) (toRouteFun . f . QueryFlag)
 
 newtype Capture (sym :: Symbol) a = Capture a
 
 instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Capture sym a -> b) where
-  toRouteInfo = addRouteInput (CaptureInput name (toParamSchema (Proxy @a))) . toRouteInfo @b
-    where
-      name = fromString (symbolVal (Proxy @sym))
+  toRouteInfo = addRouteInput (CaptureInput (getName @sym) (toParamSchema (Proxy @a))) . toRouteInfo @b
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (Capture sym a -> b) where
   type RouteMonad (Capture sym a -> b) = RouteMonad b
 
-  toRouteFun f = withCapture name (toRouteFun . f . Capture)
-    where
-      name = fromString (symbolVal (Proxy @sym))
+  toRouteFun f = withCapture (getName @sym) (toRouteFun . f . Capture)
 
 newtype Header (sym :: Symbol) a = Header a
 
 instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Header sym a -> b) where
-  toRouteInfo = addRouteInput (HeaderInput (IsRequired True) name (toParamSchema (Proxy @a))) . toRouteInfo @b
-    where
-      name = fromString (symbolVal (Proxy @sym))
+  toRouteInfo = addRouteInput (HeaderInput (IsRequired True) (getName @sym) (toParamSchema (Proxy @a))) . toRouteInfo @b
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (Header sym a -> b) where
   type RouteMonad (Header sym a -> b) = RouteMonad b
 
-  toRouteFun f = withHeader name (toRouteFun . f . Header)
-    where
-      name = fromString (symbolVal (Proxy @sym))
+  toRouteFun f = withHeader (getName @sym) (toRouteFun . f . Header)
 
 newtype OptionalHeader (sym :: Symbol) a = OptionalHeader (Maybe a)
 
 instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (OptionalHeader sym a -> b) where
-  toRouteInfo = addRouteInput (HeaderInput (IsRequired False) name (toParamSchema (Proxy @a))) . toRouteInfo @b
-    where
-      name = fromString (symbolVal (Proxy @sym))
+  toRouteInfo = addRouteInput (HeaderInput (IsRequired False) (getName @sym) (toParamSchema (Proxy @a))) . toRouteInfo @b
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (OptionalHeader sym a -> b) where
   type RouteMonad (OptionalHeader sym a -> b) = RouteMonad b
 
-  toRouteFun f = withOptionalHeader name (toRouteFun . f . OptionalHeader)
-    where
-      name = fromString (symbolVal (Proxy @sym))
+  toRouteFun f = withOptionalHeader (getName @sym) (toRouteFun . f . OptionalHeader)
 
 newtype FormBody a = FormBody a
 
@@ -285,3 +276,9 @@ instance (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method t
 instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (Either Error a)) where
   type RouteMonad (Send method ty m (Either Error a)) = m
   toRouteFun (Send a) = sendResp $ fromError (ok @ty) <$> a
+
+---------------------------------------------
+-- utils
+
+getName :: forall sym a. (KnownSymbol sym, IsString a) => a
+getName = fromString (symbolVal (Proxy @sym))

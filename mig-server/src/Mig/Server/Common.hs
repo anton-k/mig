@@ -36,6 +36,7 @@ module Mig.Server.Common (
   (/.),
   Capture (..),
   Query (..),
+  QueryFlag (..),
   Optional (..),
   Body (..),
   RawBody (..),

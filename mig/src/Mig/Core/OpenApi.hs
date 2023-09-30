@@ -3,10 +3,12 @@ module Mig.Core.OpenApi (
 ) where
 
 import Control.Lens (at, (%~), (&), (.~), (?~))
+import Data.Aeson (ToJSON (..))
 import Data.HashMap.Strict.InsOrd qualified as InsOrdHashMap
 import Data.HashSet.InsOrd qualified as Set
 import Data.Monoid (Endo (..))
 import Data.OpenApi hiding (Server (..))
+import Data.Proxy
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
@@ -94,6 +96,7 @@ fromRouteInput descInput base = case descInput.content of
   Info.RawBodyInput -> base
   Info.CaptureInput captureName captureSchema -> onCapture captureName captureSchema
   Info.QueryInput isRequired queryName querySchema -> onQuery isRequired queryName querySchema
+  Info.QueryFlagInput queryName -> onQueryFlag queryName
   Info.HeaderInput isRequired headerName headerSchema -> onHeader isRequired headerName headerSchema
   where
     onCapture = onParam addDefaultResponse404 ParamPath (IsRequired True)
@@ -118,16 +121,31 @@ fromRouteInput descInput base = case descInput.content of
     onRequestBody bodyInputType (Info.SchemaDefs defs ref) =
       base
         & addRequestBody reqBody
-        & addDefaultResponse400 tname
+        & addDefaultResponse400 "body"
         & components . schemas %~ (<> defs)
       where
-        tname = "body"
         reqBody =
           (mempty :: RequestBody)
             & description .~ (nonEmptyText =<< descInput.description)
             & content .~ InsOrdHashMap.fromList [(t, mempty & schema .~ ref) | t <- [bodyContentType]]
 
         bodyContentType = toMediaType bodyInputType
+
+    onQueryFlag queryName =
+      base
+        & addParam param
+        & addDefaultResponse400 queryName
+      where
+        param =
+          mempty
+            & name .~ queryName
+            & in_ .~ ParamQuery
+            & allowEmptyValue ?~ True
+            & schema
+              ?~ ( Inline $
+                    (toParamSchema (Proxy :: Proxy Bool))
+                      & default_ ?~ toJSON False
+                 )
 
 -------------------------------------------------------------------------------------
 -- openapi utils
