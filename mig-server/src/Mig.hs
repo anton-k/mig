@@ -29,13 +29,15 @@ module Mig (
 
   -- * DSL
   Json,
+  FormUrlEncoded,
   OctetStream,
   ToServer (..),
   ToRoute (..),
   ToRouteInfo (..),
-  MediaType (..),
+  MediaType,
   ToMediaType (..),
   MimeRender (..),
+  MimeUnrender (..),
 
   -- ** methods
   Send (..),
@@ -69,7 +71,6 @@ module Mig (
   Body (..),
   ReqBody (..),
   Header (..),
-  FormBody (..),
   PathInfo (..),
 
   -- ** response

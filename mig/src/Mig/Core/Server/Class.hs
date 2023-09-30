@@ -85,10 +85,6 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToS
   type ServerMonad (Header sym a -> b) = RouteMonad b
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
-instance (ToSchema a, FromForm a, ToRoute b) => ToServer (FormBody a -> b) where
-  type ServerMonad (FormBody a -> b) = RouteMonad b
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
 instance (ToRoute b) => ToServer (PathInfo -> b) where
   type ServerMonad (PathInfo -> b) = RouteMonad b
   toServer a = Server $ Api.HandleRoute (toRoute a)

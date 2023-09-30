@@ -16,7 +16,6 @@ module Mig.Core.Route (
   Capture (..),
   Header (..),
   OptionalHeader (..),
-  FormBody (..),
   PathInfo (..),
 
   -- * Output methods
@@ -53,7 +52,7 @@ import GHC.TypeLits
 import Mig.Core.Info
 import Mig.Core.ServerFun
 import Mig.Core.Types (Error, Resp (..), RespBody (..), fromError, ok, setContent)
-import Mig.Core.Types.MediaType (FormUrlEncoded, Json, MimeRender (..), MimeUnrender (..), ToMediaType (..))
+import Mig.Core.Types.MediaType (Json, MimeRender (..), MimeUnrender (..), ToMediaType (..))
 import Mig.Core.Types.Response (Response (..))
 import Network.HTTP.Types.Method
 import Web.FormUrlEncoded
@@ -180,20 +179,6 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToR
   type RouteMonad (OptionalHeader sym a -> b) = RouteMonad b
 
   toRouteFun f = withOptionalHeader (getName @sym) (toRouteFun . f . OptionalHeader)
-
-newtype FormBody a = FormBody a
-
--- on form url encoded we should set media types for both input and output
--- to the value of "application/x-www-form-urlencoded"
-instance (ToSchema a, ToRouteInfo b) => ToRouteInfo (FormBody a -> b) where
-  toRouteInfo = setOutputMedia mediaType . addRouteInput (ReqBodyInput mediaType (toSchemaDefs @a)) . toRouteInfo @b
-    where
-      mediaType = toMediaType @FormUrlEncoded
-
-instance (ToSchema a, FromForm a, ToRoute b) => ToRoute (FormBody a -> b) where
-  type RouteMonad (FormBody a -> b) = RouteMonad b
-
-  toRouteFun f = withFormBody (toRouteFun . f . FormBody)
 
 -- | Reads current path info
 newtype PathInfo = PathInfo [Text]
