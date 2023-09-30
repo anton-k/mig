@@ -20,8 +20,6 @@ module Mig.Core.ServerFun (
 import Control.Monad
 import Control.Monad.Catch
 import Control.Monad.IO.Class
-import Data.Aeson (FromJSON)
-import Data.Aeson qualified as Json
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BL
 import Data.CaseInsensitive qualified as CI
@@ -29,7 +27,6 @@ import Data.Either (fromRight)
 import Data.Either.Extra (eitherToMaybe)
 import Data.Map.Strict qualified as Map
 import Data.Text (Text)
-import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Mig.Core.Info
 import Mig.Core.Types (
@@ -40,6 +37,7 @@ import Mig.Core.Types (
   ok,
   setRespStatus,
  )
+import Mig.Core.Types.MediaType
 import Network.HTTP.Types.Header (HeaderName)
 import Network.HTTP.Types.Status (status413)
 import Web.FormUrlEncoded
@@ -59,11 +57,11 @@ instance ToRouteInfo (ServerFun m) where
 
 newtype ServerFun m = ServerFun {unServerFun :: Req -> m (Maybe Resp)}
 
-withBody :: (MonadIO m, FromJSON a) => (a -> ServerFun m) -> ServerFun m
+withBody :: forall media a m. (MonadIO m, MimeUnrender media a) => (a -> ServerFun m) -> ServerFun m
 withBody f = withRawBody $ \val -> ServerFun $ \req ->
-  case Json.eitherDecode val of
+  case mimeUnrender @media val of
     Right v -> unServerFun (f v) req
-    Left err -> pure $ Just $ badRequest $ "Failed to parse JSON body: " <> Text.pack err
+    Left err -> pure $ Just $ badRequest $ "Failed to parse request body: " <> err
 
 withRawBody :: (MonadIO m) => (BL.ByteString -> ServerFun m) -> ServerFun m
 withRawBody act = ServerFun $ \req -> do

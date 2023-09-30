@@ -150,9 +150,11 @@ instance (ToJSON a, ToClient b) => ToClient (Body a -> b) where
   toClient api = \(Body body) -> mapRequest (addJsonBody body) $ toClient @b api
   clientArity = clientArity @b
 
+{- TODO
 instance (ToClient b) => ToClient (RawBody -> b) where
   toClient api = \(RawBody body) -> mapRequest (addRawBody body) $ toClient @b api
   clientArity = clientArity @b
+-}
 
 addQuery :: forall sym a. (KnownSymbol sym, ToHttpApiData a) => Query sym a -> Request -> Request
 addQuery (Query a) req = req{queryString = str}
@@ -176,8 +178,10 @@ addCapture (Capture a) =
 addJsonBody :: (ToJSON a) => a -> Request -> Request
 addJsonBody body req = req{requestBody = RequestBodyLBS (Json.encode body)}
 
+{- TODO
 addRawBody :: BL.ByteString -> Request -> Request
 addRawBody body req = req{requestBody = RequestBodyLBS body}
+-}
 
 pathToString :: CaptureMap -> Path -> ByteString
 pathToString captureValues (Path path) = case path of
