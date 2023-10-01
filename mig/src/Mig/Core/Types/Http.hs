@@ -75,8 +75,8 @@ type CaptureMap = Map Text Text
 type QueryMap = Map ByteString (Maybe ByteString)
 
 -- | Bad request response
-badRequest :: Text -> Response
-badRequest message = setRespStatus status500 $ ok @Text message
+badRequest :: forall media a. (MimeRender media a) => a -> Response
+badRequest message = setRespStatus status500 $ ok @media message
 
 -- | Values convertible to lazy text
 class ToText a where

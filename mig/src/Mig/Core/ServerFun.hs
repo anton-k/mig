@@ -41,7 +41,7 @@ withBody :: forall media a m. (MonadIO m, MimeUnrender media a) => (a -> ServerF
 withBody f = withRawBody $ \val -> \req ->
   case mimeUnrender @media val of
     Right v -> f v req
-    Left err -> pure $ Just $ badRequest $ "Failed to parse request body: " <> err
+    Left err -> pure $ Just $ badRequest @Text $ "Failed to parse request body: " <> err
 
 withRawBody :: (MonadIO m) => (BL.ByteString -> ServerFun m) -> ServerFun m
 withRawBody act = \req -> do
@@ -87,7 +87,7 @@ getQuery name req =
 handleMaybeInput :: (Applicative m) => Text -> (a -> ServerFun m) -> (Maybe a -> ServerFun m)
 handleMaybeInput message act = \case
   Just arg -> \req -> act arg req
-  Nothing -> const $ pure $ Just $ badRequest message
+  Nothing -> const $ pure $ Just $ badRequest @Text message
 
 withOptional :: (FromHttpApiData a) => Text -> (Maybe a -> ServerFun m) -> ServerFun m
 withOptional name act = withQueryBy (join . getQuery name) act
@@ -134,7 +134,7 @@ withFormBody :: (MonadIO m, FromForm a) => (a -> ServerFun m) -> ServerFun m
 withFormBody act = withRawBody $ \body -> \req -> do
   case urlDecodeForm body >>= fromForm of
     Right a -> act a req
-    Left err -> pure $ Just $ setRespStatus status413 $ badRequest err
+    Left err -> pure $ Just $ setRespStatus status413 $ badRequest @Text err
 
 withPathInfo :: ([Text] -> ServerFun m) -> ServerFun m
 withPathInfo act = \req -> act req.path req

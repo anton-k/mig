@@ -3,6 +3,7 @@ module Mig.Core (
 ) where
 
 import Mig.Core.Api as X
+import Mig.Core.Middleware as X
 import Mig.Core.OpenApi as X
 import Mig.Core.Route as X
 import Mig.Core.Server as X
