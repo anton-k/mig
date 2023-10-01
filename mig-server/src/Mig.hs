@@ -83,11 +83,6 @@ module Mig (
   -- ** specific cases
   staticFiles,
 
-  -- ** Errors
-
-  -- | How to report errors
-  Error (..),
-
   -- ** Low-level types
   Req,
   Resp,
@@ -145,7 +140,6 @@ import Mig.Core.Server
 import Mig.Core.Server.Class
 import Mig.Core.ServerFun (MapServerFun (..), mapResp)
 import Mig.Core.Types (
-  Error (..),
   Req,
   Resp,
   ToText (..),

@@ -20,9 +20,10 @@ import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.Sequence (Seq (..), (|>))
 import Data.Sequence qualified as Seq
+import Data.Text (Text)
 import Data.Text qualified as Text
 import Mig.Core.ServerFun (handleError)
-import Mig.Core.Types (Error (..), Req (..), Resp (..), RespBody (..), ToText (..), badRequest)
+import Mig.Core.Types (Req (..), Resp (..), RespBody (..), ToText (..), badRequest)
 import Network.HTTP.Types.Status (status413)
 import Network.Wai qualified as Wai
 import Network.Wai.Handler.Warp qualified as Warp
@@ -77,10 +78,10 @@ fromRequest maxSize req =
       }
 
 -- | Read request body in chunks
-readRequestBody :: IO B.ByteString -> Maybe Kilobytes -> IO (Either Error [B.ByteString])
+readRequestBody :: IO B.ByteString -> Maybe Kilobytes -> IO (Either Text [B.ByteString])
 readRequestBody readChunk maxSize = loop 0 Seq.empty
   where
-    loop :: Kilobytes -> Seq B.ByteString -> IO (Either Error [B.ByteString])
+    loop :: Kilobytes -> Seq B.ByteString -> IO (Either Text [B.ByteString])
     loop !currentSize !result
       | isBigger currentSize = pure outOfSize
       | otherwise = do
@@ -89,8 +90,8 @@ readRequestBody readChunk maxSize = loop 0 Seq.empty
             then pure $ Right (toList result)
             else loop (currentSize + B.length chunk) (result |> chunk)
 
-    outOfSize :: Either Error a
-    outOfSize = Left (Error status413 (Text.pack $ "Request is too big Jim!"))
+    outOfSize :: Either Text a
+    outOfSize = Left "Request is too big Jim!"
 
     isBigger = case maxSize of
       Just size -> \current -> current > size

@@ -54,11 +54,6 @@ module Mig.Server.Common (
   -- ** specific cases
   staticFiles,
 
-  -- ** Errors
-
-  -- | How to report errors
-  Error (..),
-
   -- ** Low-level types
   Req,
   Resp,

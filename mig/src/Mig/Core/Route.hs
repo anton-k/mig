@@ -49,7 +49,7 @@ import Data.Text (Text)
 import GHC.TypeLits
 import Mig.Core.Info
 import Mig.Core.ServerFun
-import Mig.Core.Types (Error, Resp (..), RespBody (..), fromError, ok, setContent)
+import Mig.Core.Types (Resp (..), RespBody (..), ok, setContent)
 import Mig.Core.Types.MediaType (MimeRender (..), MimeUnrender (..), ToMediaType (..))
 import Mig.Core.Types.Response (Response (..))
 import Network.HTTP.Types.Method
@@ -232,9 +232,6 @@ instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (Response a)) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
-instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (Either Error a)) where
-  toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
-
 instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m a) where
   type RouteMonad (Send method ty m a) = m
   toRouteFun (Send a) = sendResp $ ok @ty <$> a
@@ -244,10 +241,6 @@ instance (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method t
   toRouteFun (Send a) = sendResp $ (\resp -> Resp resp.status (resp.headers <> setContent media) (RawResp media $ mimeRender @ty resp.body)) <$> a
     where
       media = toMediaType @ty
-
-instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (Either Error a)) where
-  type RouteMonad (Send method ty m (Either Error a)) = m
-  toRouteFun (Send a) = sendResp $ fromError (ok @ty) <$> a
 
 ---------------------------------------------
 -- utils

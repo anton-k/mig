@@ -8,6 +8,8 @@ import Control.Monad.Except
 import Control.Monad.Reader
 import Data.Kind
 import Data.Text (Text)
+import Network.HTTP.Types.Status (status500)
+
 import Mig.Core.Route
 import Mig.Core.Server
 import Mig.Core.ServerFun (MapServerFun (..))
@@ -40,9 +42,9 @@ fromReader :: env -> Server (ReaderT env IO) -> IO (Server IO)
 fromReader env server =
   flip runReaderT env $ ReaderT $ \e -> pure $ hoistServer (flip runReaderT e) server
 
-instance HasServer (ReaderT env (ExceptT Error IO)) where
+instance HasServer (ReaderT env (ExceptT Text IO)) where
   type
-    ServerResult (ReaderT env (ExceptT Error IO)) =
+    ServerResult (ReaderT env (ExceptT Text IO)) =
       env -> IO (Server IO)
 
   renderServer server initEnv = fromReaderExcept initEnv server
@@ -50,18 +52,18 @@ instance HasServer (ReaderT env (ExceptT Error IO)) where
 fromReaderExcept ::
   forall env.
   env ->
-  Server (ReaderT env (ExceptT Error IO)) ->
+  Server (ReaderT env (ExceptT Text IO)) ->
   IO (Server IO)
 fromReaderExcept env server =
   flip runReaderT env $
     ReaderT $
       \e -> pure $ mapServerFun (handle e) server
   where
-    handle :: env -> ServerFun (ReaderT env (ExceptT Error IO)) -> ServerFun IO
+    handle :: env -> ServerFun (ReaderT env (ExceptT Text IO)) -> ServerFun IO
     handle e (ServerFun f) = ServerFun $ \req ->
       handleError <$> runExceptT (runReaderT (f req) e)
 
-    handleError :: Either Error (Maybe Resp) -> Maybe Resp
+    handleError :: Either Text (Maybe Resp) -> Maybe Resp
     handleError = \case
       Right mResp -> mResp
-      Left err -> Just $ setRespStatus err.status (ok @Text err.body)
+      Left err -> Just $ setRespStatus status500 (ok @Text err)
