@@ -22,18 +22,17 @@ import Data.Maybe
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Network.HTTP.Types.Header (ResponseHeaders)
 import Safe (atMay)
 import System.FilePath (takeExtension)
 import Web.HttpApiData
 
 import Mig.Core.Api (Api, fromNormalApi, toNormalApi)
 import Mig.Core.Api qualified as Api
-import Mig.Core.Info (RouteInfo (..), RouteInput (..), describeInfoInputs)
+import Mig.Core.Info (RouteInfo (..), RouteInput (..), describeInfoInputs, setOutputMedia)
 import Mig.Core.Info qualified as Describe (Describe (..))
 import Mig.Core.Route
 import Mig.Core.ServerFun (MapServerFun (..))
-import Mig.Core.Types (Req (..))
+import Mig.Core.Types (MediaType, Req (..), setContent)
 import Mig.Core.Types.MediaType (OctetStream)
 import Mig.Core.Types.Response (Response (..), addHeaders, okResponse)
 
@@ -101,23 +100,25 @@ fromServer (Server server) = ServerFun $ \req -> do
     serverNormal = toNormalApi (fillCaptures server)
 
     getRoute req =
-      {- trace
+      {-
+      trace
       ( unlines
           [ "path"
           , show req.path
           , "input media: "
-          , show inputMedia
+          , show (getMedia "Content-Type" req)
           , "output media"
-          , show outputMedia
+          , show (getMedia "Accept" req)
           , "method"
           , show req.method
           ]
-      ) $ -}
+      ) $
+      -}
       do
-        api <- fromNormalApi req.method inputContentType serverNormal
+        api <- fromNormalApi req.method (getMedia "Accept" req) (getMedia "Content-Type" req) serverNormal
         Api.getPath req.path api
-      where
-        inputContentType = getContentType req
+
+    getMedia name req = fromMaybe "*/*" $ Map.lookup name req.headers
 
 {-| Substitutes all stars * for corresponding names in captures
 if there are more captures in the route than in the path it adds
@@ -187,9 +188,6 @@ getCaptureName index = \case
       CaptureInput name _ -> Just name
       _ -> Nothing
 
-getContentType :: Req -> ByteString
-getContentType req = fromMaybe "*/*" $ Map.lookup "Content-Type" req.headers
-
 -- | Adds tag to the route
 addTag :: Text -> Server m -> Server m
 addTag tag = mapRouteInfo (insertTag tag)
@@ -221,20 +219,25 @@ staticFiles files =
   Server $ foldMap (uncurry serveFile) files
   where
     serveFile path content =
-      (fromString path) `Api.WithPath` (Api.HandleRoute (toRoute (getFile path content)))
-
-    getFile :: FilePath -> ByteString -> Get OctetStream m (Response BL.ByteString)
-    getFile path fileContent = Send $ pure $ addHeaders contentHeaders $ okResponse $ BL.fromStrict fileContent
+      fmap (\x -> x{api = setOutputMedia media x.api}) $
+        (fromString path) `Api.WithPath` (Api.HandleRoute (toRoute (getFile media content)))
       where
-        contentHeaders :: ResponseHeaders
-        contentHeaders =
-          case mimeType of
-            Just ty -> [("Content-Type", ty)]
-            Nothing -> []
+        media = getMediaType path
 
-        mimeType = Map.lookup (takeExtension path) extToMimeMap
+    getFile :: MediaType -> ByteString -> Get OctetStream m (Response BL.ByteString)
+    getFile ty fileContent =
+      Send $
+        pure $
+          addHeaders (setContent ty) $
+            okResponse $
+              BL.fromStrict fileContent
 
-extToMimeMap :: Map String ByteString
+    getMediaType :: FilePath -> MediaType
+    getMediaType path =
+      fromMaybe "application/octet-stream" $
+        Map.lookup (takeExtension path) extToMimeMap
+
+extToMimeMap :: Map String MediaType
 extToMimeMap =
   Map.fromList
     [ (".aac", "audio/aac") -- AAC audio

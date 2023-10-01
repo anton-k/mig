@@ -64,6 +64,8 @@ dependencies:
   - pretty-show
   - openapi3
   - safe
+  - containers
+  - http-types
 
 executables:
   hello-world-mig-example-app:
