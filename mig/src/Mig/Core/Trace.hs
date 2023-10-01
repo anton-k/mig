@@ -1,5 +1,9 @@
--- | Debug utils for server. Simple logger for HTTP requests and responses
-module Mig.Core.Server.Trace (
+{-| Debug utils for server. Simple logger for HTTP requests and responses
+Also we can use real logging functions with ***By versions.
+Simple variants are only for manual testing. It prints to stdout
+with no ordering of the concurrent prints.
+-}
+module Mig.Core.Trace (
   logReq,
   logResp,
   logReqBy,
@@ -13,9 +17,9 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Data.Aeson ((.=))
 import Data.Aeson qualified as Json
-import Data.Aeson.Encode.Pretty (encodePretty)
 import Data.Aeson.Key qualified as Json
 import Data.ByteString (ByteString)
+import Data.ByteString.Char8 qualified as B
 import Data.ByteString.Lazy.Char8 qualified as BL
 import Data.CaseInsensitive (CI)
 import Data.CaseInsensitive qualified as CI
@@ -25,6 +29,7 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Data.Time
+import Data.Yaml qualified as Yaml
 import Mig.Core.Server
 import Mig.Core.ServerFun
 import Mig.Core.Types.Http
@@ -62,7 +67,7 @@ logHttpBy printer verbosity = logRespBy printer verbosity . logReqBy printer ver
 -- request
 
 logReq :: (MonadIO m) => Verbosity -> Server m -> Server m
-logReq = logReqBy $ liftIO . BL.putStrLn . encodePretty
+logReq = logReqBy defaultPrinter
 
 logReqBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Server m -> Server m
 logReqBy printer verbosity = mapServerFun $ \(ServerFun f) -> ServerFun $ \req -> do
@@ -83,12 +88,9 @@ ppReq verbosity now body req =
             [
               [ "time" .= now
               , "type" .= ("http-request" :: Text)
-              , "level" .= ("DEBUG" :: Text)
-              , "path" .= (Text.intercalate "/" req.path)
+              , "path" .= toPath req
               , "method" .= Text.decodeUtf8 (renderHeader req.method)
               ]
-            , if Map.null req.capture then [] else ["capture" .= req.capture]
-            , if Map.null req.query then [] else ["query" .= fromQuery req.query]
             ]
       , ifLevel
           verbosity
@@ -107,11 +109,6 @@ ppReq verbosity now body req =
           | verbosity < V3 = filter ((\name -> name == "Accept" || name == "Content-Type") . fst)
           | otherwise = id
 
-    fromQuery query = Json.object $ fmap go (Map.toList query)
-      where
-        go (name, mVal) =
-          Json.fromText (Text.decodeUtf8 name) .= maybe "" Text.decodeUtf8 mVal
-
     fromBody :: Either Text BL.ByteString -> Json.Value
     fromBody
       | isJsonReq = either Json.String jsonBody
@@ -123,7 +120,7 @@ ppReq verbosity now body req =
 -- response
 
 logResp :: (MonadIO m) => Verbosity -> Server m -> Server m
-logResp = logRespBy $ liftIO . BL.putStrLn . encodePretty
+logResp = logRespBy defaultPrinter
 
 logRespBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Server m -> Server m
 logRespBy printer verbosity = mapServerFun $ \(ServerFun f) -> ServerFun $ \req -> do
@@ -143,8 +140,7 @@ ppResp verbosity now dur req resp =
           [ "time" .= now
           , "duration" .= dur
           , "type" .= ("http-response" :: Text)
-          , "level" .= ("debug" :: Text)
-          , "path" .= Text.intercalate "/" req.path
+          , "path" .= toPath req
           , "status" .= resp.status.statusCode
           , "method" .= Text.decodeUtf8 (renderHeader req.method)
           ]
@@ -171,6 +167,26 @@ ppResp verbosity now dur req resp =
 
 -------------------------------------------------------------------------------------
 -- utils
+
+defaultPrinter :: (MonadIO m) => Json.Value -> m ()
+defaultPrinter =
+  liftIO . B.putStrLn . Yaml.encode . addLogPrefix
+
+addLogPrefix :: Json.Value -> Json.Value
+addLogPrefix val = Json.object ["log" .= val]
+
+toPath :: Req -> Text
+toPath req = Text.intercalate "/" req.path <> queries
+  where
+    queries
+      | Map.null req.query = mempty
+      | otherwise = "?" <> Text.intercalate "&" (fmap fromQuery (Map.toList req.query))
+
+    fromQuery (name, mVal) = case mVal of
+      Just val -> nameText <> "=" <> Text.decodeUtf8 val
+      Nothing -> nameText
+      where
+        nameText = Text.decodeUtf8 name
 
 headerName :: CI ByteString -> Json.Key
 headerName name = Json.fromText (Text.decodeUtf8 $ CI.foldedCase name)

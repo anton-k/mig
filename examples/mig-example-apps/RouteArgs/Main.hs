@@ -10,7 +10,7 @@ module Main (
 -- import Text and IO based server
 
 import Data.Text.IO qualified as Text
-import Mig.Core.Server.Trace qualified as Trace
+import Mig.Core.Trace qualified as Trace
 import Mig.Json.IO
 import Mig.Swagger
 
@@ -66,7 +66,9 @@ handleSucc (Header traceId) (Query n) = Send $ do
       | n <= 0 = status400
       | otherwise = ok200
 
--- | Using optional query parameters and error as Either
+{-| Using optional query parameters and error as Either.
+also there is handy type shortcut @EitherResponse err result@
+-}
 handleSuccOpt :: Optional "value" Int -> Get (Either (Response Text) (Response Int))
 handleSuccOpt (Optional n) = Send $ do
   logDebug "succ optional route call"

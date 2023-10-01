@@ -7,7 +7,8 @@ test:
 	stack test
 
 run:
-	stack run hello-world-mig-example-app	
+	stack run hello-world-mig-example-app 
+	## | bat -lyaml --paging=never --style=plain
 	
 run-hello-wrold:
 	stack run hello-world-mig-example-app	

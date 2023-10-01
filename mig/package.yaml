@@ -41,7 +41,7 @@ dependencies:
 - lens
 - attoparsec
 - time
-- aeson-pretty
+- yaml
 
 default-extensions:
   - OverloadedStrings
