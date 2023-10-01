@@ -1,3 +1,35 @@
+{-| Middlewares are useful to apply certain action to all routes in the server.
+For example we can add generic logger or authorization bazed on common query parameter
+or field of the body request that contains token of the session.
+
+The downside is that we work on low level of Requesnce/Response as we have rendered
+all routes to ServerFun. But thw good part of it is that we can add generic action
+to every route.
+
+Let's consider a simple example of adding logger to lall routes:
+
+
+> logRoutes :: Server IO -> Server IO
+> logRoutes = applyMiddleware $ \(PathInfo path) -> prependServerAction $
+>    when (path /= ["favicon.ico"] && headMay path /= Just "static") $ do
+>      logRoute site (Text.intercalate "/" path)
+>
+> -- | Logs the route info
+> logRoute :: Site -> Text -> IO ()
+> logRoute site route = do
+>   time <- getCurrentTime
+>   site.logInfo $ route <> " page visited at: " <> Text.pack (show time)
+
+Here we use instance of ToMiddleware for `PathInfo` to read full path for any route
+and we use this information in the logger.
+
+We have various instances for everything that we can query from the request
+and we can use this information to transform the server functions inside the routes.
+
+The instances work in the same manner as route handlers we can use as many arguments as
+we wish and we use typed wrappers to query specific part of the request.
+Thus we gain type-safety and get convenient interface to request the various parts of request.
+-}
 module Mig.Core.Middleware (
   -- * class
   ToMiddleware (..),
