@@ -50,6 +50,7 @@ module Mig.Server.Common (
   Resp (..),
   okResp,
   badResp,
+  redirect,
   addHeaders,
   setStatus,
 
@@ -69,6 +70,8 @@ module Mig.Server.Common (
   Response,
   okResponse,
   badResponse,
+  redirectResponse,
+  badRequest,
   ServerFun,
   handleRespError,
 
@@ -87,9 +90,6 @@ module Mig.Server.Common (
 
   -- * Convertes
   ToText (..),
-
-  -- * utils
-  badRequest,
 
   -- ** Server
   mapRouteInfo,

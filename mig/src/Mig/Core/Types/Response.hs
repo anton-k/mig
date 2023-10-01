@@ -6,12 +6,15 @@ module Mig.Core.Types.Response (
   addHeaders,
   setStatus,
   fromResp,
+  redirect,
 ) where
 
 import Data.OpenApi (ToSchema (..))
+import Data.Text (Text)
+import Data.Text.Encoding qualified as Text
 import Data.Typeable
 import Network.HTTP.Types.Header (ResponseHeaders)
-import Network.HTTP.Types.Status (Status, ok200)
+import Network.HTTP.Types.Status (Status, ok200, status302)
 
 import Mig.Core.Types.Http (Response)
 import Mig.Core.Types.Http qualified as Types
@@ -25,6 +28,9 @@ data Resp a = Resp
 
 okResp :: a -> Resp a
 okResp = Resp ok200 []
+
+redirect :: Text -> Resp Text
+redirect url = addHeaders [("Location", Text.encodeUtf8 url)] $ badResp status302 ""
 
 badResp :: Status -> a -> Resp a
 badResp status = Resp status []
