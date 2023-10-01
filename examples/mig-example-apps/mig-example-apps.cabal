@@ -55,6 +55,8 @@ executable counter-mig-example-app
     , aeson-pretty
     , base >=4.7 && <5
     , bytestring
+    , containers
+    , http-types
     , mig
     , mig-client
     , mig-server
@@ -97,7 +99,9 @@ executable hello-client-mig-example-app
     , aeson-pretty
     , base >=4.7 && <5
     , bytestring
+    , containers
     , http-client
+    , http-types
     , mig
     , mig-client
     , mig-server
@@ -139,6 +143,8 @@ executable hello-world-mig-example-app
     , aeson-pretty
     , base >=4.7 && <5
     , bytestring
+    , containers
+    , http-types
     , mig
     , mig-client
     , mig-server
@@ -190,8 +196,10 @@ executable html-mig-example-app
     , base >=4.7 && <5
     , blaze-html
     , bytestring
+    , containers
     , file-embed-lzma
     , http-api-data
+    , http-types
     , mig
     , mig-client
     , mig-server
@@ -242,6 +250,7 @@ executable json-api-mig-example-app
     , base >=4.7 && <5
     , bytestring
     , containers
+    , http-types
     , mig
     , mig-client
     , mig-server
@@ -283,6 +292,8 @@ executable route-args-mig-example-app
     , aeson-pretty
     , base >=4.7 && <5
     , bytestring
+    , containers
+    , http-types
     , mig
     , mig-client
     , mig-server

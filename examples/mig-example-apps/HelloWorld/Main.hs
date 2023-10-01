@@ -7,10 +7,12 @@ module Main (
   bye',
 ) where
 
+import Data.Map.Strict qualified as Map
 import Mig
-import Mig.Core.Api (toNormalApi)
+import Mig.Core.Api (ApiNormal (..), MediaMap (..), OutputMediaMap (..), toNormalApi)
 import Mig.Core.Server (fillCaptures)
 import Mig.Swagger
+import Network.HTTP.Types.Method (methodGet)
 import Text.Show.Pretty
 
 import Mig.Client
@@ -21,8 +23,13 @@ It uses wai and warp.
 main :: IO ()
 main = do
   putStrLn ("The hello world server listens on port: " <> show port)
-  pPrint (fmap (.api) $ toNormalApi $ fillCaptures server.unServer)
-  printOpenApi server
+  pPrint
+    ( case fmap (.api) $ toNormalApi $ fillCaptures (withSwagger swaggerConfig server).unServer of
+        ApiNormal m ->
+          case m Map.! methodGet of
+            OutputMediaMap x -> map fst x.mapValues
+    )
+  --  printOpenApi server
   runServer port (withSwagger swaggerConfig server)
   where
     port = 8085

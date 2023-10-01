@@ -19,7 +19,7 @@ category:            Web
 # common to point users to the README.md file.
 description:         Please see the README on GitHub at <https://github.com/githubuser/mig-rio#readme>
 
-default-language: GHC2021
+language: GHC2021
 
 default-extensions:
   - DerivingStrategies

@@ -10,6 +10,9 @@ module Mig.Core.Api (
   CaptureMap,
   flatApi,
   fromFlatApi,
+  OutputMediaMap (..),
+  InputMediaMap (..),
+  MediaMap (..),
 ) where
 
 import Data.ByteString (ByteString)
@@ -19,9 +22,9 @@ import Data.Set qualified as Set
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Mig.Core.Info (RouteInfo (..), getInputType)
+import Mig.Core.Info (RouteInfo (..), RouteOutput (..), getInputType)
 import Mig.Core.Route qualified as Route
-import Network.HTTP.Media (mapContentMedia)
+import Network.HTTP.Media (mapAcceptMedia, mapContentMedia)
 import Network.HTTP.Media.MediaType (MediaType)
 import Network.HTTP.Types.Method
 import System.FilePath
@@ -58,7 +61,7 @@ filterApi check = \case
     rec = filterApi check
 
 toNormalApi :: forall m. Api (Route.Route m) -> ApiNormal (Route.Route m)
-toNormalApi api = ApiNormal $ fmap toInputMediaMap (toMethodMap api)
+toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (toMethodMap api)
   where
     filterEmpty :: Map key (Api val) -> Map key (Api val)
     filterEmpty = Map.filter $ \case
@@ -78,25 +81,48 @@ toNormalApi api = ApiNormal $ fmap toInputMediaMap (toMethodMap api)
         methods = foldMap (\r -> maybe [] pure r.api.method) a
 
     toInputMediaMap :: Api (Route.Route m) -> InputMediaMap (Api (Route.Route m))
-    toInputMediaMap a =
-      fmap toMediaApi medias
+    toInputMediaMap = InputMediaMap . toMediaMapBy getInputType
+
+    toOutputMediaMap :: Api (Route.Route m) -> OutputMediaMap (Api (Route.Route m))
+    toOutputMediaMap = OutputMediaMap . toMediaMapBy (\routeInfo -> routeInfo.output.media)
+
+    toMediaMapBy :: (RouteInfo -> MediaType) -> Api (Route.Route m) -> MediaMap (Api (Route.Route m))
+    toMediaMapBy getMedia a =
+      MediaMap (toMediaApi <$> medias) a
       where
-        medias = Set.toList $ foldMap (\r -> Set.singleton (getInputType r.api)) a
+        medias = Set.toList $ foldMap (\r -> Set.singleton (getMedia r.api)) a
 
-        toMediaApi media = (media, filterApi (\r -> getInputType r.api == media) a)
+        toMediaApi media = (media, filterApi (\r -> getMedia r.api == media) a)
 
-fromNormalApi :: Method -> ByteString -> ApiNormal a -> Maybe (Api a)
-fromNormalApi method inputContentType (ApiNormal methodMap) = do
-  inputMediaMap <- Map.lookup method methodMap
-  mapContentMedia inputMediaMap inputContentType
+fromNormalApi :: Method -> ByteString -> ByteString -> ApiNormal a -> Maybe (Api a)
+fromNormalApi method outputAccept inputContentType (ApiNormal methodMap) = do
+  OutputMediaMap outputMediaMap <- Map.lookup method methodMap
+  InputMediaMap inputMediaMap <- lookupMediaMapBy mapAcceptMedia outputMediaMap outputAccept
+  lookupMediaMapBy mapContentMedia inputMediaMap inputContentType
 
-newtype ApiNormal a = ApiNormal (MethodMap (InputMediaMap (Api a)))
+newtype ApiNormal a = ApiNormal (MethodMap (OutputMediaMap (InputMediaMap (Api a))))
   deriving (Show, Eq, Functor)
 
 type MethodMap a = Map Method a
 
 -- | filter by Content-Type header
-type InputMediaMap a = [(MediaType, a)]
+newtype InputMediaMap a = InputMediaMap (MediaMap a)
+  deriving (Show, Eq, Functor)
+
+-- | filter by Accept header
+newtype OutputMediaMap a = OutputMediaMap (MediaMap a)
+  deriving (Show, Eq, Functor)
+
+data MediaMap a = MediaMap
+  { mapValues :: [(MediaType, a)]
+  , matchAll :: a
+  }
+  deriving (Show, Eq, Functor)
+
+lookupMediaMapBy :: ([(MediaType, a)] -> ByteString -> Maybe a) -> MediaMap a -> ByteString -> Maybe a
+lookupMediaMapBy getter (MediaMap m matchAll) media
+  | media == "*/*" = Just matchAll
+  | otherwise = getter m media
 
 newtype Path = Path {unPath :: [PathItem]}
   deriving newtype (Show, Eq, Ord, Semigroup, Monoid)

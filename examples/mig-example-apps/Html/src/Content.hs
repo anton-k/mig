@@ -8,7 +8,7 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 
 poems :: [Text]
-poems = [lukomorye, tweedle, dream, pie, toSeeAWorld]
+poems = [lukomorye, tweedle, peasants, dream, pie, zhongnanMountains, toSeeAWorld]
 
 lukomorye :: Text
 lukomorye =
@@ -89,6 +89,17 @@ pie =
     , "Alan Milne"
     ]
 
+peasants :: Text
+peasants =
+  Text.unlines
+    [ "锄禾日当午，"
+    , "汗滴禾下土。"
+    , "谁知盘中餐，"
+    , "粒粒皆辛苦。"
+    , ""
+    , "李绅"
+    ]
+
 toSeeAWorld :: Text
 toSeeAWorld =
   Text.unlines
@@ -98,6 +109,21 @@ toSeeAWorld =
     , "And Eternity in an hour"
     , ""
     , "William Blake"
+    ]
+
+zhongnanMountains :: Text
+zhongnanMountains =
+  Text.unlines
+    [ "太乙近天都，"
+    , "连山到海隅。"
+    , "白云回望合，"
+    , "青霭入看无。"
+    , "分野中峰变，"
+    , "阴晴众壑殊。"
+    , "欲投人处宿，"
+    , "隔水问樵夫。"
+    , ""
+    , "王维"
     ]
 
 tweedle :: Text
