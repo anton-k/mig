@@ -12,7 +12,6 @@ import Mig.Core.Api (Api)
 import Mig.Core.Api qualified as Api
 import Mig.Core.Route
 import Mig.Core.Server (Server (..))
-import Mig.Core.Types (Error)
 import Mig.Core.Types.MediaType (MimeRender (..), MimeUnrender (..))
 import Mig.Core.Types.Response (Response)
 import Web.HttpApiData
@@ -51,10 +50,6 @@ instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => T
 
 instance (MonadIO m, MimeRender ty a, IsMethod method) => ToServer (Send method ty m (Response a)) where
   type ServerMonad (Send method ty m (Response a)) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, MimeRender ty a, IsMethod method) => ToServer (Send method ty m (Either Error a)) where
-  type ServerMonad (Send method ty m (Either Error a)) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 -- inputs

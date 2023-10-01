@@ -95,6 +95,9 @@ instance MimeRender OctetStream ByteString where
 instance (ToForm a) => MimeRender FormUrlEncoded a where
   mimeRender = urlEncodeAsForm
 
+instance (MimeRender ty a, MimeRender ty b) => MimeRender ty (Either a b) where
+  mimeRender = either (mimeRender @ty) (mimeRender @ty)
+
 -------------------------------------------------------------------------------------
 -- mime unrender (everything that can be parsed from HTTP-input)
 

@@ -30,7 +30,6 @@ import Data.Text (Text)
 import Data.Text.Encoding qualified as Text
 import Mig.Core.Info
 import Mig.Core.Types (
-  Error (..),
   Req (..),
   Resp (..),
   badRequest,
@@ -39,7 +38,7 @@ import Mig.Core.Types (
  )
 import Mig.Core.Types.MediaType
 import Network.HTTP.Types.Header (HeaderName)
-import Network.HTTP.Types.Status (status413)
+import Network.HTTP.Types.Status (status413, status500)
 import Web.FormUrlEncoded
 import Web.HttpApiData
 
@@ -68,7 +67,7 @@ withRawBody act = ServerFun $ \req -> do
   eBody <- liftIO req.readBody
   case eBody of
     Right body -> unServerFun (act body) req
-    Left err -> pure $ Just $ setRespStatus err.status (ok @Text err.body)
+    Left err -> pure $ Just $ setRespStatus status500 (ok @Text err)
 
 withQuery :: (Monad m, FromHttpApiData a) => Text -> (a -> ServerFun m) -> ServerFun m
 withQuery name act = withQueryBy (join . getQuery name) processResp

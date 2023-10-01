@@ -8,8 +8,6 @@ module Mig.Core.Types.Http (
   RespBody (..),
   QueryMap,
   ToText (..),
-  Error (..),
-  fromError,
 
   -- * responses
   ok,
@@ -21,7 +19,6 @@ module Mig.Core.Types.Http (
   addRespHeaders,
 ) where
 
-import Control.Monad.Catch
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BL
 import Data.Map.Strict (Map)
@@ -66,31 +63,13 @@ data Req = Req
   -- ^ request headers
   , method :: Method
   -- ^ request method
-  , readBody :: IO (Either Error BL.ByteString)
+  , readBody :: IO (Either Text BL.ByteString)
   -- ^ lazy body reader. Error can happen if size is too big (configured on running the server)
   }
 
 type HeaderMap = Map HeaderName ByteString
 
 type CaptureMap = Map Text Text
-
--- Errors
-
--- | Errors
-data Error = Error
-  { status :: Status
-  , -- error status
-    body :: Text
-    -- message or error details
-  }
-  deriving (Show)
-
-instance Exception Error
-
-fromError :: (a -> Resp) -> Either Error a -> Resp
-fromError f = \case
-  Right a -> f a
-  Left err -> setRespStatus err.status $ ok @Text err.body
 
 -- | Map of query parameters for fast-access
 type QueryMap = Map ByteString (Maybe ByteString)
