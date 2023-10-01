@@ -1,8 +1,6 @@
 -- | input implementation
 module Mig.Core.ServerFun (
-  ServerFun (..),
-  MapServerFun (..),
-  mapResponse,
+  ServerFun,
   sendResponse,
   withBody,
   withRawBody,
@@ -34,31 +32,22 @@ import Network.HTTP.Types.Status (status413, status500)
 import Web.FormUrlEncoded
 import Web.HttpApiData
 
-class MapServerFun f where
-  mapServerFun :: (ServerFun m -> ServerFun n) -> f m -> f n
-
-mapResponse :: (Functor m, MapServerFun f) => (Response -> Response) -> f m -> f m
-mapResponse f = mapServerFun $ \(ServerFun fun) -> ServerFun (fmap (fmap f) . fun)
-
-instance MapServerFun ServerFun where
-  mapServerFun = id
-
-instance ToRouteInfo (ServerFun m) where
-  toRouteInfo = id
-
-newtype ServerFun m = ServerFun {unServerFun :: Request -> m (Maybe Response)}
+{-| Low-level representation of the server.
+Missing route for a given request returns @Nothing@.
+-}
+type ServerFun m = Request -> m (Maybe Response)
 
 withBody :: forall media a m. (MonadIO m, MimeUnrender media a) => (a -> ServerFun m) -> ServerFun m
-withBody f = withRawBody $ \val -> ServerFun $ \req ->
+withBody f = withRawBody $ \val -> \req ->
   case mimeUnrender @media val of
-    Right v -> unServerFun (f v) req
+    Right v -> f v req
     Left err -> pure $ Just $ badRequest $ "Failed to parse request body: " <> err
 
 withRawBody :: (MonadIO m) => (BL.ByteString -> ServerFun m) -> ServerFun m
-withRawBody act = ServerFun $ \req -> do
+withRawBody act = \req -> do
   eBody <- liftIO req.readBody
   case eBody of
-    Right body -> unServerFun (act body) req
+    Right body -> act body req
     Left err -> pure $ Just $ setRespStatus status500 (ok @Text err)
 
 withQuery :: (Monad m, FromHttpApiData a) => Text -> (a -> ServerFun m) -> ServerFun m
@@ -69,7 +58,7 @@ withQuery name act = withQueryBy (join . getQuery name) processResponse
     errorMessage = "Failed to parse arg: " <> name
 
 withQueryFlag :: Text -> (Bool -> ServerFun m) -> ServerFun m
-withQueryFlag name act = ServerFun $ \req ->
+withQueryFlag name act = \req ->
   let
     val =
       case getQuery name req of
@@ -81,7 +70,7 @@ withQueryFlag name act = ServerFun $ \req ->
         Just Nothing -> True -- we interpret empty value as True for a flag
         Nothing -> False
    in
-    unServerFun (act val) req
+    act val req
 
 {-| The first maybe means that query with that name is missing
 the second maybe is weather value is present or empty in the query
@@ -97,8 +86,8 @@ getQuery name req =
 
 handleMaybeInput :: (Applicative m) => Text -> (a -> ServerFun m) -> (Maybe a -> ServerFun m)
 handleMaybeInput message act = \case
-  Just arg -> ServerFun $ \req -> unServerFun (act arg) req
-  Nothing -> ServerFun $ const $ pure $ Just $ badRequest message
+  Just arg -> \req -> act arg req
+  Nothing -> const $ pure $ Just $ badRequest message
 
 withOptional :: (FromHttpApiData a) => Text -> (Maybe a -> ServerFun m) -> ServerFun m
 withOptional name act = withQueryBy (join . getQuery name) act
@@ -108,12 +97,12 @@ withQueryBy ::
   (Request -> Maybe Text) ->
   (Maybe a -> ServerFun m) ->
   ServerFun m
-withQueryBy getVal act = ServerFun $ \req ->
+withQueryBy getVal act = \req ->
   let
     -- TODO: do not ignore parse failure
     mArg = either (const Nothing) Just . parseQueryParam =<< getVal req
    in
-    unServerFun (act mArg) req
+    act mArg req
 
 withCapture :: (Monad m, FromHttpApiData a) => Text -> (a -> ServerFun m) -> ServerFun m
 withCapture name act = withQueryBy getVal processResponse
@@ -142,18 +131,18 @@ withOptionalHeader name act = withQueryBy getVal act
     getVal req = eitherToMaybe . parseHeader =<< Map.lookup name req.headers
 
 withFormBody :: (MonadIO m, FromForm a) => (a -> ServerFun m) -> ServerFun m
-withFormBody act = withRawBody $ \body -> ServerFun $ \req -> do
+withFormBody act = withRawBody $ \body -> \req -> do
   case urlDecodeForm body >>= fromForm of
-    Right a -> unServerFun (act a) req
+    Right a -> act a req
     Left err -> pure $ Just $ setRespStatus status413 $ badRequest err
 
 withPathInfo :: ([Text] -> ServerFun m) -> ServerFun m
-withPathInfo act = ServerFun $ \req -> unServerFun (act req.path) req
+withPathInfo act = \req -> act req.path req
 
 sendResponse :: (Functor m) => m Response -> ServerFun m
-sendResponse act = ServerFun $ const $ fmap Just act
+sendResponse act = const $ fmap Just act
 
 -- | Handle errors
 handleError :: (Exception a, MonadCatch m) => (a -> ServerFun m) -> ServerFun m -> ServerFun m
-handleError handler (ServerFun act) = ServerFun $ \req ->
-  (act req) `catch` (\err -> unServerFun (handler err) req)
+handleError handler act = \req ->
+  (act req) `catch` (\err -> handler err req)

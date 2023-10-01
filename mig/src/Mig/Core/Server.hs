@@ -2,6 +2,8 @@
 
 module Mig.Core.Server (
   Server (..),
+  mapServerFun,
+  mapResponse,
   fromServer,
   fillCaptures,
   addTag,
@@ -29,8 +31,7 @@ import Web.HttpApiData
 import Mig.Core.Api (Api, fromNormalApi, toNormalApi)
 import Mig.Core.Api qualified as Api
 import Mig.Core.Route
-import Mig.Core.ServerFun (MapServerFun (..))
-import Mig.Core.Types (MediaType, Request (..), setContent)
+import Mig.Core.Types (MediaType, Request (..), Response, setContent)
 import Mig.Core.Types.Info (RouteInfo (..), RouteInput (..), describeInfoInputs, setOutputMedia)
 import Mig.Core.Types.Info qualified as Describe (Describe (..))
 import Mig.Core.Types.Response (Resp (..), addHeaders, okResp)
@@ -82,16 +83,19 @@ we have wrappers:
 newtype Server m = Server {unServer :: Api (Route m)}
   deriving newtype (Semigroup, Monoid)
 
-instance MapServerFun Server where
-  mapServerFun f (Server server) = Server $ fmap (\x -> Route x.api (f x.run)) server
+mapServerFun :: (ServerFun m -> ServerFun n) -> Server m -> Server n
+mapServerFun f (Server server) = Server $ fmap (\x -> Route x.api (f x.run)) server
+
+mapResponse :: (Functor m) => (Response -> Response) -> Server m -> Server m
+mapResponse f = mapServerFun $ \fun -> fmap (fmap f) . fun
 
 {-| Converts server to server function. Server function can be used to implement low-level handlers
 in various server-libraries.
 -}
 fromServer :: (Monad m) => Server m -> ServerFun m
-fromServer (Server server) = ServerFun $ \req -> do
+fromServer (Server server) = \req -> do
   case getRoute req of
-    Just (routes, captureMap) -> unServerFun routes.run (req{capture = captureMap})
+    Just (routes, captureMap) -> routes.run req{capture = captureMap}
     Nothing -> pure Nothing
   where
     serverNormal = toNormalApi (fillCaptures server)

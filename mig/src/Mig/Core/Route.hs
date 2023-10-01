@@ -5,7 +5,7 @@ module Mig.Core.Route (
   Route (..),
   ToRoute (..),
   toRoute,
-  ServerFun (..),
+  ServerFun,
 
   -- * Inputs
   ReqBody (..),
@@ -77,9 +77,6 @@ toRoute a =
     , run = toRouteFun a
     }
 
-instance MapServerFun Route where
-  mapServerFun f r = Route r.api (f r.run)
-
 -------------------------------------------------------------------------------------
 -- identity instances
 
@@ -89,10 +86,6 @@ instance ToRouteInfo (Route m) where
 instance (MonadIO m) => ToRoute (Route m) where
   type RouteMonad (Route m) = m
   toRouteFun = (.run)
-
-instance (MonadIO m) => ToRoute (ServerFun m) where
-  type RouteMonad (ServerFun m) = m
-  toRouteFun = id
 
 -------------------------------------------------------------------------------------
 -- request inputs

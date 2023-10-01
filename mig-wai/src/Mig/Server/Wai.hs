@@ -43,13 +43,13 @@ runServer port server = Warp.run port (toApplication config server)
 -- | Convert server to WAI-application
 toApplication :: ServerConfig -> Server IO -> Wai.Application
 toApplication config server req processResponse = do
-  mResp <- unServerFun (handleError onErr (fromServer server)) =<< fromRequest config.maxBodySize req
+  mResp <- handleError onErr (fromServer server) =<< fromRequest config.maxBodySize req
   processResponse $ toResponse $ fromMaybe noResult mResp
   where
     noResult = badRequest "Server produces nothing"
 
     onErr :: SomeException -> ServerFun IO
-    onErr err = ServerFun $ const $ pure $ Just $ badRequest $ "Error: Exception has happened: " <> toText (show err)
+    onErr err = const $ pure $ Just $ badRequest $ "Error: Exception has happened: " <> toText (show err)
 
 -- | Convert response to low-level WAI-response
 toResponse :: Response -> Wai.Response

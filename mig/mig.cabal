@@ -26,6 +26,7 @@ library
   exposed-modules:
     Mig.Core
     Mig.Core.Api
+    Mig.Core.Middleware
     Mig.Core.OpenApi
     Mig.Core.Route
     Mig.Core.Server

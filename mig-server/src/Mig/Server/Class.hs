@@ -12,13 +12,12 @@ import Network.HTTP.Types.Status (status500)
 
 import Mig.Core.Route
 import Mig.Core.Server
-import Mig.Core.ServerFun (MapServerFun (..))
 import Mig.Core.Types
 
 -- | Map internal monad of the server
 hoistServer :: (forall a. m a -> n a) -> Server m -> Server n
 hoistServer f (Server server) =
-  Server $ fmap (\x -> Route x.api (ServerFun $ f . x.run.unServerFun)) server
+  Server $ fmap (\x -> Route x.api (f . x.run)) server
 
 {-| Class contains types which can be converted to IO-based server to run as with WAI-interface.
 
@@ -60,7 +59,7 @@ fromReaderExcept env server =
       \e -> pure $ mapServerFun (handle e) server
   where
     handle :: env -> ServerFun (ReaderT env (ExceptT Text IO)) -> ServerFun IO
-    handle e (ServerFun f) = ServerFun $ \req ->
+    handle e f = \req ->
       handleError <$> runExceptT (runReaderT (f req) e)
 
     handleError :: Either Text (Maybe Response) -> Maybe Response
