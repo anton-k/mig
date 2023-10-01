@@ -7,6 +7,8 @@ module Server (
 
 import Control.Monad
 import Data.ByteString (ByteString)
+import Data.List qualified as List
+import Data.Maybe
 import Data.Text qualified as Text
 import Data.Time
 import FileEmbedLzma
@@ -32,6 +34,7 @@ server site =
             ]
       , defaultPage
       , "static" /. staticFiles resourceFiles
+      , "favicon.ico" /. staticFiles faviconLogo
       ]
   where
     -- server to read info.
@@ -123,6 +126,10 @@ randomBlogPost site =
 
 resourceFiles :: [(FilePath, ByteString)]
 resourceFiles = $(embedRecursiveDir "Html/resources")
+
+faviconLogo :: [(FilePath, ByteString)]
+faviconLogo =
+  fmap (".png",) $ maybeToList $ List.lookup "/lambda-logo.png" resourceFiles
 
 -------------------------------------------------------------------------------------
 -- utils

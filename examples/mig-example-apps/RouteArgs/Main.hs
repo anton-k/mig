@@ -10,6 +10,7 @@ module Main (
 -- import Text and IO based server
 
 import Data.Text.IO qualified as Text
+import Mig.Core.Server.Trace qualified as Trace
 import Mig.Json.IO
 import Mig.Swagger
 
@@ -23,24 +24,25 @@ main = do
 -- | Let's define a server
 routeArgs :: Server IO
 routeArgs =
-  "hello"
-    /. "api"
-    /. mconcat
-      -- no args, constnat output
-      [ "world" /. helloWorld
-      , -- required query param and custom header
-        "succ" /. handleSucc
-      , -- optional query param
-        "succ-opt" /. handleSuccOpt
-      , -- several query params
-        "add" /. handleAdd
-      , -- query flag
-        "add-if" /. handleAddIf
-      , -- capture
-        "mul" /. "*" /. "*" /. handleMul
-      , -- json body as input
-        "add-json" /. handleAddJson
-      ]
+  Trace.logHttp Trace.V2 $
+    "hello"
+      /. "api"
+      /. mconcat
+        -- no args, constnat output
+        [ "world" /. helloWorld
+        , -- required query param and custom header
+          "succ" /. handleSucc
+        , -- optional query param
+          "succ-opt" /. handleSuccOpt
+        , -- several query params
+          "add" /. handleAdd
+        , -- query flag
+          "add-if" /. handleAddIf
+        , -- capture
+          "mul" /. "*" /. "*" /. handleMul
+        , -- json body as input
+          "add-json" /. handleAddJson
+        ]
 
 -- | Simple getter
 helloWorld :: Get Text
@@ -65,10 +67,12 @@ handleSucc (Header traceId) (Query n) = Send $ do
       | otherwise = ok200
 
 -- | Using optional query parameters and error as Either
-handleSuccOpt :: Optional "value" Int -> Get (Either Error Int)
+handleSuccOpt :: Optional "value" Int -> Get (Either (Response Text) (Response Int))
 handleSuccOpt (Optional n) = Send $ do
   logDebug "succ optional route call"
-  pure $ maybe (Left $ Error status400 "error: no input") Right (succ <$> n)
+  pure $ case n of
+    Just val -> Right $ okResponse (succ val)
+    Nothing -> Left $ badResponse status500 "error: no input"
 
 {-| Using custom headers in response and several input query parameters.
 Note that function can have any number of arguments.

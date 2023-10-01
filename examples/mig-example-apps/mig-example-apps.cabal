@@ -20,6 +20,7 @@ build-type:         Simple
 extra-source-files:
   CHANGELOG.md
   Html/resources/haskell-logo.png
+  Html/resources/lambda-logo.png
   Html/resources/milligram.min.css
   README.md
 

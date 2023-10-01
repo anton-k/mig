@@ -11,6 +11,7 @@ import Data.Map.Strict qualified as Map
 import Mig
 import Mig.Core.Api (ApiNormal (..), MediaMap (..), OutputMediaMap (..), toNormalApi)
 import Mig.Core.Server (fillCaptures)
+import Mig.Core.Server.Trace qualified as Trace
 import Mig.Swagger
 import Network.HTTP.Types.Method (methodGet)
 import Text.Show.Pretty
@@ -53,12 +54,13 @@ replies on a single route
 -}
 server :: Server IO
 server =
-  "api"
-    /. "v1"
-    /. mconcat
-      [ helloDescription $ "hello" /. hello
-      , "bye" /. bye
-      ]
+  Trace.logHttp Trace.V1 $
+    "api"
+      /. "v1"
+      /. mconcat
+        [ helloDescription $ "hello" /. hello
+        , "bye" /. bye
+        ]
   where
     helloDescription =
       setDescription "Greeting action"

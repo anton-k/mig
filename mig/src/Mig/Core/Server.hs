@@ -22,7 +22,7 @@ import Data.Maybe
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Safe (atMay)
+import Safe (atMay, headMay)
 import System.FilePath (takeExtension)
 import Web.HttpApiData
 
@@ -33,10 +33,7 @@ import Mig.Core.Info qualified as Describe (Describe (..))
 import Mig.Core.Route
 import Mig.Core.ServerFun (MapServerFun (..))
 import Mig.Core.Types (MediaType, Req (..), setContent)
-import Mig.Core.Types.MediaType (OctetStream)
 import Mig.Core.Types.Response (Response (..), addHeaders, okResponse)
-
--- import Debug.Trace
 
 {-| Server type. It is a function fron request to response.
 Some servers does not return valid value. We use it to find right path.
@@ -99,24 +96,9 @@ fromServer (Server server) = ServerFun $ \req -> do
   where
     serverNormal = toNormalApi (fillCaptures server)
 
-    getRoute req =
-      {-
-      trace
-      ( unlines
-          [ "path"
-          , show req.path
-          , "input media: "
-          , show (getMedia "Content-Type" req)
-          , "output media"
-          , show (getMedia "Accept" req)
-          , "method"
-          , show req.method
-          ]
-      ) $
-      -}
-      do
-        api <- fromNormalApi req.method (getMedia "Accept" req) (getMedia "Content-Type" req) serverNormal
-        Api.getPath req.path api
+    getRoute req = do
+      api <- fromNormalApi req.method (getMedia "Accept" req) (getMedia "Content-Type" req) serverNormal
+      Api.getPath req.path api
 
     getMedia name req = fromMaybe "*/*" $ Map.lookup name req.headers
 
@@ -220,11 +202,15 @@ staticFiles files =
   where
     serveFile path content =
       fmap (\x -> x{api = setOutputMedia media x.api}) $
-        (fromString path) `Api.WithPath` (Api.HandleRoute (toRoute (getFile media content)))
+        ( if headMay path == Just '.'
+            then id
+            else ((fromString path) `Api.WithPath`)
+        )
+          (Api.HandleRoute (toRoute (getFile media content)))
       where
         media = getMediaType path
 
-    getFile :: MediaType -> ByteString -> Get OctetStream m (Response BL.ByteString)
+    getFile :: MediaType -> ByteString -> Get AnyMedia m (Response BL.ByteString)
     getFile ty fileContent =
       Send $
         pure $
