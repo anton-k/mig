@@ -31,7 +31,6 @@ import Data.Text.Encoding qualified as Text
 import Data.Time
 import Data.Yaml qualified as Yaml
 import Mig.Core.Server
-import Mig.Core.ServerFun
 import Mig.Core.Types.Http
 import Network.HTTP.Media.RenderHeader (renderHeader)
 import Network.HTTP.Types.Status (Status (..))
@@ -70,7 +69,7 @@ logReq :: (MonadIO m) => Verbosity -> Server m -> Server m
 logReq = logReqBy defaultPrinter
 
 logReqBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Server m -> Server m
-logReqBy printer verbosity = mapServerFun $ \(ServerFun f) -> ServerFun $ \req -> do
+logReqBy printer verbosity = mapServerFun $ \f -> \req -> do
   when (verbosity > V0) $ do
     reqTrace <- liftIO $ do
       eBody <- req.readBody
@@ -123,7 +122,7 @@ logResp :: (MonadIO m) => Verbosity -> Server m -> Server m
 logResp = logRespBy defaultPrinter
 
 logRespBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Server m -> Server m
-logRespBy printer verbosity = mapServerFun $ \(ServerFun f) -> ServerFun $ \req -> do
+logRespBy printer verbosity = mapServerFun $ \f -> \req -> do
   (dur, resp) <- duration (f req)
   when (verbosity > V0) $ do
     now <- liftIO getCurrentTime

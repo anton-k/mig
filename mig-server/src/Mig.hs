@@ -88,8 +88,8 @@ module Mig (
   -- ** Low-level types
   Request,
   Response,
-  MapServerFun (..),
-  ServerFun (..),
+  mapServerFun,
+  ServerFun,
   handleRespError,
 
   -- * Run
@@ -140,7 +140,6 @@ import Control.Monad.Catch (MonadCatch, try)
 import Mig.Core.OpenApi (toOpenApi)
 import Mig.Core.Server
 import Mig.Core.Server.Class
-import Mig.Core.ServerFun (MapServerFun (..), mapResponse)
 import Mig.Core.Types (
   Request,
   Response,
@@ -159,8 +158,8 @@ import Mig.Server.Class
 import Mig.Server.Wai
 
 -- | Prepends action to the server
-prependServerAction :: (Monad m, MapServerFun f) => f m -> m () -> f m
-prependServerAction srv act = flip mapServerFun srv $ \(ServerFun f) -> ServerFun $ \req -> do
+prependServerAction :: (Monad m) => ServerFun m -> m () -> ServerFun m
+prependServerAction f act = \req -> do
   act
   f req
 
@@ -170,7 +169,7 @@ handleRespError ::
   (a -> m (Maybe Response)) ->
   Server m ->
   Server m
-handleRespError handle = mapServerFun $ \(ServerFun f) -> ServerFun $ \req -> do
+handleRespError handle = mapServerFun $ \f -> \req -> do
   eResult <- try @m @a (f req)
   case eResult of
     Right res -> pure res

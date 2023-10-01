@@ -59,7 +59,7 @@ module Mig.Server.Common (
   -- ** Low-level types
   Request,
   Response,
-  ServerFun (..),
+  ServerFun,
   handleRespError,
 
   -- * Run
