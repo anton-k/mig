@@ -75,19 +75,19 @@ module Mig (
   -- ** response
 
   -- | How to modify response and attach specific info to it
-  Response (..),
-  okResponse,
-  badResponse,
+  Resp (..),
+  okResp,
+  badResp,
   setStatus,
   addHeaders,
-  EitherResponse,
+  EitherResp,
 
   -- ** specific cases
   staticFiles,
 
   -- ** Low-level types
-  Req,
-  Resp,
+  Request,
+  Response,
   MapServerFun (..),
   ServerFun (..),
   handleRespError,
@@ -114,7 +114,7 @@ module Mig (
 
   -- ** Server
   mapRouteInfo,
-  mapResp,
+  mapResponse,
 
   -- ** OpenApi
   toOpenApi,
@@ -140,19 +140,19 @@ import Control.Monad.Catch (MonadCatch, try)
 import Mig.Core.OpenApi (toOpenApi)
 import Mig.Core.Server
 import Mig.Core.Server.Class
-import Mig.Core.ServerFun (MapServerFun (..), mapResp)
+import Mig.Core.ServerFun (MapServerFun (..), mapResponse)
 import Mig.Core.Types (
-  Req,
-  Resp,
+  Request,
+  Response,
   ToText (..),
   badRequest,
  )
 import Mig.Core.Types.MediaType
 import Mig.Core.Types.Response (
-  Response (..),
+  Resp (..),
   addHeaders,
-  badResponse,
-  okResponse,
+  badResp,
+  okResp,
   setStatus,
  )
 import Mig.Server.Class
@@ -167,7 +167,7 @@ prependServerAction srv act = flip mapServerFun srv $ \(ServerFun f) -> ServerFu
 handleRespError ::
   forall a m.
   (MonadCatch m, Exception a) =>
-  (a -> m (Maybe Resp)) ->
+  (a -> m (Maybe Response)) ->
   Server m ->
   Server m
 handleRespError handle = mapServerFun $ \(ServerFun f) -> ServerFun $ \req -> do

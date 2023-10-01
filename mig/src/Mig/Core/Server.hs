@@ -30,10 +30,10 @@ import Mig.Core.Api (Api, fromNormalApi, toNormalApi)
 import Mig.Core.Api qualified as Api
 import Mig.Core.Route
 import Mig.Core.ServerFun (MapServerFun (..))
-import Mig.Core.Types (MediaType, Req (..), setContent)
+import Mig.Core.Types (MediaType, Request (..), setContent)
 import Mig.Core.Types.Info (RouteInfo (..), RouteInput (..), describeInfoInputs, setOutputMedia)
 import Mig.Core.Types.Info qualified as Describe (Describe (..))
-import Mig.Core.Types.Response (Response (..), addHeaders, okResponse)
+import Mig.Core.Types.Response (Resp (..), addHeaders, okResp)
 
 {-| Server type. It is a function fron request to response.
 Some servers does not return valid value. We use it to find right path.
@@ -210,12 +210,12 @@ staticFiles files =
       where
         media = getMediaType path
 
-    getFile :: MediaType -> ByteString -> Get AnyMedia m (Response BL.ByteString)
+    getFile :: MediaType -> ByteString -> Get AnyMedia m (Resp BL.ByteString)
     getFile ty fileContent =
       Send $
         pure $
           addHeaders (setContent ty) $
-            okResponse $
+            okResp $
               BL.fromStrict fileContent
 
     getMediaType :: FilePath -> MediaType

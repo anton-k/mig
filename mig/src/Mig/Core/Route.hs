@@ -27,7 +27,7 @@ module Mig.Core.Route (
   Head,
   Patch,
   Trace,
-  EitherResponse,
+  EitherResp,
 
   -- ** Method tags
   IsMethod (..),
@@ -228,34 +228,34 @@ instance IsMethod TRACE where
 
 newtype Send method ty m a = Send {unSend :: m a}
 
-type EitherResponse err a = Either (Response err) (Response a)
+type EitherResp err a = Either (Resp err) (Resp a)
 
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m a) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
-instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (Response a)) where
+instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (Resp a)) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
-instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (EitherResponse err a)) where
+instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (EitherResp err a)) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
 instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m a) where
   type RouteMonad (Send method ty m a) = m
-  toRouteFun (Send a) = sendResp $ ok @ty <$> a
+  toRouteFun (Send a) = sendResponse $ ok @ty <$> a
 
-instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (Response a)) where
-  type RouteMonad (Send method ty m (Response a)) = m
-  toRouteFun (Send a) = sendResp $ (\resp -> Resp resp.status (resp.headers <> setContent media) (RawResp media $ mimeRender @ty resp.body)) <$> a
+instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (Resp a)) where
+  type RouteMonad (Send method ty m (Resp a)) = m
+  toRouteFun (Send a) = sendResponse $ (\resp -> Response resp.status (resp.headers <> setContent media) (RawResp media $ mimeRender @ty resp.body)) <$> a
     where
       media = toMediaType @ty
 
-instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty err, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (EitherResponse err a)) where
-  type RouteMonad (Send method ty m (Either (Response err) (Response a))) = m
+instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty err, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (EitherResp err a)) where
+  type RouteMonad (Send method ty m (Either (Resp err) (Resp a))) = m
   toRouteFun (Send a) =
-    sendResp $
+    sendResponse $
       ( \eResp -> case eResp of
-          Right resp -> Resp resp.status (resp.headers <> setContent media) (RawResp media $ mimeRender @ty resp.body)
-          Left err -> Resp err.status (err.headers <> setContent media) (RawResp media $ mimeRender @ty err.body)
+          Right resp -> Response resp.status (resp.headers <> setContent media) (RawResp media $ mimeRender @ty resp.body)
+          Left err -> Response err.status (err.headers <> setContent media) (RawResp media $ mimeRender @ty err.body)
       )
         <$> a
     where
@@ -269,12 +269,12 @@ and do not add ContentType to response
 -}
 data AnyMedia
 
-instance {-# OVERLAPPABLE #-} (IsMethod method) => ToRouteInfo (Send method AnyMedia m (Response BL.ByteString)) where
+instance {-# OVERLAPPABLE #-} (IsMethod method) => ToRouteInfo (Send method AnyMedia m (Resp BL.ByteString)) where
   toRouteInfo = setMethod (toMethod @method) "*/*"
 
-instance (MonadIO m, IsMethod method) => ToRoute (Send method AnyMedia m (Response BL.ByteString)) where
-  type RouteMonad (Send method AnyMedia m (Response BL.ByteString)) = m
-  toRouteFun (Send a) = sendResp $ (\resp -> Resp resp.status (resp.headers) (RawResp "*/*" resp.body)) <$> a
+instance (MonadIO m, IsMethod method) => ToRoute (Send method AnyMedia m (Resp BL.ByteString)) where
+  type RouteMonad (Send method AnyMedia m (Resp BL.ByteString)) = m
+  toRouteFun (Send a) = sendResponse $ (\resp -> Response resp.status (resp.headers) (RawResp "*/*" resp.body)) <$> a
 
 ---------------------------------------------
 -- utils

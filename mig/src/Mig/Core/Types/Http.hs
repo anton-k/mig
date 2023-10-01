@@ -3,8 +3,8 @@
 -- | Core types and functions
 module Mig.Core.Types.Http (
   -- * types
-  Req (..),
-  Resp (..),
+  Request (..),
+  Response (..),
   RespBody (..),
   QueryMap,
   ToText (..),
@@ -33,7 +33,7 @@ import Network.HTTP.Types.Method (Method)
 import Network.HTTP.Types.Status (Status, ok200, status500)
 
 -- | Http response
-data Resp = Resp
+data Response = Response
   { status :: Status
   -- ^ status
   , headers :: ResponseHeaders
@@ -42,7 +42,7 @@ data Resp = Resp
   -- ^ response body
   }
 
-instance IsString Resp where
+instance IsString Response where
   fromString = ok @Text @Text . fromString
 
 -- | Http response body
@@ -52,7 +52,7 @@ data RespBody
   | StreamResp
 
 -- | Http request
-data Req = Req
+data Request = Request
   { path :: [Text]
   -- ^ URI path
   , query :: QueryMap
@@ -75,7 +75,7 @@ type CaptureMap = Map Text Text
 type QueryMap = Map ByteString (Maybe ByteString)
 
 -- | Bad request response
-badRequest :: Text -> Resp
+badRequest :: Text -> Response
 badRequest message = setRespStatus status500 $ ok @Text message
 
 -- | Values convertible to lazy text
@@ -105,14 +105,14 @@ setContent media =
   [("Content-Type", renderHeader media)]
 
 -- | Sets response status
-setRespStatus :: Status -> Resp -> Resp
-setRespStatus status (Resp _ headers body) = Resp status headers body
+setRespStatus :: Status -> Response -> Response
+setRespStatus status (Response _ headers body) = Response status headers body
 
-addRespHeaders :: ResponseHeaders -> Resp -> Resp
-addRespHeaders headers (Resp status hs body) = Resp status (headers <> hs) body
+addRespHeaders :: ResponseHeaders -> Response -> Response
+addRespHeaders headers (Response status hs body) = Response status (headers <> hs) body
 
 -- | Respond with ok 200-status
-ok :: forall mime a. (MimeRender mime a) => a -> Resp
-ok = Resp ok200 (setContent media) . RawResp media . mimeRender @mime
+ok :: forall mime a. (MimeRender mime a) => a -> Response
+ok = Response ok200 (setContent media) . RawResp media . mimeRender @mime
   where
     media = toMediaType @mime

@@ -45,7 +45,7 @@ server env =
         , version = "0.1.0"
         }
 
-handleAuthToken :: Env -> Body User -> Post (EitherResponse Text AuthToken)
+handleAuthToken :: Env -> Body User -> Post (EitherResp Text AuthToken)
 handleAuthToken env (Body user) = Send $ do
   env.logger.info ("get new auth token for: " <> user.name)
   isValid <- env.auth.validUser user
@@ -53,10 +53,10 @@ handleAuthToken env (Body user) = Send $ do
     then do
       token <- env.auth.newToken user
       void $ forkIO $ setExpireTimer token
-      pure $ Right $ okResponse token
+      pure $ Right $ okResp token
     else do
       env.logger.error "User does not have access to service"
-      pure $ Left $ badResponse status500 "User is not valid"
+      pure $ Left $ badResp status500 "User is not valid"
   where
     setExpireTimer token = do
       threadDelay (1_000_000 * 60 * 10) -- 10 minutes
@@ -68,14 +68,14 @@ handleGetWeather ::
   Capture "location" Location ->
   Capture "day" Day ->
   Capture "day-interval" DayInterval ->
-  Get (EitherResponse Text (Timed WeatherData))
+  Get (EitherResp Text (Timed WeatherData))
 handleGetWeather env (Query token) (Capture location) (Capture fromDay) (Capture interval) = Send $ do
   env.logger.info "get the weather forecast"
   whenAuth env token $ do
     mResult <- env.weather.get location fromDay interval
     case mResult of
-      Just result -> pure $ Right $ okResponse result
-      Nothing -> pure $ Left $ badResponse status400 "No data"
+      Just result -> pure $ Right $ okResp result
+      Nothing -> pure $ Left $ badResp status400 "No data"
 
 handleUpdateWeather ::
   Env ->
@@ -86,15 +86,15 @@ handleUpdateWeather env (Query token) (Body updateData) = Send $ do
   env.logger.info "update the weather data"
   void $
     whenAuth env token $
-      Right . okResponse <$> env.weather.update updateData
+      Right . okResp <$> env.weather.update updateData
 
-whenAuth :: Env -> AuthToken -> IO (EitherResponse Text a) -> IO (EitherResponse Text a)
+whenAuth :: Env -> AuthToken -> IO (EitherResp Text a) -> IO (EitherResp Text a)
 whenAuth env token act = do
   isOk <- env.auth.validToken token
   if isOk
     then act
     else do
       env.logger.error errMessage
-      pure $ Left $ badResponse status500 errMessage
+      pure $ Left $ badResp status500 errMessage
   where
     errMessage = "Token is invalid"

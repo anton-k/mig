@@ -79,7 +79,7 @@ logReqBy printer verbosity = mapServerFun $ \(ServerFun f) -> ServerFun $ \req -
     printer reqTrace
   f req
 
-ppReq :: Verbosity -> UTCTime -> Either Text BL.ByteString -> Req -> Json.Value
+ppReq :: Verbosity -> UTCTime -> Either Text BL.ByteString -> Request -> Json.Value
 ppReq verbosity now body req =
   Json.object $
     concat $
@@ -130,7 +130,7 @@ logRespBy printer verbosity = mapServerFun $ \(ServerFun f) -> ServerFun $ \req 
     mapM_ (printer . ppResp verbosity now dur req) resp
   pure resp
 
-ppResp :: Verbosity -> UTCTime -> Seconds -> Req -> Resp -> Json.Value
+ppResp :: Verbosity -> UTCTime -> Seconds -> Request -> Response -> Json.Value
 ppResp verbosity now dur req resp =
   Json.object $
     concat
@@ -175,7 +175,7 @@ defaultPrinter =
 addLogPrefix :: Json.Value -> Json.Value
 addLogPrefix val = Json.object ["log" .= val]
 
-toPath :: Req -> Text
+toPath :: Request -> Text
 toPath req = Text.intercalate "/" req.path <> queries
   where
     queries

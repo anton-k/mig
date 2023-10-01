@@ -56,34 +56,34 @@ newtype TraceId = TraceId Text
 {-| Using several inputs: header argument and required query
 and using conditional output status
 -}
-handleSucc :: Header "Trace-Id" TraceId -> Query "value" Int -> Get (Response Int)
+handleSucc :: Header "Trace-Id" TraceId -> Query "value" Int -> Get (Resp Int)
 handleSucc (Header traceId) (Query n) = Send $ do
   logDebug "succ route call"
   logDebug $ "traceId: " <> toText traceId
-  pure $ setStatus st $ okResponse (succ n)
+  pure $ setStatus st $ okResp (succ n)
   where
     st
       | n <= 0 = status400
       | otherwise = ok200
 
 {-| Using optional query parameters and error as Either.
-also there is handy type shortcut @EitherResponse err result@
+also there is handy type shortcut @EitherResp err result@
 -}
-handleSuccOpt :: Optional "value" Int -> Get (Either (Response Text) (Response Int))
+handleSuccOpt :: Optional "value" Int -> Get (Either (Resp Text) (Resp Int))
 handleSuccOpt (Optional n) = Send $ do
   logDebug "succ optional route call"
   pure $ case n of
-    Just val -> Right $ okResponse (succ val)
-    Nothing -> Left $ badResponse status500 "error: no input"
+    Just val -> Right $ okResp (succ val)
+    Nothing -> Left $ badResp status500 "error: no input"
 
 {-| Using custom headers in response and several input query parameters.
 Note that function can have any number of arguments.
 We encode the input type with proper type-wrapper.
 -}
-handleAdd :: Query "a" Int -> Query "b" Int -> Get (Response Int)
+handleAdd :: Query "a" Int -> Query "b" Int -> Get (Resp Int)
 handleAdd (Query a) (Query b) = Send $ do
   logDebug "add route call"
-  pure $ addHeaders headers $ okResponse $ a + b
+  pure $ addHeaders headers $ okResp $ a + b
   where
     headers = [("args", "a, b")]
 
@@ -113,10 +113,10 @@ data AddInput = AddInput
   deriving (Generic, ToJSON, FromJSON, ToSchema)
 
 -- | Using JSON as input and setting status for response
-handleAddJson :: Body AddInput -> Post (Response Int)
+handleAddJson :: Body AddInput -> Post (Resp Int)
 handleAddJson (Body (AddInput a b)) = Send $ do
   logDebug "add route call"
-  pure $ setStatus ok200 $ okResponse $ a + b
+  pure $ setStatus ok200 $ okResp $ a + b
 
 -- utils
 

@@ -21,7 +21,7 @@ module Mig.Server.Common (
   -- ** methods
   Send (..),
   IsMethod (..),
-  EitherResponse,
+  EitherResp,
   GET,
   POST,
   PUT,
@@ -47,9 +47,9 @@ module Mig.Server.Common (
   -- ** response
 
   -- | How to modify response and attach specific info to it
-  Response (..),
-  okResponse,
-  badResponse,
+  Resp (..),
+  okResp,
+  badResp,
   addHeaders,
   setStatus,
 
@@ -57,8 +57,8 @@ module Mig.Server.Common (
   staticFiles,
 
   -- ** Low-level types
-  Req,
-  Resp,
+  Request,
+  Response,
   ServerFun (..),
   handleRespError,
 
@@ -85,7 +85,7 @@ module Mig.Server.Common (
   -- ** Server
   mapRouteInfo,
   mapServerFun,
-  mapResp,
+  mapResponse,
 
   -- ** OpenApi
   toOpenApi,
