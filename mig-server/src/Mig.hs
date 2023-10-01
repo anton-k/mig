@@ -96,6 +96,8 @@ module Mig (
   -- ** Low-level types
   Request,
   Response,
+  okResponse,
+  badResponse,
   mapServerFun,
   ServerFun,
   handleRespError,

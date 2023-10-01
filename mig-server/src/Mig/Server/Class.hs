@@ -8,7 +8,6 @@ import Control.Monad.Except
 import Control.Monad.Reader
 import Data.Kind
 import Data.Text (Text)
-import Network.HTTP.Types.Status (status500)
 
 import Mig.Core.Route
 import Mig.Core.Server
@@ -65,4 +64,4 @@ fromReaderExcept env server =
     handleError :: Either Text (Maybe Response) -> Maybe Response
     handleError = \case
       Right mResp -> mResp
-      Left err -> Just $ setRespStatus status500 (ok @Text err)
+      Left err -> Just $ badRequest @Text err

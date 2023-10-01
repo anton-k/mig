@@ -10,7 +10,8 @@ module Mig.Core.Types.Http (
   ToText (..),
 
   -- * responses
-  ok,
+  okResponse,
+  badResponse,
   badRequest,
   setContent,
 
@@ -43,7 +44,7 @@ data Response = Response
   }
 
 instance IsString Response where
-  fromString = ok @Text @Text . fromString
+  fromString = okResponse @Text @Text . fromString
 
 -- | Http response body
 data RespBody
@@ -76,7 +77,7 @@ type QueryMap = Map ByteString (Maybe ByteString)
 
 -- | Bad request response
 badRequest :: forall media a. (MimeRender media a) => a -> Response
-badRequest message = setRespStatus status500 $ ok @media message
+badRequest message = badResponse @media status500 message
 
 -- | Values convertible to lazy text
 class ToText a where
@@ -112,7 +113,13 @@ addRespHeaders :: ResponseHeaders -> Response -> Response
 addRespHeaders headers (Response status hs body) = Response status (headers <> hs) body
 
 -- | Respond with ok 200-status
-ok :: forall mime a. (MimeRender mime a) => a -> Response
-ok = Response ok200 (setContent media) . RawResp media . mimeRender @mime
+okResponse :: forall mime a. (MimeRender mime a) => a -> Response
+okResponse = Response ok200 (setContent media) . RawResp media . mimeRender @mime
+  where
+    media = toMediaType @mime
+
+-- | Bad response qith given status
+badResponse :: forall mime a. (MimeRender mime a) => Status -> a -> Response
+badResponse status = Response status (setContent media) . RawResp media . mimeRender @mime
   where
     media = toMediaType @mime
