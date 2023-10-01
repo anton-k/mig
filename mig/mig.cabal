@@ -31,6 +31,7 @@ library
     Mig.Core.Route
     Mig.Core.Server
     Mig.Core.Server.Class
+    Mig.Core.Server.Trace
     Mig.Core.ServerFun
     Mig.Core.Types
     Mig.Core.Types.Http
@@ -56,6 +57,7 @@ library
 
   build-depends:
       aeson
+    , aeson-pretty
     , attoparsec
     , base >=4.7 && <5
     , blaze-html
@@ -75,5 +77,6 @@ library
     , openapi3
     , safe
     , text
+    , time
 
   default-language:   GHC2021

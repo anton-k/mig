@@ -48,8 +48,9 @@ module Mig.Server.Common (
   -- | How to modify response and attach specific info to it
   Response (..),
   okResponse,
-  setStatus,
+  badResponse,
   addHeaders,
+  setStatus,
 
   -- ** specific cases
   staticFiles,

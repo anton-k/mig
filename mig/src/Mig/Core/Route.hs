@@ -38,9 +38,13 @@ module Mig.Core.Route (
   HEAD,
   PATCH,
   TRACE,
+
+  -- ** Media
+  AnyMedia,
 ) where
 
 import Control.Monad.IO.Class
+import Data.ByteString.Lazy qualified as BL
 import Data.Kind
 import Data.OpenApi (ToParamSchema (..), ToSchema (..))
 import Data.Proxy
@@ -232,15 +236,45 @@ instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (Response a)) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
+instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (Either (Response err) (Response a))) where
+  toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
+
 instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m a) where
   type RouteMonad (Send method ty m a) = m
   toRouteFun (Send a) = sendResp $ ok @ty <$> a
 
-instance (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (Response a)) where
+instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (Response a)) where
   type RouteMonad (Send method ty m (Response a)) = m
   toRouteFun (Send a) = sendResp $ (\resp -> Resp resp.status (resp.headers <> setContent media) (RawResp media $ mimeRender @ty resp.body)) <$> a
     where
       media = toMediaType @ty
+
+instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty err, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (Either (Response err) (Response a))) where
+  type RouteMonad (Send method ty m (Either (Response err) (Response a))) = m
+  toRouteFun (Send a) =
+    sendResp $
+      ( \eResp -> case eResp of
+          Right resp -> Resp resp.status (resp.headers <> setContent media) (RawResp media $ mimeRender @ty resp.body)
+          Left err -> Resp err.status (err.headers <> setContent media) (RawResp media $ mimeRender @ty err.body)
+      )
+        <$> a
+    where
+      media = toMediaType @ty
+
+---------------------------------------------
+-- any media
+
+{-| In case of any media we do not set output media in the Api info
+and do not add ContentType to response
+-}
+data AnyMedia
+
+instance {-# OVERLAPPABLE #-} (IsMethod method) => ToRouteInfo (Send method AnyMedia m (Response BL.ByteString)) where
+  toRouteInfo = setMethod (toMethod @method) "*/*"
+
+instance (MonadIO m, IsMethod method) => ToRoute (Send method AnyMedia m (Response BL.ByteString)) where
+  type RouteMonad (Send method AnyMedia m (Response BL.ByteString)) = m
+  toRouteFun (Send a) = sendResp $ (\resp -> Resp resp.status (resp.headers) (RawResp "*/*" resp.body)) <$> a
 
 ---------------------------------------------
 -- utils

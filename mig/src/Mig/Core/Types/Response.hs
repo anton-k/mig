@@ -2,6 +2,7 @@
 module Mig.Core.Types.Response (
   Response (..),
   okResponse,
+  badResponse,
   addHeaders,
   setStatus,
   fromResponse,
@@ -24,6 +25,9 @@ data Response a = Response
 
 okResponse :: a -> Response a
 okResponse = Response ok200 []
+
+badResponse :: Status -> a -> Response a
+badResponse status = Response status []
 
 addHeaders :: ResponseHeaders -> Response a -> Response a
 addHeaders hs x = x{headers = x.headers <> hs}

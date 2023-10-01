@@ -16,15 +16,14 @@ import Control.Monad.Catch
 import Data.ByteString qualified as B
 import Data.ByteString.Lazy qualified as BL
 import Data.Foldable
+import Data.IORef
 import Data.Map.Strict qualified as Map
 import Data.Maybe
 import Data.Sequence (Seq (..), (|>))
 import Data.Sequence qualified as Seq
 import Data.Text (Text)
-import Data.Text qualified as Text
 import Mig.Core.ServerFun (handleError)
 import Mig.Core.Types (Req (..), Resp (..), RespBody (..), ToText (..), badRequest)
-import Network.HTTP.Types.Status (status413)
 import Network.Wai qualified as Wai
 import Network.Wai.Handler.Warp qualified as Warp
 
@@ -66,18 +65,37 @@ toResponse resp =
 First argument limits the size of input body. The body is read in chunks.
 -}
 fromRequest :: Maybe Kilobytes -> Wai.Request -> IO Req
-fromRequest maxSize req =
+fromRequest maxSize req = do
+  bodyCache <- newBodyCache
   pure $
     Req
       { path = Wai.pathInfo req
       , query = Map.fromList (Wai.queryString req)
       , headers = Map.fromList $ Wai.requestHeaders req
       , method = Wai.requestMethod req
-      , readBody = fmap (fmap BL.fromChunks) $ readRequestBody (Wai.getRequestBodyChunk req) maxSize
+      , readBody = readBodyCache getBody bodyCache
       , capture = mempty
       }
+  where
+    getBody =
+      fmap (fmap BL.fromChunks) $ readRequestBody (Wai.getRequestBodyChunk req) maxSize
 
--- | Read request body in chunks
+newtype BodyCache a = BodyCache (IORef (Maybe a))
+
+newBodyCache :: IO (BodyCache a)
+newBodyCache = BodyCache <$> newIORef Nothing
+
+readBodyCache :: IO a -> BodyCache a -> IO a
+readBodyCache getter (BodyCache ref) = do
+  mVal <- readIORef ref
+  case mVal of
+    Just val -> pure val
+    Nothing -> do
+      val <- getter
+      writeIORef ref (Just val)
+      pure val
+
+-- | Read request body in chunks. Note that this function can be used only once
 readRequestBody :: IO B.ByteString -> Maybe Kilobytes -> IO (Either Text [B.ByteString])
 readRequestBody readChunk maxSize = loop 0 Seq.empty
   where

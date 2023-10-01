@@ -77,6 +77,7 @@ module Mig (
   -- | How to modify response and attach specific info to it
   Response (..),
   okResponse,
+  badResponse,
   setStatus,
   addHeaders,
 
@@ -149,6 +150,7 @@ import Mig.Core.Types.MediaType
 import Mig.Core.Types.Response (
   Response (..),
   addHeaders,
+  badResponse,
   okResponse,
   setStatus,
  )

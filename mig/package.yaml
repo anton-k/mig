@@ -40,6 +40,8 @@ dependencies:
 - insert-ordered-containers
 - lens
 - attoparsec
+- time
+- aeson-pretty
 
 default-extensions:
   - OverloadedStrings

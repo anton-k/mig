@@ -52,6 +52,10 @@ instance (MonadIO m, MimeRender ty a, IsMethod method) => ToServer (Send method 
   type ServerMonad (Send method ty m (Response a)) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
+instance (MonadIO m, MimeRender ty err, MimeRender ty a, IsMethod method) => ToServer (Send method ty m (Either (Response err) (Response a))) where
+  type ServerMonad (Send method ty m (Either (Response err) (Response a))) = m
+  toServer a = Server $ Api.HandleRoute (toRoute a)
+
 -- inputs
 
 instance (ToSchema a, MimeUnrender media a, ToRoute b) => ToServer (ReqBody media a -> b) where
