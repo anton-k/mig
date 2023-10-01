@@ -85,6 +85,14 @@ module Mig (
   -- ** specific cases
   staticFiles,
 
+  -- ** Middlewares
+  Middleware,
+  ToMiddleware (..),
+  applyMiddleware,
+  prependServerAction,
+  appendServerAction,
+  processResponse,
+
   -- ** Low-level types
   Request,
   Response,
@@ -110,7 +118,6 @@ module Mig (
 
   -- * utils
   badRequest,
-  prependServerAction,
 
   -- ** Server
   mapRouteInfo,
@@ -137,31 +144,9 @@ import Web.HttpApiData as X
 
 import Control.Exception (Exception)
 import Control.Monad.Catch (MonadCatch, try)
-import Mig.Core.OpenApi (toOpenApi)
-import Mig.Core.Server
-import Mig.Core.Server.Class
-import Mig.Core.Types (
-  Request,
-  Response,
-  ToText (..),
-  badRequest,
- )
-import Mig.Core.Types.MediaType
-import Mig.Core.Types.Response (
-  Resp (..),
-  addHeaders,
-  badResp,
-  okResp,
-  setStatus,
- )
+import Mig.Core
 import Mig.Server.Class
 import Mig.Server.Wai
-
--- | Prepends action to the server
-prependServerAction :: (Monad m) => ServerFun m -> m () -> ServerFun m
-prependServerAction f act = \req -> do
-  act
-  f req
 
 handleRespError ::
   forall a m.

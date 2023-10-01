@@ -56,6 +56,14 @@ module Mig.Server.Common (
   -- ** specific cases
   staticFiles,
 
+  -- ** Middlewares
+  Middleware,
+  ToMiddleware (..),
+  applyMiddleware,
+  prependServerAction,
+  appendServerAction,
+  processResponse,
+
   -- ** Low-level types
   Request,
   Response,
@@ -80,7 +88,6 @@ module Mig.Server.Common (
 
   -- * utils
   badRequest,
-  prependServerAction,
 
   -- ** Server
   mapRouteInfo,

@@ -14,7 +14,6 @@ import Data.Time
 import FileEmbedLzma
 import Safe (headMay)
 
-import Mig.Core.ServerFun (withPathInfo)
 import Mig.Html.IO
 import System.Random
 
@@ -65,13 +64,9 @@ server site =
         ]
 
     logRoutes :: Server IO -> Server IO
-    logRoutes = mapServerFun go
-      where
-        go :: ServerFun IO -> ServerFun IO
-        go f = withPathInfo $ \path ->
-          prependServerAction f $ do
-            when (path /= ["favicon.ico"] && headMay path /= Just "static") $ do
-              logRoute site (Text.intercalate "/" path)
+    logRoutes = applyMiddleware $ \(PathInfo path) -> prependServerAction $
+      when (path /= ["favicon.ico"] && headMay path /= Just "static") $ do
+        logRoute site (Text.intercalate "/" path)
 
 -------------------------------------------------------------------------------------
 -- server handlers
