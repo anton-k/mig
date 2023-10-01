@@ -1,11 +1,11 @@
 -- | Generic response
 module Mig.Core.Types.Response (
-  Response (..),
-  okResponse,
-  badResponse,
+  Resp (..),
+  okResp,
+  badResp,
   addHeaders,
   setStatus,
-  fromResponse,
+  fromResp,
 ) where
 
 import Data.OpenApi (ToSchema (..))
@@ -13,30 +13,30 @@ import Data.Typeable
 import Network.HTTP.Types.Header (ResponseHeaders)
 import Network.HTTP.Types.Status (Status, ok200)
 
-import Mig.Core.Types.Http (Resp)
+import Mig.Core.Types.Http (Response)
 import Mig.Core.Types.Http qualified as Types
 
-data Response a = Response
+data Resp a = Resp
   { status :: Status
   , headers :: ResponseHeaders
   , body :: a
   }
   deriving (Show, Functor)
 
-okResponse :: a -> Response a
-okResponse = Response ok200 []
+okResp :: a -> Resp a
+okResp = Resp ok200 []
 
-badResponse :: Status -> a -> Response a
-badResponse status = Response status []
+badResp :: Status -> a -> Resp a
+badResp status = Resp status []
 
-addHeaders :: ResponseHeaders -> Response a -> Response a
+addHeaders :: ResponseHeaders -> Resp a -> Resp a
 addHeaders hs x = x{headers = x.headers <> hs}
 
-setStatus :: Status -> Response a -> Response a
+setStatus :: Status -> Resp a -> Resp a
 setStatus st x = x{status = st}
 
-instance (ToSchema a) => ToSchema (Response a) where
+instance (ToSchema a) => ToSchema (Resp a) where
   declareNamedSchema _ = declareNamedSchema (Proxy @a)
 
-fromResponse :: (a -> Resp) -> Response a -> Resp
-fromResponse f a = Types.setRespStatus a.status $ Types.addRespHeaders a.headers $ f a.body
+fromResp :: (a -> Response) -> Resp a -> Response
+fromResp f a = Types.setRespStatus a.status $ Types.addRespHeaders a.headers $ f a.body

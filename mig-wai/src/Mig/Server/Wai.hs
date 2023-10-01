@@ -24,7 +24,7 @@ import Mig.Core.Route as X
 import Mig.Core.Server as X
 import Mig.Core.Server.Class as X
 import Mig.Core.ServerFun (handleError)
-import Mig.Core.Types (Req (..), Resp (..), RespBody (..), ToText (..), badRequest)
+import Mig.Core.Types (Request (..), RespBody (..), Response (..), ToText (..), badRequest)
 import Mig.Core.Types.Info as X
 
 -- | Size of the input body
@@ -52,7 +52,7 @@ toApplication config server req processResponse = do
     onErr err = ServerFun $ const $ pure $ Just $ badRequest $ "Error: Exception has happened: " <> toText (show err)
 
 -- | Convert response to low-level WAI-response
-toResponse :: Resp -> Wai.Response
+toResponse :: Response -> Wai.Response
 toResponse resp =
   case resp.body of
     FileResp file -> Wai.responseFile resp.status resp.headers file Nothing
@@ -64,11 +64,11 @@ toResponse resp =
 {-| Read request from low-level WAI-request
 First argument limits the size of input body. The body is read in chunks.
 -}
-fromRequest :: Maybe Kilobytes -> Wai.Request -> IO Req
+fromRequest :: Maybe Kilobytes -> Wai.Request -> IO Request
 fromRequest maxSize req = do
   bodyCache <- newBodyCache
   pure $
-    Req
+    Request
       { path = Wai.pathInfo req
       , query = Map.fromList (Wai.queryString req)
       , headers = Map.fromList $ Wai.requestHeaders req

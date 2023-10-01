@@ -2,8 +2,8 @@
 module Mig.Core.ServerFun (
   ServerFun (..),
   MapServerFun (..),
-  mapResp,
-  sendResp,
+  mapResponse,
+  sendResponse,
   withBody,
   withRawBody,
   withQuery,
@@ -37,8 +37,8 @@ import Web.HttpApiData
 class MapServerFun f where
   mapServerFun :: (ServerFun m -> ServerFun n) -> f m -> f n
 
-mapResp :: (Functor m, MapServerFun f) => (Resp -> Resp) -> f m -> f m
-mapResp f = mapServerFun $ \(ServerFun fun) -> ServerFun (fmap (fmap f) . fun)
+mapResponse :: (Functor m, MapServerFun f) => (Response -> Response) -> f m -> f m
+mapResponse f = mapServerFun $ \(ServerFun fun) -> ServerFun (fmap (fmap f) . fun)
 
 instance MapServerFun ServerFun where
   mapServerFun = id
@@ -46,7 +46,7 @@ instance MapServerFun ServerFun where
 instance ToRouteInfo (ServerFun m) where
   toRouteInfo = id
 
-newtype ServerFun m = ServerFun {unServerFun :: Req -> m (Maybe Resp)}
+newtype ServerFun m = ServerFun {unServerFun :: Request -> m (Maybe Response)}
 
 withBody :: forall media a m. (MonadIO m, MimeUnrender media a) => (a -> ServerFun m) -> ServerFun m
 withBody f = withRawBody $ \val -> ServerFun $ \req ->
@@ -62,9 +62,9 @@ withRawBody act = ServerFun $ \req -> do
     Left err -> pure $ Just $ setRespStatus status500 (ok @Text err)
 
 withQuery :: (Monad m, FromHttpApiData a) => Text -> (a -> ServerFun m) -> ServerFun m
-withQuery name act = withQueryBy (join . getQuery name) processResp
+withQuery name act = withQueryBy (join . getQuery name) processResponse
   where
-    processResp = handleMaybeInput errorMessage act
+    processResponse = handleMaybeInput errorMessage act
 
     errorMessage = "Failed to parse arg: " <> name
 
@@ -86,7 +86,7 @@ withQueryFlag name act = ServerFun $ \req ->
 {-| The first maybe means that query with that name is missing
 the second maybe is weather value is present or empty in the query
 -}
-getQuery :: Text -> Req -> Maybe (Maybe Text)
+getQuery :: Text -> Request -> Maybe (Maybe Text)
 getQuery name req =
   case Map.lookup (Text.encodeUtf8 name) req.query of
     Just mBs ->
@@ -105,7 +105,7 @@ withOptional name act = withQueryBy (join . getQuery name) act
 
 withQueryBy ::
   (FromHttpApiData a) =>
-  (Req -> Maybe Text) ->
+  (Request -> Maybe Text) ->
   (Maybe a -> ServerFun m) ->
   ServerFun m
 withQueryBy getVal act = ServerFun $ \req ->
@@ -116,20 +116,20 @@ withQueryBy getVal act = ServerFun $ \req ->
     unServerFun (act mArg) req
 
 withCapture :: (Monad m, FromHttpApiData a) => Text -> (a -> ServerFun m) -> ServerFun m
-withCapture name act = withQueryBy getVal processResp
+withCapture name act = withQueryBy getVal processResponse
   where
     getVal req = Map.lookup name req.capture
 
-    processResp = handleMaybeInput errorMessage act
+    processResponse = handleMaybeInput errorMessage act
 
     errorMessage = "Failed to parse capture: " <> name
 
 withHeader :: (Monad m, FromHttpApiData a) => HeaderName -> (a -> ServerFun m) -> ServerFun m
-withHeader name act = withQueryBy getVal processResp
+withHeader name act = withQueryBy getVal processResponse
   where
     getVal req = eitherToMaybe . parseHeader =<< Map.lookup name req.headers
 
-    processResp = handleMaybeInput errorMessage act
+    processResponse = handleMaybeInput errorMessage act
 
     errorMessage = "Failed to parse header: " <> headerNameToText name
 
@@ -150,8 +150,8 @@ withFormBody act = withRawBody $ \body -> ServerFun $ \req -> do
 withPathInfo :: ([Text] -> ServerFun m) -> ServerFun m
 withPathInfo act = ServerFun $ \req -> unServerFun (act req.path) req
 
-sendResp :: (Functor m) => m Resp -> ServerFun m
-sendResp act = ServerFun $ const $ fmap Just act
+sendResponse :: (Functor m) => m Response -> ServerFun m
+sendResponse act = ServerFun $ const $ fmap Just act
 
 -- | Handle errors
 handleError :: (Exception a, MonadCatch m) => (a -> ServerFun m) -> ServerFun m -> ServerFun m

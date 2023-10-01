@@ -63,7 +63,7 @@ fromReaderExcept env server =
     handle e (ServerFun f) = ServerFun $ \req ->
       handleError <$> runExceptT (runReaderT (f req) e)
 
-    handleError :: Either Text (Maybe Resp) -> Maybe Resp
+    handleError :: Either Text (Maybe Response) -> Maybe Response
     handleError = \case
       Right mResp -> mResp
       Left err -> Just $ setRespStatus status500 (ok @Text err)
