@@ -1,5 +1,6 @@
-module Mig.Server (
+module Mig.Server.Wai (
   ServerConfig (..),
+  Kilobytes,
   toApplication,
   runServer,
   module X,
