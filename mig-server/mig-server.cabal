@@ -84,7 +84,6 @@ library
     Mig.Html.IO
     Mig.Json
     Mig.Json.IO
-    Mig.Server
     Mig.Server.Class
     Mig.Server.Common
 
@@ -114,10 +113,9 @@ library
     , http-api-data
     , http-types
     , mig
+    , mig-wai
     , mtl
     , openapi3
     , text
-    , wai
-    , warp
 
   default-language:   GHC2021

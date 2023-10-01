@@ -84,8 +84,7 @@ dependencies:
 - aeson
 - base >= 4.7 && < 5
 - mig
-- wai
-- warp
+- mig-wai
 - blaze-markup
 - http-types
 - text

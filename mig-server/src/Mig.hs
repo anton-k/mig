@@ -158,8 +158,8 @@ import Mig.Core.Types.Response (
   okResponse,
   setStatus,
  )
-import Mig.Server
 import Mig.Server.Class
+import Mig.Server.Wai
 
 -- | Prepends action to the server
 prependServerAction :: (Monad m, MapServerFun f) => f m -> m () -> f m

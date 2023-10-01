@@ -34,6 +34,7 @@ packages:
 - mig-client
 - mig-server
 - mig-swagger-ui
+- mig-wai
 - mig-rio
 # Dependency packages to be pulled from upstream that are not in the resolver.
 # These entries can reference officially published versions as well as
