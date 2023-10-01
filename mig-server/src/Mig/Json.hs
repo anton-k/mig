@@ -50,3 +50,10 @@ instance (ToSchema a, FromJSON a, ToRoute b) => ToServer (Body a -> b) where
   toServer f =
     (toServer :: ((ReqBody Json a -> b) -> Server (RouteMonad b)))
       (\(ReqBody a) -> f (Body a))
+
+instance (FromJSON a, ToMiddleware b) => ToMiddleware (Body a -> b) where
+  type MiddlewareMonad (Body a -> b) = MiddlewareMonad b
+
+  toMiddleware f =
+    (toMiddleware :: ((ReqBody Json a -> b) -> Middleware (MiddlewareMonad b)))
+      (\(ReqBody a) -> f (Body a))
