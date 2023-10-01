@@ -234,7 +234,7 @@ instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (
 
 instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m a) where
   type RouteMonad (Send method ty m a) = m
-  toRouteFun (Send a) = sendResponse $ ok @ty <$> a
+  toRouteFun (Send a) = sendResponse $ okResponse @ty <$> a
 
 instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (Resp a)) where
   type RouteMonad (Send method ty m (Resp a)) = m

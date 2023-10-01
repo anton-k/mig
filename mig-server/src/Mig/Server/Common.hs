@@ -67,6 +67,8 @@ module Mig.Server.Common (
   -- ** Low-level types
   Request,
   Response,
+  okResponse,
+  badResponse,
   ServerFun,
   handleRespError,
 

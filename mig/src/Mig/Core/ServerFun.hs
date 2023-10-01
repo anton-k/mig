@@ -48,7 +48,7 @@ withRawBody act = \req -> do
   eBody <- liftIO req.readBody
   case eBody of
     Right body -> act body req
-    Left err -> pure $ Just $ setRespStatus status500 (ok @Text err)
+    Left err -> pure $ Just $ setRespStatus status500 (okResponse @Text err)
 
 withQuery :: (Monad m, FromHttpApiData a) => Text -> (a -> ServerFun m) -> ServerFun m
 withQuery name act = withQueryBy (join . getQuery name) processResponse
