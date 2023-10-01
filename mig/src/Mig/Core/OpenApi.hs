@@ -13,10 +13,10 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import Mig.Core.Api (Api)
 import Mig.Core.Api qualified as Api
-import Mig.Core.Info (IsRequired (..), RouteInfo)
-import Mig.Core.Info qualified as Info
 import Mig.Core.Route (Route (..))
 import Mig.Core.Server (Server (..), fillCaptures)
+import Mig.Core.Types.Info (IsRequired (..), RouteInfo)
+import Mig.Core.Types.Info qualified as Info
 import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status (Status (..))
 

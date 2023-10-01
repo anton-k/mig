@@ -26,15 +26,15 @@ library
   exposed-modules:
     Mig.Core
     Mig.Core.Api
-    Mig.Core.Info
     Mig.Core.OpenApi
     Mig.Core.Route
     Mig.Core.Server
     Mig.Core.Server.Class
-    Mig.Core.Server.Trace
     Mig.Core.ServerFun
+    Mig.Core.Trace
     Mig.Core.Types
     Mig.Core.Types.Http
+    Mig.Core.Types.Info
     Mig.Core.Types.MediaType
     Mig.Core.Types.Response
 
@@ -57,7 +57,6 @@ library
 
   build-depends:
       aeson
-    , aeson-pretty
     , attoparsec
     , base >=4.7 && <5
     , blaze-html
@@ -78,5 +77,6 @@ library
     , safe
     , text
     , time
+    , yaml
 
   default-language:   GHC2021

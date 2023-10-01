@@ -80,6 +80,7 @@ module Mig (
   badResponse,
   setStatus,
   addHeaders,
+  EitherResponse,
 
   -- ** specific cases
   staticFiles,

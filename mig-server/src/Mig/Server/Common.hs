@@ -21,6 +21,7 @@ module Mig.Server.Common (
   -- ** methods
   Send (..),
   IsMethod (..),
+  EitherResponse,
   GET,
   POST,
   PUT,

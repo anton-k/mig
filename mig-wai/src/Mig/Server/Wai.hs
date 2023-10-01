@@ -6,12 +6,6 @@ module Mig.Server.Wai (
   module X,
 ) where
 
-import Mig.Core.Api as X (Api (..), Path (..), PathItem (..))
-import Mig.Core.Info as X
-import Mig.Core.Route as X
-import Mig.Core.Server as X
-import Mig.Core.Server.Class as X
-
 import Control.Monad.Catch
 import Data.ByteString qualified as B
 import Data.ByteString.Lazy qualified as BL
@@ -22,10 +16,16 @@ import Data.Maybe
 import Data.Sequence (Seq (..), (|>))
 import Data.Sequence qualified as Seq
 import Data.Text (Text)
-import Mig.Core.ServerFun (handleError)
-import Mig.Core.Types (Req (..), Resp (..), RespBody (..), ToText (..), badRequest)
 import Network.Wai qualified as Wai
 import Network.Wai.Handler.Warp qualified as Warp
+
+import Mig.Core.Api as X (Api (..), Path (..), PathItem (..))
+import Mig.Core.Route as X
+import Mig.Core.Server as X
+import Mig.Core.Server.Class as X
+import Mig.Core.ServerFun (handleError)
+import Mig.Core.Types (Req (..), Resp (..), RespBody (..), ToText (..), badRequest)
+import Mig.Core.Types.Info as X
 
 -- | Size of the input body
 type Kilobytes = Int

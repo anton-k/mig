@@ -27,6 +27,7 @@ module Mig.Core.Route (
   Head,
   Patch,
   Trace,
+  EitherResponse,
 
   -- ** Method tags
   IsMethod (..),
@@ -51,11 +52,8 @@ import Data.Proxy
 import Data.String
 import Data.Text (Text)
 import GHC.TypeLits
-import Mig.Core.Info
 import Mig.Core.ServerFun
-import Mig.Core.Types (Resp (..), RespBody (..), ok, setContent)
-import Mig.Core.Types.MediaType (MimeRender (..), MimeUnrender (..), ToMediaType (..))
-import Mig.Core.Types.Response (Response (..))
+import Mig.Core.Types
 import Network.HTTP.Types.Method
 import Web.HttpApiData
 
@@ -230,13 +228,15 @@ instance IsMethod TRACE where
 
 newtype Send method ty m a = Send {unSend :: m a}
 
+type EitherResponse err a = Either (Response err) (Response a)
+
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m a) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (Response a)) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
-instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (Either (Response err) (Response a))) where
+instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (EitherResponse err a)) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
 instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m a) where
@@ -249,7 +249,7 @@ instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => T
     where
       media = toMediaType @ty
 
-instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty err, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (Either (Response err) (Response a))) where
+instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty err, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (EitherResponse err a)) where
   type RouteMonad (Send method ty m (Either (Response err) (Response a))) = m
   toRouteFun (Send a) =
     sendResp $

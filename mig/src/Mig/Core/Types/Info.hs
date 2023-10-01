@@ -1,5 +1,5 @@
 -- | Types that describe route info
-module Mig.Core.Info (
+module Mig.Core.Types.Info (
   RouteInfo (..),
   RouteInput (..),
   Describe (..),

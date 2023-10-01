@@ -28,11 +28,11 @@ import Web.HttpApiData
 
 import Mig.Core.Api (Api, fromNormalApi, toNormalApi)
 import Mig.Core.Api qualified as Api
-import Mig.Core.Info (RouteInfo (..), RouteInput (..), describeInfoInputs, setOutputMedia)
-import Mig.Core.Info qualified as Describe (Describe (..))
 import Mig.Core.Route
 import Mig.Core.ServerFun (MapServerFun (..))
 import Mig.Core.Types (MediaType, Req (..), setContent)
+import Mig.Core.Types.Info (RouteInfo (..), RouteInput (..), describeInfoInputs, setOutputMedia)
+import Mig.Core.Types.Info qualified as Describe (Describe (..))
 import Mig.Core.Types.Response (Response (..), addHeaders, okResponse)
 
 {-| Server type. It is a function fron request to response.
