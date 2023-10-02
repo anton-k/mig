@@ -12,8 +12,12 @@ module Mig.Core.Server (
   mapRouteInfo,
   staticFiles,
   describeInputs,
+  atPath,
+  addPathLink,
 ) where
 
+import Control.Applicative
+import Control.Monad
 import Control.Monad.IO.Class
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BL
@@ -313,3 +317,36 @@ handleError ::(Exception a, MonadCatch m) => (a -> Server m) -> Server m -> Serv
 handleError handler (Server act) = Server $ \req ->
   (act req) `catch` (\err -> unServer (handler err) req)
 -}
+
+{-| Sub-server for a server on given path
+it might be usefule to emulate links from one route to another within the server
+or reuse part of the server inside another server.
+-}
+atPath :: forall m. Api.Path -> Server m -> Server m
+atPath rootPath rootServer = maybe mempty Server $ find rootPath rootServer.unServer
+  where
+    find :: Api.Path -> Api (Route m) -> Maybe (Api (Route m))
+    find (Api.Path path) server = case path of
+      [] -> Just server
+      _ ->
+        case server of
+          Api.Empty -> Nothing
+          Api.HandleRoute _ -> Nothing
+          Api.Append a b -> find (Api.Path path) a <|> find (Api.Path path) b
+          Api.WithPath (Api.Path pathB) serverB ->
+            flip find serverB =<< matchPath pathB path
+
+    matchPath :: [Api.PathItem] -> [Api.PathItem] -> Maybe Api.Path
+    matchPath prefix path = case prefix of
+      [] -> Just (Api.Path path)
+      prefixHead : prefixTail -> do
+        (pathHead, pathTail) <- List.uncons path
+        guard (prefixHead == pathHead)
+        matchPath prefixTail pathTail
+
+{-| Links one route of the server to another
+so that every call to first path is redirected to the second path
+-}
+addPathLink :: Api.Path -> Api.Path -> Server m -> Server m
+addPathLink from to server =
+  server <> Server (Api.WithPath from (atPath to server).unServer)

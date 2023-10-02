@@ -7,8 +7,6 @@ module Server (
 
 import Control.Monad
 import Data.ByteString (ByteString)
-import Data.List qualified as List
-import Data.Maybe
 import Data.Text qualified as Text
 import Data.Time
 import FileEmbedLzma
@@ -21,6 +19,8 @@ import Interface
 import Types
 import View ()
 
+-- import ToMarkup instances for Html rendering
+
 -- | Server definition. Note how we assemble it from parts with monoid method mconcat.
 server :: Site -> Server IO
 server site =
@@ -32,10 +32,11 @@ server site =
             , writeServer
             ]
       , defaultPage
-      , "static" /. staticFiles resourceFiles
-      , "favicon.ico" /. staticFiles faviconLogo
+      , addFavicon $ "static" /. staticFiles resourceFiles
       ]
   where
+    addFavicon = addPathLink "favicon.ico" "static/lambda-logo.png"
+
     -- server to read info.
     -- We can read blog posts and quotes.
     readServer =
@@ -117,14 +118,10 @@ randomBlogPost site =
   oneOf =<< site.listBlogPosts
 
 -------------------------------------------------------------------------------------
--- utils
+-- static files
 
 resourceFiles :: [(FilePath, ByteString)]
 resourceFiles = $(embedRecursiveDir "Html/resources")
-
-faviconLogo :: [(FilePath, ByteString)]
-faviconLogo =
-  fmap (".png",) $ maybeToList $ List.lookup "/lambda-logo.png" resourceFiles
 
 -------------------------------------------------------------------------------------
 -- utils

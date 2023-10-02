@@ -95,6 +95,8 @@ module Mig.Server.Common (
   mapRouteInfo,
   mapServerFun,
   mapResponse,
+  atPath,
+  addPathLink,
 
   -- ** OpenApi
   toOpenApi,
