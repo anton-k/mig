@@ -38,7 +38,7 @@ import Mig.Core.Route
 import Mig.Core.Types (MediaType, Request (..), Response, setContent)
 import Mig.Core.Types.Info (RouteInfo (..), RouteInput (..), describeInfoInputs, setOutputMedia)
 import Mig.Core.Types.Info qualified as Describe (Describe (..))
-import Mig.Core.Types.Response (Resp (..), addHeaders, okResp)
+import Mig.Core.Types.Response (Resp (..), okResp)
 
 {-| Server type. It is a function fron request to response.
 Some servers does not return valid value. We use it to find right path.

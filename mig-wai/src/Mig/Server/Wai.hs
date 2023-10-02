@@ -24,7 +24,7 @@ import Mig.Core.Route as X
 import Mig.Core.Server as X
 import Mig.Core.Server.Class as X
 import Mig.Core.ServerFun (handleError)
-import Mig.Core.Types (Request (..), RespBody (..), Response (..), ToText (..), badRequest)
+import Mig.Core.Types (Request (..), Response (..), ResponseBody (..), ToText (..), badRequest)
 import Mig.Core.Types.Info as X
 
 -- | Size of the input body

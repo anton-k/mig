@@ -39,6 +39,16 @@ module Mig (
   MimeRender (..),
   MimeUnrender (..),
 
+  -- ** response
+  RespBody,
+  RespError,
+  IsResp (..),
+  badReq,
+  internalServerError,
+  notImplemented,
+  redirect,
+  setHeader,
+
   -- ** methods
   Send (..),
   Get,
@@ -78,9 +88,6 @@ module Mig (
   Resp (..),
   okResp,
   badResp,
-  redirect,
-  setStatus,
-  addHeaders,
   RespOr,
 
   -- ** specific cases
@@ -99,7 +106,6 @@ module Mig (
   Response,
   okResponse,
   badResponse,
-  redirectResponse,
   ServerFun,
   handleRespError,
 

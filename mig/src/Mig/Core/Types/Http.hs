@@ -5,7 +5,7 @@ module Mig.Core.Types.Http (
   -- * types
   Request (..),
   Response (..),
-  RespBody (..),
+  ResponseBody (..),
   QueryMap,
   ToText (..),
 
@@ -13,8 +13,8 @@ module Mig.Core.Types.Http (
   okResponse,
   badResponse,
   badRequest,
-  redirectResponse,
   setContent,
+  noContentResponse,
 
   -- * utils
   setRespStatus,
@@ -27,13 +27,12 @@ import Data.Map.Strict (Map)
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Data.Text.Encoding qualified as Text
 import Data.Text.Lazy qualified as TL
 import Mig.Core.Types.MediaType (MediaType, MimeRender (..), ToMediaType (..))
 import Network.HTTP.Media.RenderHeader
 import Network.HTTP.Types.Header (HeaderName, ResponseHeaders)
 import Network.HTTP.Types.Method (Method)
-import Network.HTTP.Types.Status (Status, ok200, status302, status500)
+import Network.HTTP.Types.Status (Status, ok200, status500)
 
 -- | Http response
 data Response = Response
@@ -41,15 +40,18 @@ data Response = Response
   -- ^ status
   , headers :: ResponseHeaders
   -- ^ headers
-  , body :: RespBody
+  , body :: ResponseBody
   -- ^ response body
   }
+
+noContentResponse :: Status -> Response
+noContentResponse status = Response status [] (RawResp "*/*" "")
 
 instance IsString Response where
   fromString = okResponse @Text @Text . fromString
 
 -- | Http response body
-data RespBody
+data ResponseBody
   = RawResp MediaType BL.ByteString
   | FileResp FilePath
   | StreamResp
@@ -119,10 +121,6 @@ okResponse :: forall mime a. (MimeRender mime a) => a -> Response
 okResponse = Response ok200 (setContent media) . RawResp media . mimeRender @mime
   where
     media = toMediaType @mime
-
-redirectResponse :: Text -> Response
-redirectResponse url =
-  Response status302 [("Location", Text.encodeUtf8 url)] (RawResp "*/*" "")
 
 -- | Bad response qith given status
 badResponse :: forall mime a. (MimeRender mime a) => Status -> a -> Response

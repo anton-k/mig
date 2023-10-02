@@ -53,10 +53,10 @@ handleAuthToken env (Body user) = Send $ do
     then do
       token <- env.auth.newToken user
       void $ forkIO $ setExpireTimer token
-      pure $ Right $ okResp token
+      ok token
     else do
       env.logger.error "User does not have access to service"
-      pure $ Left $ badResp status500 "User is not valid"
+      bad status500 "User is not valid"
   where
     setExpireTimer token = do
       threadDelay (1_000_000 * 60 * 10) -- 10 minutes
@@ -74,8 +74,8 @@ handleGetWeather env (Query token) (Capture location) (Capture fromDay) (Capture
   whenAuth env token $ do
     mResult <- env.weather.get location fromDay interval
     case mResult of
-      Just result -> pure $ Right $ okResp result
-      Nothing -> pure $ Left $ badResp status400 "No data"
+      Just result -> ok result
+      Nothing -> bad status400 "No data"
 
 handleUpdateWeather ::
   Env ->
@@ -86,7 +86,7 @@ handleUpdateWeather env (Query token) (Body updateData) = Send $ do
   env.logger.info "update the weather data"
   void $
     whenAuth env token $
-      Right . okResp <$> env.weather.update updateData
+      ok <$> env.weather.update updateData
 
 whenAuth :: Env -> AuthToken -> IO (RespOr Text a) -> IO (RespOr Text a)
 whenAuth env token act = do
@@ -95,6 +95,6 @@ whenAuth env token act = do
     then act
     else do
       env.logger.error errMessage
-      pure $ Left $ badResp status500 errMessage
+      bad status500 errMessage
   where
     errMessage = "Token is invalid"
