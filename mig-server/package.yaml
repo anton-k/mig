@@ -73,12 +73,13 @@ description: |
 language: GHC2021
 
 default-extensions:
-  - OverloadedRecordDot
+  - DerivingStrategies
   - DuplicateRecordFields
+  - LambdaCase
+  - OverloadedRecordDot
   - OverloadedStrings
   - StrictData
   - TypeFamilies
-  - LambdaCase
 
 dependencies:
 - aeson

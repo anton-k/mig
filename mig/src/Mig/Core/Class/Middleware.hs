@@ -30,7 +30,7 @@ The instances work in the same manner as route handlers we can use as many argum
 we wish and we use typed wrappers to query specific part of the request.
 Thus we gain type-safety and get convenient interface to request the various parts of request.
 -}
-module Mig.Core.Middleware (
+module Mig.Core.Class.Middleware (
   -- * class
   ToMiddleware (..),
   Middleware,
@@ -49,7 +49,7 @@ import Data.String
 import GHC.TypeLits
 import Web.HttpApiData
 
-import Mig.Core.Route
+import Mig.Core.Class.Route
 import Mig.Core.Server
 import Mig.Core.ServerFun
 import Mig.Core.Types

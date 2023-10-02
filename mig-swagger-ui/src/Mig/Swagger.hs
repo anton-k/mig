@@ -98,16 +98,17 @@ swagger config getOpenApi =
           ]
     ]
   where
-    getSchema :: Get Json m Json.Value
-    getSchema = Send $ Json.toJSON <$> (config.mapSchema =<< getOpenApi)
+    getSchema :: Get m (Resp Json Json.Value)
+    getSchema = Send $ ok . Json.toJSON <$> (config.mapSchema =<< getOpenApi)
 
-    getIndex :: Get Html m Html
+    getIndex :: Get m (Resp Html Html)
     getIndex = Send $ do
       pure $
-        preEscapedToMarkup $
-          Text.replace "MIG_SWAGGER_UI_SCHEMA" (toUrlPiece config.swaggerFile) $
-            Text.replace "MIG_SWAGGER_UI_DIR" (toUrlPiece config.staticDir) $
-              indexTemplate
+        ok $
+          preEscapedToMarkup $
+            Text.replace "MIG_SWAGGER_UI_SCHEMA" (toUrlPiece config.swaggerFile) $
+              Text.replace "MIG_SWAGGER_UI_DIR" (toUrlPiece config.staticDir) $
+                indexTemplate
 
 swaggerFiles :: [(FilePath, ByteString)]
 swaggerFiles = $(embedRecursiveDir "swagger-ui-dist-5.0.0")

@@ -34,11 +34,11 @@ import Web.HttpApiData
 
 import Mig.Core.Api (Api, fromNormalApi, toNormalApi)
 import Mig.Core.Api qualified as Api
-import Mig.Core.Route
-import Mig.Core.Types (MediaType, Request (..), Response, setContent)
+import Mig.Core.Class.Response (IsResp (..), Resp (..))
+import Mig.Core.Class.Route
+import Mig.Core.Types (AnyMedia, MediaType, Request (..), Response, setContent)
 import Mig.Core.Types.Info (RouteInfo (..), RouteInput (..), describeInfoInputs, setOutputMedia)
 import Mig.Core.Types.Info qualified as Describe (Describe (..))
-import Mig.Core.Types.Response (Resp (..), okResp)
 
 {-| Server type. It is a function fron request to response.
 Some servers does not return valid value. We use it to find right path.
@@ -105,10 +105,10 @@ fromServer (Server server) = \req -> do
     serverNormal = toNormalApi (fillCaptures server)
 
     getRoute req = do
-      api <- fromNormalApi req.method (getMedia "Accept" req) (getMedia "Content-Type" req) serverNormal
+      api <- fromNormalApi req.method (getMediaType "Accept" req) (getMediaType "Content-Type" req) serverNormal
       Api.getPath req.path api
 
-    getMedia name req = fromMaybe "*/*" $ Map.lookup name req.headers
+    getMediaType name req = fromMaybe "*/*" $ Map.lookup name req.headers
 
 {-| Substitutes all stars * for corresponding names in captures
 if there are more captures in the route than in the path it adds
@@ -218,12 +218,12 @@ staticFiles files =
       where
         media = getMediaType path
 
-    getFile :: MediaType -> ByteString -> Get AnyMedia m (Resp BL.ByteString)
+    getFile :: MediaType -> ByteString -> Get m (Resp AnyMedia BL.ByteString)
     getFile ty fileContent =
       Send $
         pure $
           addHeaders (setContent ty) $
-            okResp $
+            ok $
               BL.fromStrict fileContent
 
     getMediaType :: FilePath -> MediaType

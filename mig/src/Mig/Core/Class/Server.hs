@@ -1,5 +1,5 @@
 -- | To server class
-module Mig.Core.Server.Class (
+module Mig.Core.Class.Server (
   (/.),
   ToServer (..),
 ) where
@@ -10,10 +10,10 @@ import Data.OpenApi (ToParamSchema, ToSchema)
 import GHC.TypeLits
 import Mig.Core.Api (Api)
 import Mig.Core.Api qualified as Api
-import Mig.Core.Route
+import Mig.Core.Class.Response (IsResp)
+import Mig.Core.Class.Route
 import Mig.Core.Server (Server (..))
-import Mig.Core.Types.MediaType (MimeRender (..), MimeUnrender (..))
-import Mig.Core.Types.Response (Resp)
+import Mig.Core.Types.MediaType (MimeUnrender (..))
 import Web.HttpApiData
 
 infixr 4 /.
@@ -43,17 +43,8 @@ instance ToServer (Server m) where
   toServer = id
 
 -- outputs
-
-instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToServer (Send method ty m a) where
-  type ServerMonad (Send method ty m a) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, MimeRender ty a, IsMethod method) => ToServer (Send method ty m (Resp a)) where
-  type ServerMonad (Send method ty m (Resp a)) = m
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (MonadIO m, MimeRender ty err, MimeRender ty a, IsMethod method) => ToServer (Send method ty m (Either (Resp err) (Resp a))) where
-  type ServerMonad (Send method ty m (Either (Resp err) (Resp a))) = m
+instance (MonadIO m, IsResp a, IsMethod method) => ToServer (Send method m a) where
+  type ServerMonad (Send method m a) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 -- inputs

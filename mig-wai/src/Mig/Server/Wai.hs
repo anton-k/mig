@@ -20,9 +20,9 @@ import Network.Wai qualified as Wai
 import Network.Wai.Handler.Warp qualified as Warp
 
 import Mig.Core.Api as X (Api (..), Path (..), PathItem (..))
-import Mig.Core.Route as X
+import Mig.Core.Class.Route as X
+import Mig.Core.Class.Server as X
 import Mig.Core.Server as X
-import Mig.Core.Server.Class as X
 import Mig.Core.ServerFun (handleError)
 import Mig.Core.Types (Request (..), Response (..), ResponseBody (..), ToText (..), badRequest)
 import Mig.Core.Types.Info as X
@@ -44,7 +44,7 @@ runServer port server = Warp.run port (toApplication config server)
 toApplication :: ServerConfig -> Server IO -> Wai.Application
 toApplication config server req processResponse = do
   mResp <- handleError onErr (fromServer server) =<< fromRequest config.maxBodySize req
-  processResponse $ toResponse $ fromMaybe noResult mResp
+  processResponse $ toWaiResponse $ fromMaybe noResult mResp
   where
     noResult = badRequest @Text ("Server produces nothing" :: Text)
 
@@ -52,8 +52,8 @@ toApplication config server req processResponse = do
     onErr err = const $ pure $ Just $ badRequest @Text $ "Error: Exception has happened: " <> toText (show err)
 
 -- | Convert response to low-level WAI-response
-toResponse :: Response -> Wai.Response
-toResponse resp =
+toWaiResponse :: Response -> Wai.Response
+toWaiResponse resp =
   case resp.body of
     FileResp file -> Wai.responseFile resp.status resp.headers file Nothing
     RawResp _ str -> lbs str

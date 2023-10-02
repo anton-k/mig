@@ -22,7 +22,6 @@ module Mig.Server.Common (
   -- ** methods
   Send (..),
   IsMethod (..),
-  RespOr,
   GET,
   POST,
   PUT,
@@ -48,9 +47,6 @@ module Mig.Server.Common (
   -- ** response
 
   -- | How to modify response and attach specific info to it
-  Resp (..),
-  okResp,
-  badResp,
 
   -- ** specific cases
   staticFiles,
@@ -111,6 +107,8 @@ import Mig hiding (
   Patch,
   Post,
   Put,
+  Resp,
+  RespOr,
   Trace,
  )
 

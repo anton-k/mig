@@ -45,10 +45,10 @@ routeArgs =
         ]
 
 -- | Simple getter
-helloWorld :: Get Text
+helloWorld :: Get (Resp Text)
 helloWorld = Send $ do
   logDebug "hello world route call"
-  pure "Hello world!"
+  pure $ ok "Hello world!"
 
 newtype TraceId = TraceId Text
   deriving newtype (FromHttpApiData, ToText, ToParamSchema)
@@ -66,10 +66,8 @@ handleSucc (Header traceId) (Query n) = Send $ do
       | n <= 0 = status400
       | otherwise = ok200
 
-{-| Using optional query parameters and error as Either.
-also there is handy type shortcut @RespOr err result@
--}
-handleSuccOpt :: Optional "value" Int -> Get (Either (Resp Text) (Resp Int))
+-- | Using optional query parameters and error as RespOr.
+handleSuccOpt :: Optional "value" Int -> Get (RespOr Text Int)
 handleSuccOpt (Optional n) = Send $ do
   logDebug "succ optional route call"
   pure $ case n of
@@ -88,23 +86,24 @@ handleAdd (Query a) (Query b) = Send $ do
     headers = [("args", "a, b")]
 
 -- | Using query flag if flag is false returns 0
-handleAddIf :: Query "a" Int -> Query "b" Int -> QueryFlag "perform" -> Get Int
+handleAddIf :: Query "a" Int -> Query "b" Int -> QueryFlag "perform" -> Get (Resp Int)
 handleAddIf (Query a) (Query b) (QueryFlag addFlag) = Send $ do
   logDebug "add-if route call"
   pure $
-    if addFlag
-      then (a + b)
-      else 0
+    ok $
+      if addFlag
+        then (a + b)
+        else 0
 
 {-| Using capture as arguments. This route expects two arguments
 captured in URL. For example:
 
 > http://localhost:8085/hello/api/mul/3/100
 -}
-handleMul :: Capture "a" Int -> Capture "b" Int -> Get Int
+handleMul :: Capture "a" Int -> Capture "b" Int -> Get (Resp Int)
 handleMul (Capture a) (Capture b) = Send $ do
   logDebug "mul route call"
-  pure (a * b)
+  pure $ ok (a * b)
 
 data AddInput = AddInput
   { a :: Int

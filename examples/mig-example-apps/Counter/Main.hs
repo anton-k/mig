@@ -71,18 +71,18 @@ server =
       ]
 
 -- | Get handler. It logs the call and returns current state
-handleGet :: Get App Int
+handleGet :: Get App (Resp Int)
 handleGet = Send $ do
   logInfo "Call get"
   ref <- asks (.current)
-  liftIO $ readIORef ref
+  liftIO $ ok <$> readIORef ref
 
 -- | Put handler. It logs the call and updates the state with integer which is read from URL
-handlePut :: Capture "arg" Int -> Get App ()
+handlePut :: Capture "arg" Int -> Get App (Resp ())
 handlePut (Capture val) = Send $ do
   logInfo $ "Call put with: " <> show val
   ref <- asks (.current)
-  liftIO $ atomicModifyIORef' ref (\cur -> (cur + val, ()))
+  liftIO $ ok <$> atomicModifyIORef' ref (\cur -> (cur + val, ()))
 
 -- | Helper to do simple logging
 logInfo :: String -> App ()

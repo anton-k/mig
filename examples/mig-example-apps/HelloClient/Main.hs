@@ -2,6 +2,10 @@ module Main (
   main,
 ) where
 
+main :: IO ()
+main = putStrLn "todo"
+
+{-
 import Mig
 import Mig.Client
 import Network.HTTP.Client
@@ -27,3 +31,4 @@ server =
       [ "hello" /. "*" /. "*" /. hello
       , "bye" /. bye
       ]
+-}

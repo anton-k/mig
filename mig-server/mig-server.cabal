@@ -82,6 +82,7 @@ library
     Mig
     Mig.Html
     Mig.Html.IO
+    Mig.IO
     Mig.Json
     Mig.Json.IO
     Mig.Server.Class
@@ -90,6 +91,7 @@ library
   other-modules:      Paths_mig_server
   hs-source-dirs:     src
   default-extensions:
+    DerivingStrategies
     DuplicateRecordFields
     LambdaCase
     OverloadedRecordDot
