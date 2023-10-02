@@ -66,14 +66,16 @@ class (MonadIO (RouteMonad a), ToRouteInfo a) => ToRoute a where
 
 -- | Route contains API-info and how to run it
 data Route m = Route
-  { api :: RouteInfo
+  { info :: RouteInfo
+  -- ^ definition of the API (to use it in OpenApi or clients)
   , run :: ServerFun m
+  -- ^ how to run a server
   }
 
 toRoute :: forall a. (ToRoute a) => a -> Route (RouteMonad a)
 toRoute a =
   Route
-    { api = toRouteInfo @a emptyRouteInfo
+    { info = toRouteInfo @a emptyRouteInfo
     , run = toRouteFun a
     }
 
