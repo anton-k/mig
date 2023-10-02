@@ -1,21 +1,11 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Creation of routes from functions
-module Mig.Core.Route (
+module Mig.Core.Class.Route (
   Route (..),
   ToRoute (..),
   toRoute,
   ServerFun,
-
-  -- * Response
-  RespBody,
-  RespError,
-  IsResp (..),
-  badReq,
-  internalServerError,
-  notImplemented,
-  redirect,
-  setHeader,
 
   -- * Inputs
   ReqBody (..),
@@ -37,7 +27,6 @@ module Mig.Core.Route (
   Head,
   Patch,
   Trace,
-  RespOr,
 
   -- ** Method tags
   IsMethod (..),
@@ -51,28 +40,19 @@ module Mig.Core.Route (
   TRACE,
 
   -- ** Media
-  AnyMedia,
 ) where
 
 import Control.Monad.IO.Class
-import Data.Bifunctor
-import Data.ByteString.Lazy qualified as BL
 import Data.Kind
-import Data.Maybe
 import Data.OpenApi (ToParamSchema (..), ToSchema (..))
 import Data.Proxy
 import Data.String
 import Data.Text (Text)
-import Data.Text.Encoding qualified as Text
 import GHC.TypeLits
+import Mig.Core.Class.Response (IsResp (..))
 import Mig.Core.ServerFun
 import Mig.Core.Types
-import Mig.Core.Types.Http qualified as Response (Response (..))
-import Mig.Core.Types.Response qualified as Resp (Resp (..))
-import Network.HTTP.Media.RenderHeader (RenderHeader (..))
-import Network.HTTP.Types.Header (HeaderName, ResponseHeaders)
 import Network.HTTP.Types.Method
-import Network.HTTP.Types.Status (Status, internalServerError500, notImplemented501, ok200, status302, status400)
 import Web.HttpApiData
 
 class (MonadIO (RouteMonad a), ToRouteInfo a) => ToRoute a where
@@ -203,14 +183,14 @@ data HEAD
 data PATCH
 data TRACE
 
-type Get ty m a = Send GET ty m a
-type Post ty m a = Send POST ty m a
-type Put ty m a = Send PUT ty m a
-type Delete ty m a = Send DELETE ty m a
-type Options ty m a = Send OPTIONS ty m a
-type Head ty m a = Send HEAD ty m a
-type Patch ty m a = Send PATCH ty m a
-type Trace ty m a = Send TRACE ty m a
+type Get m a = Send GET m a
+type Post m a = Send POST m a
+type Put m a = Send PUT m a
+type Delete m a = Send DELETE m a
+type Options m a = Send OPTIONS m a
+type Head m a = Send HEAD m a
+type Patch m a = Send PATCH m a
+type Trace m a = Send TRACE m a
 
 class IsMethod a where
   toMethod :: Method
@@ -239,132 +219,14 @@ instance IsMethod PATCH where
 instance IsMethod TRACE where
   toMethod = methodTrace
 
-newtype Send method ty m a = Send {unSend :: m a}
+newtype Send method m a = Send {unSend :: m a}
 
-type RespOr err a = Either (Resp err) (Resp a)
+instance {-# OVERLAPPABLE #-} (IsMethod method, IsResp a) => ToRouteInfo (Send method m a) where
+  toRouteInfo = setMethod (toMethod @method) (getMedia @a)
 
-instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m a) where
-  toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
-
-instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (Resp a)) where
-  toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
-
-instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (RespOr err a)) where
-  toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
-
-instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m a) where
-  type RouteMonad (Send method ty m a) = m
-  toRouteFun (Send a) = sendResponse $ okResponse @ty <$> a
-
-instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (Resp a)) where
-  type RouteMonad (Send method ty m (Resp a)) = m
-  toRouteFun (Send a) = sendResponse $ (\resp -> Response resp.status (resp.headers <> setContent media) (RawResp media $ maybe "" (mimeRender @ty) resp.body)) <$> a
-    where
-      media = toMediaType @ty
-
-instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty err, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (RespOr err a)) where
-  type RouteMonad (Send method ty m (Either (Resp err) (Resp a))) = m
-  toRouteFun (Send a) =
-    sendResponse $
-      ( \eResp -> case eResp of
-          Right resp -> Response resp.status (resp.headers <> setContent media) (RawResp media $ maybe "" (mimeRender @ty) resp.body)
-          Left err -> Response err.status (err.headers <> setContent media) (RawResp media $ maybe "" (mimeRender @ty) err.body)
-      )
-        <$> a
-    where
-      media = toMediaType @ty
-
----------------------------------------------
--- any media
-
-{-| In case of any media we do not set output media in the Api info
-and do not add ContentType to response
--}
-data AnyMedia
-
-instance {-# OVERLAPPABLE #-} (IsMethod method) => ToRouteInfo (Send method AnyMedia m (Resp BL.ByteString)) where
-  toRouteInfo = setMethod (toMethod @method) "*/*"
-
-instance (MonadIO m, IsMethod method) => ToRoute (Send method AnyMedia m (Resp BL.ByteString)) where
-  type RouteMonad (Send method AnyMedia m (Resp BL.ByteString)) = m
-  toRouteFun (Send a) = sendResponse $ (\resp -> Response resp.status (resp.headers) (RawResp "*/*" (fromMaybe "" resp.body))) <$> a
-
--------------------------------------------------------------------------------------
--- response class
-
-type family RespBody a where
-  RespBody Response = BL.ByteString
-  RespBody (Resp a) = a
-  RespBody (RespOr err a) = a
-  RespBody (m a) = RespBody a
-
-type family RespError a where
-  RespError Response = BL.ByteString
-  RespError (Resp a) = a
-  RespError (RespOr err a) = err
-  RespError (m a) = RespError a
-
-class IsResp a where
-  ok :: RespBody a -> a
-  bad :: Status -> RespError a -> a
-  noContent :: Status -> a
-  addHeaders :: ResponseHeaders -> a -> a
-  setStatus :: Status -> a -> a
-
-  setMedia :: MediaType -> a -> a
-  setMedia = setHeader "Content-Type"
-
--- | Set header for response
-setHeader :: (IsResp a, RenderHeader h) => HeaderName -> h -> a -> a
-setHeader name val = addHeaders [(name, renderHeader val)]
-
-instance IsResp (Resp a) where
-  ok = okResp
-  bad = badResp
-  addHeaders hs x = x{Resp.headers = x.headers <> hs}
-  noContent st = Resp st [] Nothing
-  setStatus st x = x{Resp.status = st}
-
-instance IsResp Response where
-  ok = Response ok200 [] . RawResp "*/*"
-  bad st = Response st [] . RawResp "*/*"
-  addHeaders hs x = x{Response.headers = x.headers <> hs}
-  noContent = noContentResponse
-  setStatus st x = x{Response.status = st}
-
-  setMedia media = setHeader "Content-Type" media . updateBody
-    where
-      updateBody response = response{Response.body = setBodyMedia response.body}
-
-      setBodyMedia = \case
-        RawResp _ content -> RawResp media content
-        other -> other
-
-instance {-# OVERLAPPABLE #-} (RespBody (m a) ~ RespBody a, RespError (m a) ~ RespError a, Applicative m, IsResp a) => IsResp (m a) where
-  ok = pure . ok
-  bad status = pure . bad status
-  addHeaders hs = fmap (addHeaders hs)
-  noContent = pure . noContent
-  setStatus st = fmap (setStatus st)
-
-instance IsResp (RespOr err a) where
-  ok = Right . okResp
-  bad status = Left . badResp status
-  addHeaders hs = bimap (addHeaders hs) (addHeaders hs)
-  noContent st = Right (noContent st)
-  setStatus st = bimap (setStatus st) (setStatus st)
-
-badReq :: (IsResp a) => RespError a -> a
-badReq = bad status400
-
-internalServerError :: (IsResp a) => RespError a -> a
-internalServerError = bad internalServerError500
-
-notImplemented :: (IsResp a) => RespError a -> a
-notImplemented = bad notImplemented501
-
-redirect :: (IsResp a) => Text -> a
-redirect url = addHeaders [("Location", Text.encodeUtf8 url)] $ noContent status302
+instance {-# OVERLAPPABLE #-} (MonadIO m, IsResp a, IsMethod method) => ToRoute (Send method m a) where
+  type RouteMonad (Send method m a) = m
+  toRouteFun (Send a) = sendResponse $ toResponse <$> a
 
 ---------------------------------------------
 -- utils

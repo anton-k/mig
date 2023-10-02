@@ -22,7 +22,7 @@ import Data.Set qualified as Set
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Mig.Core.Route qualified as Route
+import Mig.Core.Class.Route qualified as Route
 import Mig.Core.Types (RouteInfo (..), RouteOutput (..), getInputType)
 import Network.HTTP.Media (mapAcceptMedia, mapContentMedia)
 import Network.HTTP.Media.MediaType (MediaType)

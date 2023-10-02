@@ -59,7 +59,6 @@ executable counter-mig-example-app
     , containers
     , http-types
     , mig
-    , mig-client
     , mig-server
     , mig-swagger-ui
     , mtl
@@ -104,7 +103,6 @@ executable hello-client-mig-example-app
     , http-client
     , http-types
     , mig
-    , mig-client
     , mig-server
     , mig-swagger-ui
     , openapi3
@@ -147,7 +145,6 @@ executable hello-world-mig-example-app
     , containers
     , http-types
     , mig
-    , mig-client
     , mig-server
     , mig-swagger-ui
     , openapi3
@@ -202,7 +199,6 @@ executable html-mig-example-app
     , http-api-data
     , http-types
     , mig
-    , mig-client
     , mig-server
     , mig-swagger-ui
     , openapi3
@@ -253,7 +249,6 @@ executable json-api-mig-example-app
     , containers
     , http-types
     , mig
-    , mig-client
     , mig-server
     , mig-swagger-ui
     , openapi3
@@ -296,7 +291,6 @@ executable route-args-mig-example-app
     , containers
     , http-types
     , mig
-    , mig-client
     , mig-server
     , mig-swagger-ui
     , openapi3

@@ -40,8 +40,6 @@ module Mig (
   MimeUnrender (..),
 
   -- ** response
-  RespBody,
-  RespError,
   IsResp (..),
   badReq,
   internalServerError,
@@ -86,9 +84,7 @@ module Mig (
 
   -- | How to modify response and attach specific info to it
   Resp (..),
-  okResp,
-  badResp,
-  RespOr,
+  RespOr (..),
 
   -- ** specific cases
   staticFiles,

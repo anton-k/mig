@@ -31,7 +31,7 @@ resolver:
 #   - wai
 packages:
 - mig
-- mig-client
+  # - mig-client
 - mig-server
 - mig-swagger-ui
 - mig-wai

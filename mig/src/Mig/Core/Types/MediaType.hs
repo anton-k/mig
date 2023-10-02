@@ -5,6 +5,7 @@ module Mig.Core.Types.MediaType (
   Json,
   FormUrlEncoded,
   OctetStream,
+  AnyMedia,
   MimeUnrender (..),
 ) where
 
@@ -23,14 +24,11 @@ import Data.Attoparsec.ByteString.Char8 (
 import Data.Bifunctor
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BL
-import Data.Proxy
-import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Data.Text.Lazy qualified as TextLazy
 import Data.Text.Lazy.Encoding qualified as TextLazy
-import GHC.TypeLits
 import Network.HTTP.Media.MediaType
 import Text.Blaze.Html (Html, ToMarkup (..))
 import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
@@ -58,17 +56,17 @@ data Json
 instance ToMediaType Json where
   toMediaType = "application/json"
 
-data RawMedia (sym :: Symbol)
-
 data FormUrlEncoded
 
 instance ToMediaType FormUrlEncoded where
   toMediaType = "application/x-www-form-urlencoded"
 
-instance (KnownSymbol sym) => ToMediaType (RawMedia sym) where
-  toMediaType = fromString (symbolVal (Proxy @sym))
+data AnyMedia
 
--------------------------------------------------------------------------------------
+instance ToMediaType AnyMedia where
+  toMediaType = "*/*"
+
+------------------------------------------------------------------------------------
 -- mime render (everything that can be rendered as HTTP-output)
 
 class (ToMediaType ty) => MimeRender ty b where
@@ -94,6 +92,12 @@ instance MimeRender OctetStream ByteString where
 
 instance (ToForm a) => MimeRender FormUrlEncoded a where
   mimeRender = urlEncodeAsForm
+
+instance MimeRender AnyMedia BL.ByteString where
+  mimeRender = id
+
+instance MimeRender AnyMedia ByteString where
+  mimeRender = BL.fromStrict
 
 -------------------------------------------------------------------------------------
 -- mime unrender (everything that can be parsed from HTTP-input)

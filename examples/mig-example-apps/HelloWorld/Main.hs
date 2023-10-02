@@ -3,15 +3,15 @@ It has only one route which outputs the greeting to the user
 -}
 module Main (
   main,
-  hello',
-  bye',
+  -- hello',
+  -- bye',
 ) where
 
 import Mig
 import Mig.Core.Trace qualified as Trace
 import Mig.Swagger
 
-import Mig.Client
+-- import Mig.Client
 
 {-| We can render the server and run it on port 8085.
 It uses wai and warp.
@@ -57,17 +57,26 @@ server =
           , ("suffix", "suffix to use on greeting")
           ]
 
-type Hello m = Capture "who" Text -> Capture "suffix" Text -> Get Json m Text
+type Hello m = Capture "who" Text -> Capture "suffix" Text -> Get m (Resp Json Text)
 
 -- | Handler takes no inputs and marked as Get HTTP-request that returns Text.
 hello :: Hello IO
-hello (Capture who) (Capture suffix) = Send $ pure $ mappend "Hello " who <> " " <> suffix
+hello (Capture who) (Capture suffix) =
+  Send $
+    pure $
+      ok $
+        "Hello " <> who <> " " <> suffix
 
-type Bye m = Optional "who" Text -> Post Json m Text
+type Bye m = Optional "who" Text -> Post m (Resp Json Text)
 
 bye :: Bye IO
-bye (Optional mWho) = Send $ pure $ mappend "Hello " $ maybe "World" id mWho
+bye (Optional mWho) =
+  Send $
+    pure $
+      ok $
+        "Hello " <> maybe "World" id mWho
 
+{-
 ---------------------------------------------------------
 -- client reuses server definition
 
@@ -75,3 +84,4 @@ hello' :: Hello Client
 bye' :: Bye Client
 hello'
   :| bye' = toClient server
+-}

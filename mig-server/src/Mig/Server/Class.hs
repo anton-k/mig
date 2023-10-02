@@ -10,7 +10,7 @@ import Control.Monad.Reader
 import Data.Kind
 import Data.Text (Text)
 
-import Mig.Core.Route
+import Mig.Core.Class
 import Mig.Core.Server
 import Mig.Core.Types
 

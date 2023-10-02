@@ -1,4 +1,3 @@
--- | Html IO-based servers
 module Mig.Html.IO (
   -- * Http verbs
   Get,
@@ -10,17 +9,22 @@ module Mig.Html.IO (
   Head,
   Trace,
 
+  -- * Response
+  Resp (..),
+  RespOr,
+
   -- * re-exports
   module X,
 ) where
 
+import Mig.Html (Resp (..), RespOr)
 import Mig.Server.Common as X
 
-type Get a = Send GET Html IO a
-type Post a = Send POST Html IO a
-type Put a = Send PUT Html IO a
-type Delete a = Send DELETE Html IO a
-type Patch a = Send PATCH Html IO a
-type Options a = Send OPTIONS Html IO a
-type Head a = Send HEAD Html IO a
-type Trace a = Send TRACE Html IO a
+type Get a = Send GET IO (Resp a)
+type Post a = Send POST IO (Resp a)
+type Put a = Send PUT IO (Resp a)
+type Delete a = Send DELETE IO (Resp a)
+type Patch a = Send PATCH IO (Resp a)
+type Options a = Send OPTIONS IO (Resp a)
+type Head a = Send HEAD IO (Resp a)
+type Trace a = Send TRACE IO (Resp a)

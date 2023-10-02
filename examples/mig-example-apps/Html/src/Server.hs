@@ -75,36 +75,37 @@ server site =
 -- | Greet the user on main page
 handleGreeting :: Site -> Get (Page Greeting)
 handleGreeting site =
-  Send $ Page . Greeting <$> site.listBlogPosts
+  Send $ ok . Page . Greeting <$> site.listBlogPosts
 
 -- | Read blog post by id
 handleBlogPost :: Site -> Optional "id" BlogPostId -> Get (Page BlogPost)
 handleBlogPost site (Optional mBlogId) = Send $
   case mBlogId of
-    Nothing -> Page <$> randomBlogPost site
-    Just blogId -> maybe (PostNotFound blogId) Page <$> site.readBlogPost blogId
+    Nothing -> ok . Page <$> randomBlogPost site
+    Just blogId -> bad notFound404 . maybe (PostNotFound blogId) Page <$> site.readBlogPost blogId
 
 -- | Read random quote
 handleQuote :: Site -> Get (Page Quote)
-handleQuote site = Send $ Page <$> site.readQuote
+handleQuote site = Send $ ok . Page <$> site.readQuote
 
 -- | Show form to the user to fill new post data
 handleWriteForm :: Site -> Get (Page WritePost)
 handleWriteForm _site =
   Send $
     pure $
-      Page WritePost
+      ok $
+        Page WritePost
 
 -- | Submit form with data provided by the user
 handleWriteSubmit :: Site -> ReqBody FormUrlEncoded SubmitBlogPost -> Post (Page BlogPost)
 handleWriteSubmit site (ReqBody (SubmitBlogPost title content)) = Send $ do
   pid <- site.writeBlogPost title content
-  maybe (PostNotFound pid) Page <$> site.readBlogPost pid
+  bad notFound404 . maybe (PostNotFound pid) Page <$> site.readBlogPost pid
 
 -- | List all posts so far
 handleListPosts :: Site -> Get (Page ListPosts)
 handleListPosts site = Send $ do
-  Page . ListPosts <$> site.listBlogPosts
+  ok . Page . ListPosts <$> site.listBlogPosts
 
 -- | Logs the route info
 logRoute :: Site -> Text -> IO ()

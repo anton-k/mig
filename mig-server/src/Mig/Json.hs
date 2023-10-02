@@ -1,3 +1,5 @@
+{-# LANGUAGE UndecidableInstances #-}
+
 -- | Json servers
 module Mig.Json (
   -- * Http verbs
@@ -13,22 +15,34 @@ module Mig.Json (
   -- * Json request body
   Body (..),
 
+  -- * Json response
+  Resp,
+  RespOr,
+
   -- * re-exports
   module X,
 ) where
 
+import Mig (
+  Delete,
+  Get,
+  Head,
+  Options,
+  Patch,
+  Post,
+  Put,
+  Trace,
+ )
+import Mig.Core qualified as Core
 import Mig.Server.Common as X
 
 -- response
 
-type Get m a = Send GET Json m a
-type Post m a = Send POST Json m a
-type Put m a = Send PUT Json m a
-type Delete m a = Send DELETE Json m a
-type Patch m a = Send PATCH Json m a
-type Options m a = Send OPTIONS Json m a
-type Head m a = Send HEAD Json m a
-type Trace m a = Send TRACE Json m a
+newtype Resp a = Resp (Core.Resp Json a)
+  deriving newtype (IsResp)
+
+newtype RespOr err a = RespOr (Core.RespOr Json err a)
+  deriving newtype (IsResp)
 
 -- request
 
