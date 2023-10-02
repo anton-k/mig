@@ -1,6 +1,7 @@
 module Mig.Swagger (
   SwaggerConfig (..),
   withSwagger,
+  swagger,
 
   -- * utils
   Default (..),
