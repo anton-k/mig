@@ -36,8 +36,8 @@ module Mig (
   ToRouteInfo (..),
   MediaType,
   ToMediaType (..),
-  MimeRender (..),
-  MimeUnrender (..),
+  ToRespBody (..),
+  FromReqBody (..),
 
   -- ** response
   IsResp (..),

@@ -34,9 +34,10 @@ import Web.HttpApiData
 
 import Mig.Core.Api (Api, fromNormalApi, toNormalApi)
 import Mig.Core.Api qualified as Api
+import Mig.Core.Class.MediaType
 import Mig.Core.Class.Response (IsResp (..), Resp (..))
 import Mig.Core.Class.Route
-import Mig.Core.Types (AnyMedia, MediaType, Request (..), Response, setContent)
+import Mig.Core.Types (Request (..), Response, setContent)
 import Mig.Core.Types.Info (RouteInfo (..), RouteInput (..), describeInfoInputs, setOutputMedia)
 import Mig.Core.Types.Info qualified as Describe (Describe (..))
 

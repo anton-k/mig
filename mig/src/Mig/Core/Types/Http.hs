@@ -28,7 +28,7 @@ import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Text.Lazy qualified as TL
-import Mig.Core.Types.MediaType (MediaType, MimeRender (..), ToMediaType (..))
+import Mig.Core.Class.MediaType (MediaType, ToMediaType (..), ToRespBody (..))
 import Network.HTTP.Media.RenderHeader
 import Network.HTTP.Types.Header (HeaderName, ResponseHeaders)
 import Network.HTTP.Types.Method (Method)
@@ -80,7 +80,7 @@ type CaptureMap = Map Text Text
 type QueryMap = Map ByteString (Maybe ByteString)
 
 -- | Bad request response
-badRequest :: forall media a. (MimeRender media a) => a -> Response
+badRequest :: forall media a. (ToRespBody media a) => a -> Response
 badRequest message = badResponse @media status500 message
 
 -- | Values convertible to lazy text
@@ -117,13 +117,13 @@ addRespHeaders :: ResponseHeaders -> Response -> Response
 addRespHeaders headers (Response status hs body) = Response status (headers <> hs) body
 
 -- | Respond with ok 200-status
-okResponse :: forall mime a. (MimeRender mime a) => a -> Response
-okResponse = Response ok200 (setContent media) . RawResp media . mimeRender @mime
+okResponse :: forall mime a. (ToRespBody mime a) => a -> Response
+okResponse = Response ok200 (setContent media) . RawResp media . toRespBody @mime
   where
     media = toMediaType @mime
 
 -- | Bad response qith given status
-badResponse :: forall mime a. (MimeRender mime a) => Status -> a -> Response
-badResponse status = Response status (setContent media) . RawResp media . mimeRender @mime
+badResponse :: forall mime a. (ToRespBody mime a) => Status -> a -> Response
+badResponse status = Response status (setContent media) . RawResp media . toRespBody @mime
   where
     media = toMediaType @mime

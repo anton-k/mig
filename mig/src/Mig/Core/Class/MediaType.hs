@@ -1,12 +1,12 @@
-module Mig.Core.Types.MediaType (
+module Mig.Core.Class.MediaType (
   MediaType,
   ToMediaType (..),
-  MimeRender (..),
+  ToRespBody (..),
   Json,
   FormUrlEncoded,
   OctetStream,
   AnyMedia,
-  MimeUnrender (..),
+  FromReqBody (..),
 ) where
 
 import Data.Aeson (FromJSON, ToJSON)
@@ -69,56 +69,56 @@ instance ToMediaType AnyMedia where
 ------------------------------------------------------------------------------------
 -- mime render (everything that can be rendered as HTTP-output)
 
-class (ToMediaType ty) => MimeRender ty b where
-  mimeRender :: b -> BL.ByteString
+class (ToMediaType ty) => ToRespBody ty b where
+  toRespBody :: b -> BL.ByteString
 
-instance (ToJSON a) => MimeRender Json a where
-  mimeRender = Json.encode
+instance (ToJSON a) => ToRespBody Json a where
+  toRespBody = Json.encode
 
-instance MimeRender Text Text where
-  mimeRender = BL.fromStrict . Text.encodeUtf8
+instance ToRespBody Text Text where
+  toRespBody = BL.fromStrict . Text.encodeUtf8
 
-instance MimeRender Text TextLazy.Text where
-  mimeRender = TextLazy.encodeUtf8
+instance ToRespBody Text TextLazy.Text where
+  toRespBody = TextLazy.encodeUtf8
 
-instance (ToMarkup a) => MimeRender Html a where
-  mimeRender = renderHtml . toMarkup
+instance (ToMarkup a) => ToRespBody Html a where
+  toRespBody = renderHtml . toMarkup
 
-instance MimeRender OctetStream BL.ByteString where
-  mimeRender = id
+instance ToRespBody OctetStream BL.ByteString where
+  toRespBody = id
 
-instance MimeRender OctetStream ByteString where
-  mimeRender = BL.fromStrict
+instance ToRespBody OctetStream ByteString where
+  toRespBody = BL.fromStrict
 
-instance (ToForm a) => MimeRender FormUrlEncoded a where
-  mimeRender = urlEncodeAsForm
+instance (ToForm a) => ToRespBody FormUrlEncoded a where
+  toRespBody = urlEncodeAsForm
 
-instance MimeRender AnyMedia BL.ByteString where
-  mimeRender = id
+instance ToRespBody AnyMedia BL.ByteString where
+  toRespBody = id
 
-instance MimeRender AnyMedia ByteString where
-  mimeRender = BL.fromStrict
+instance ToRespBody AnyMedia ByteString where
+  toRespBody = BL.fromStrict
 
 -------------------------------------------------------------------------------------
 -- mime unrender (everything that can be parsed from HTTP-input)
 
-class (ToMediaType ty) => MimeUnrender ty b where
-  mimeUnrender :: BL.ByteString -> Either Text b
+class (ToMediaType ty) => FromReqBody ty b where
+  fromReqBody :: BL.ByteString -> Either Text b
 
-instance MimeUnrender Text Text where
-  mimeUnrender = first (Text.pack . show) . Text.decodeUtf8' . BL.toStrict
+instance FromReqBody Text Text where
+  fromReqBody = first (Text.pack . show) . Text.decodeUtf8' . BL.toStrict
 
-instance MimeUnrender OctetStream BL.ByteString where
-  mimeUnrender = Right
+instance FromReqBody OctetStream BL.ByteString where
+  fromReqBody = Right
 
-instance MimeUnrender OctetStream ByteString where
-  mimeUnrender = Right . BL.toStrict
+instance FromReqBody OctetStream ByteString where
+  fromReqBody = Right . BL.toStrict
 
-instance (FromJSON a) => MimeUnrender Json a where
-  mimeUnrender = eitherDecodeLenient
+instance (FromJSON a) => FromReqBody Json a where
+  fromReqBody = eitherDecodeLenient
 
-instance (FromForm a) => MimeUnrender FormUrlEncoded a where
-  mimeUnrender = urlDecodeAsForm
+instance (FromForm a) => FromReqBody FormUrlEncoded a where
+  fromReqBody = urlDecodeAsForm
 
 {-| Like 'Data.Aeson.eitherDecode' but allows all JSON values instead of just
 objects and arrays.

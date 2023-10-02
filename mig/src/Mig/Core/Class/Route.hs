@@ -49,6 +49,7 @@ import Data.Proxy
 import Data.String
 import Data.Text (Text)
 import GHC.TypeLits
+import Mig.Core.Class.MediaType
 import Mig.Core.Class.Response (IsResp (..))
 import Mig.Core.ServerFun
 import Mig.Core.Types
@@ -96,7 +97,7 @@ newtype ReqBody media a = ReqBody a
 instance (ToSchema a, ToMediaType ty, ToRouteInfo b) => ToRouteInfo (ReqBody ty a -> b) where
   toRouteInfo = addRouteInput (ReqBodyInput (toMediaType @ty) (toSchemaDefs @a)) . toRouteInfo @b
 
-instance (ToSchema a, MimeUnrender media a, ToRoute b) => ToRoute (ReqBody media a -> b) where
+instance (ToSchema a, FromReqBody media a, ToRoute b) => ToRoute (ReqBody media a -> b) where
   type RouteMonad (ReqBody media a -> b) = RouteMonad b
 
   toRouteFun f = withBody @media (toRouteFun . f . ReqBody)

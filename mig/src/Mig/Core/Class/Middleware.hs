@@ -49,6 +49,7 @@ import Data.String
 import GHC.TypeLits
 import Web.HttpApiData
 
+import Mig.Core.Class.MediaType
 import Mig.Core.Class.Route
 import Mig.Core.Server
 import Mig.Core.ServerFun
@@ -74,7 +75,7 @@ instance (ToMiddleware a) => ToMiddleware (PathInfo -> a) where
   toMiddleware f = \fun -> withPathInfo (\path -> toMiddleware (f (PathInfo path)) fun)
 
 -- request body
-instance (MimeUnrender media a, ToMiddleware b) => ToMiddleware (ReqBody media a -> b) where
+instance (FromReqBody media a, ToMiddleware b) => ToMiddleware (ReqBody media a -> b) where
   type MiddlewareMonad (ReqBody media a -> b) = MiddlewareMonad b
   toMiddleware f = \fun -> withBody @media (\body -> toMiddleware (f (ReqBody body)) fun)
 
