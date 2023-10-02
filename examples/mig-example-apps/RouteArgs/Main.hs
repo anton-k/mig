@@ -67,7 +67,7 @@ handleSucc (Header traceId) (Query n) = Send $ do
       | otherwise = ok200
 
 {-| Using optional query parameters and error as Either.
-also there is handy type shortcut @EitherResp err result@
+also there is handy type shortcut @RespOr err result@
 -}
 handleSuccOpt :: Optional "value" Int -> Get (Either (Resp Text) (Resp Int))
 handleSuccOpt (Optional n) = Send $ do

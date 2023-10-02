@@ -81,7 +81,7 @@ module Mig (
   redirect,
   setStatus,
   addHeaders,
-  EitherResp,
+  RespOr,
 
   -- ** specific cases
   staticFiles,

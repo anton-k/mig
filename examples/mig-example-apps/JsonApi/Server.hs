@@ -45,7 +45,7 @@ server env =
         , version = "0.1.0"
         }
 
-handleAuthToken :: Env -> Body User -> Post (EitherResp Text AuthToken)
+handleAuthToken :: Env -> Body User -> Post (RespOr Text AuthToken)
 handleAuthToken env (Body user) = Send $ do
   env.logger.info ("get new auth token for: " <> user.name)
   isValid <- env.auth.validUser user
@@ -68,7 +68,7 @@ handleGetWeather ::
   Capture "location" Location ->
   Capture "day" Day ->
   Capture "day-interval" DayInterval ->
-  Get (EitherResp Text (Timed WeatherData))
+  Get (RespOr Text (Timed WeatherData))
 handleGetWeather env (Query token) (Capture location) (Capture fromDay) (Capture interval) = Send $ do
   env.logger.info "get the weather forecast"
   whenAuth env token $ do
@@ -88,7 +88,7 @@ handleUpdateWeather env (Query token) (Body updateData) = Send $ do
     whenAuth env token $
       Right . okResp <$> env.weather.update updateData
 
-whenAuth :: Env -> AuthToken -> IO (EitherResp Text a) -> IO (EitherResp Text a)
+whenAuth :: Env -> AuthToken -> IO (RespOr Text a) -> IO (RespOr Text a)
 whenAuth env token act = do
   isOk <- env.auth.validToken token
   if isOk
