@@ -102,7 +102,7 @@ handleWriteSubmit site (ReqBody (SubmitBlogPost title content)) = Send $ do
   maybe (PostNotFound pid) Page <$> site.readBlogPost pid
 
 -- | List all posts so far
-handleListPosts :: Site -> Get (EitherResp Text (Page ListPosts))
+handleListPosts :: Site -> Get (RespOr Text (Page ListPosts))
 handleListPosts site = Send $ do
   Right . okResp . Page . ListPosts <$> site.listBlogPosts
 

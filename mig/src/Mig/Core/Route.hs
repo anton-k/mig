@@ -27,7 +27,7 @@ module Mig.Core.Route (
   Head,
   Patch,
   Trace,
-  EitherResp,
+  RespOr,
 
   -- ** Method tags
   IsMethod (..),
@@ -223,7 +223,7 @@ instance IsMethod TRACE where
 
 newtype Send method ty m a = Send {unSend :: m a}
 
-type EitherResp err a = Either (Resp err) (Resp a)
+type RespOr err a = Either (Resp err) (Resp a)
 
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m a) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
@@ -231,7 +231,7 @@ instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (
 instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (Resp a)) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
-instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (EitherResp err a)) where
+instance {-# OVERLAPPABLE #-} (IsMethod method, ToMediaType ty) => ToRouteInfo (Send method ty m (RespOr err a)) where
   toRouteInfo = setMethod (toMethod @method) (toMediaType @ty)
 
 instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m a) where
@@ -244,7 +244,7 @@ instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty a, IsMethod method) => T
     where
       media = toMediaType @ty
 
-instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty err, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (EitherResp err a)) where
+instance {-# OVERLAPPABLE #-} (MonadIO m, MimeRender ty err, MimeRender ty a, IsMethod method) => ToRoute (Send method ty m (RespOr err a)) where
   type RouteMonad (Send method ty m (Either (Resp err) (Resp a))) = m
   toRouteFun (Send a) =
     sendResponse $
