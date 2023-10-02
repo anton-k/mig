@@ -16,7 +16,7 @@ module Mig.Server.Common (
   ToRouteInfo (..),
   MediaType,
   ToMediaType (..),
-  MimeRender (..),
+  ToRespBody (..),
   IsResp (..),
 
   -- ** methods

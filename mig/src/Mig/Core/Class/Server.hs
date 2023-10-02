@@ -10,10 +10,10 @@ import Data.OpenApi (ToParamSchema, ToSchema)
 import GHC.TypeLits
 import Mig.Core.Api (Api)
 import Mig.Core.Api qualified as Api
+import Mig.Core.Class.MediaType (FromReqBody (..))
 import Mig.Core.Class.Response (IsResp)
 import Mig.Core.Class.Route
 import Mig.Core.Server (Server (..))
-import Mig.Core.Types.MediaType (MimeUnrender (..))
 import Web.HttpApiData
 
 infixr 4 /.
@@ -49,7 +49,7 @@ instance (MonadIO m, IsResp a, IsMethod method) => ToServer (Send method m a) wh
 
 -- inputs
 
-instance (ToSchema a, MimeUnrender media a, ToRoute b) => ToServer (ReqBody media a -> b) where
+instance (ToSchema a, FromReqBody media a, ToRoute b) => ToServer (ReqBody media a -> b) where
   type ServerMonad (ReqBody media a -> b) = RouteMonad b
   toServer a = Server $ Api.HandleRoute (toRoute a)
 

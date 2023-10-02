@@ -27,6 +27,7 @@ library
     Mig.Core
     Mig.Core.Api
     Mig.Core.Class
+    Mig.Core.Class.MediaType
     Mig.Core.Class.Middleware
     Mig.Core.Class.Response
     Mig.Core.Class.Route
@@ -38,7 +39,6 @@ library
     Mig.Core.Types
     Mig.Core.Types.Http
     Mig.Core.Types.Info
-    Mig.Core.Types.MediaType
 
   other-modules:      Paths_mig
   hs-source-dirs:     src

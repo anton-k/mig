@@ -28,7 +28,7 @@ import Data.OpenApi
 import Data.OpenApi.Declare (runDeclare)
 import Data.Proxy
 import Data.Text (Text)
-import Mig.Core.Types.MediaType
+import Mig.Core.Class.MediaType
 import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status
 

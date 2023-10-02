@@ -19,10 +19,10 @@ import Network.HTTP.Media.RenderHeader (RenderHeader (..))
 import Network.HTTP.Types.Header (HeaderName, ResponseHeaders)
 import Network.HTTP.Types.Status (Status, internalServerError500, notImplemented501, ok200, status302, status400)
 
+import Mig.Core.Class.MediaType (MediaType, ToMediaType (..), ToRespBody (..))
 import Mig.Core.Types.Http (Response, ResponseBody (..), noContentResponse)
 import Mig.Core.Types.Http qualified as Response (Response (..))
 import Mig.Core.Types.Http qualified as Types
-import Mig.Core.Types.MediaType (MediaType, MimeRender (..), ToMediaType (..))
 
 data Resp media a = Resp
   { status :: Status
@@ -60,7 +60,7 @@ class IsResp a where
 setHeader :: (IsResp a, RenderHeader h) => HeaderName -> h -> a -> a
 setHeader name val = addHeaders [(name, renderHeader val)]
 
-instance (MimeRender ty a) => IsResp (Resp ty a) where
+instance (ToRespBody ty a) => IsResp (Resp ty a) where
   type RespBody (Resp ty a) = a
   type RespError (Resp ty a) = a
 
@@ -75,7 +75,7 @@ instance (MimeRender ty a) => IsResp (Resp ty a) where
     where
       media = toMediaType @ty
       headers = a.headers <> [("Content-Type", renderHeader media)]
-      body = RawResp media (maybe "" (mimeRender @ty) a.body)
+      body = RawResp media (maybe "" (toRespBody @ty) a.body)
 
 instance IsResp Response where
   type RespBody Response = BL.ByteString
@@ -98,7 +98,7 @@ instance IsResp Response where
         RawResp _ content -> RawResp media content
         other -> other
 
-instance (MimeRender ty err, MimeRender ty a) => IsResp (RespOr ty err a) where
+instance (ToRespBody ty err, ToRespBody ty a) => IsResp (RespOr ty err a) where
   type RespBody (RespOr ty err a) = a
   type RespError (RespOr ty err a) = err
 

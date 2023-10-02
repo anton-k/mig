@@ -26,6 +26,7 @@ import Data.Either.Extra (eitherToMaybe)
 import Data.Map.Strict qualified as Map
 import Data.Text (Text)
 import Data.Text.Encoding qualified as Text
+import Mig.Core.Class.MediaType
 import Mig.Core.Types
 import Network.HTTP.Types.Header (HeaderName)
 import Network.HTTP.Types.Status (status413, status500)
@@ -37,9 +38,9 @@ Missing route for a given request returns @Nothing@.
 -}
 type ServerFun m = Request -> m (Maybe Response)
 
-withBody :: forall media a m. (MonadIO m, MimeUnrender media a) => (a -> ServerFun m) -> ServerFun m
+withBody :: forall media a m. (MonadIO m, FromReqBody media a) => (a -> ServerFun m) -> ServerFun m
 withBody f = withRawBody $ \val -> \req ->
-  case mimeUnrender @media val of
+  case fromReqBody @media val of
     Right v -> f v req
     Left err -> pure $ Just $ badRequest @Text $ "Failed to parse request body: " <> err
 
