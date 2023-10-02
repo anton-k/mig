@@ -17,6 +17,7 @@ module Mig.Server.Common (
   MediaType,
   ToMediaType (..),
   MimeRender (..),
+  IsResp (..),
 
   -- ** methods
   Send (..),
@@ -50,9 +51,6 @@ module Mig.Server.Common (
   Resp (..),
   okResp,
   badResp,
-  redirect,
-  addHeaders,
-  setStatus,
 
   -- ** specific cases
   staticFiles,
@@ -70,7 +68,6 @@ module Mig.Server.Common (
   Response,
   okResponse,
   badResponse,
-  redirectResponse,
   badRequest,
   ServerFun,
   handleRespError,

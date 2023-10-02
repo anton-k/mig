@@ -60,7 +60,7 @@ handleSucc :: Header "Trace-Id" TraceId -> Query "value" Int -> Get (Resp Int)
 handleSucc (Header traceId) (Query n) = Send $ do
   logDebug "succ route call"
   logDebug $ "traceId: " <> toText traceId
-  pure $ setStatus st $ okResp (succ n)
+  pure $ setStatus st $ ok (succ n)
   where
     st
       | n <= 0 = status400
@@ -73,8 +73,8 @@ handleSuccOpt :: Optional "value" Int -> Get (Either (Resp Text) (Resp Int))
 handleSuccOpt (Optional n) = Send $ do
   logDebug "succ optional route call"
   pure $ case n of
-    Just val -> Right $ okResp (succ val)
-    Nothing -> Left $ badResp status500 "error: no input"
+    Just val -> ok (succ val)
+    Nothing -> bad status500 "error: no input"
 
 {-| Using custom headers in response and several input query parameters.
 Note that function can have any number of arguments.
@@ -83,7 +83,7 @@ We encode the input type with proper type-wrapper.
 handleAdd :: Query "a" Int -> Query "b" Int -> Get (Resp Int)
 handleAdd (Query a) (Query b) = Send $ do
   logDebug "add route call"
-  pure $ addHeaders headers $ okResp $ a + b
+  pure $ addHeaders headers $ ok $ a + b
   where
     headers = [("args", "a, b")]
 
@@ -116,7 +116,7 @@ data AddInput = AddInput
 handleAddJson :: Body AddInput -> Post (Resp Int)
 handleAddJson (Body (AddInput a b)) = Send $ do
   logDebug "add route call"
-  pure $ setStatus ok200 $ okResp $ a + b
+  pure $ setStatus ok200 $ ok $ a + b
 
 -- utils
 
