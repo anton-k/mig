@@ -84,7 +84,7 @@ newtype Server m = Server {unServer :: Api (Route m)}
   deriving newtype (Semigroup, Monoid)
 
 mapServerFun :: (ServerFun m -> ServerFun n) -> Server m -> Server n
-mapServerFun f (Server server) = Server $ fmap (\x -> Route x.api (f x.run)) server
+mapServerFun f (Server server) = Server $ fmap (\x -> Route x.info (f x.run)) server
 
 mapResponse :: (Functor m) => (Response -> Response) -> Server m -> Server m
 mapResponse f = mapServerFun $ \fun -> fmap (fmap f) . fun
@@ -145,7 +145,7 @@ fillCaptures = go mempty 0
       where
         missingCapturesCount = routeCaptureCount - pathCaptureCount
 
-        routeCaptureCount = captureCount route.api
+        routeCaptureCount = captureCount route.info
 
     withMissingCaptures pathSoFar indexes route =
       Api.WithPath (Api.Path $ Api.CapturePath <$> names) route
@@ -165,7 +165,7 @@ getCaptureName index = \case
   Api.Append a _b -> rec a
   Api.Empty -> Nothing
   Api.WithPath _ a -> rec a
-  Api.HandleRoute a -> mapMaybe (toCapture . Describe.content) a.api.inputs `atMay` index
+  Api.HandleRoute a -> mapMaybe (toCapture . Describe.content) a.info.inputs `atMay` index
   where
     rec = getCaptureName index
 
@@ -187,7 +187,7 @@ setSummary :: Text -> Server m -> Server m
 setSummary val = mapRouteInfo $ \info -> info{summary = val}
 
 mapRouteInfo :: (RouteInfo -> RouteInfo) -> Server m -> Server m
-mapRouteInfo f (Server srv) = Server $ fmap (\x -> x{api = f x.api}) srv
+mapRouteInfo f (Server srv) = Server $ fmap (\route -> route{info = f route.info}) srv
 
 insertTag :: Text -> RouteInfo -> RouteInfo
 insertTag tag info = info{tags = tag : info.tags}
@@ -205,7 +205,7 @@ staticFiles files =
   Server $ foldMap (uncurry serveFile) files
   where
     serveFile path content =
-      fmap (\x -> x{api = setOutputMedia media x.api}) $
+      unServer . mapRouteInfo (setOutputMedia media) . Server $
         ( if headMay path == Just '.'
             then id
             else ((fromString path) `Api.WithPath`)

@@ -74,11 +74,11 @@ toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (to
         Map.fromList $
           fmap
             ( \m ->
-                (m, filterApi (\r -> r.api.method == Just m) a)
+                (m, filterApi (\route -> route.info.method == Just m) a)
             )
             methods
       where
-        methods = foldMap (\r -> maybe [] pure r.api.method) a
+        methods = foldMap (\route -> maybe [] pure route.info.method) a
 
     toInputMediaMap :: Api (Route.Route m) -> InputMediaMap (Api (Route.Route m))
     toInputMediaMap = InputMediaMap . toMediaMapBy getInputType
@@ -90,9 +90,9 @@ toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (to
     toMediaMapBy getMedia a =
       MediaMap (toMediaApi <$> medias) a
       where
-        medias = Set.toList $ foldMap (\r -> Set.singleton (getMedia r.api)) a
+        medias = Set.toList $ foldMap (\route -> Set.singleton (getMedia route.info)) a
 
-        toMediaApi media = (media, filterApi (\r -> getMedia r.api == media) a)
+        toMediaApi media = (media, filterApi (\route -> getMedia route.info == media) a)
 
 fromNormalApi :: Method -> ByteString -> ByteString -> ApiNormal a -> Maybe (Api a)
 fromNormalApi method outputAccept inputContentType (ApiNormal methodMap) = do

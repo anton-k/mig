@@ -25,7 +25,7 @@ addCapture captureName =
   prependPath ("{" <> Text.unpack captureName <> "}")
 
 toOpenApi :: Server m -> OpenApi
-toOpenApi (Server x) = fromApiInfo (fmap (.api) $ fillCaptures x)
+toOpenApi (Server x) = fromApiInfo (fmap (.info) $ fillCaptures x)
 
 fromApiInfo :: Api RouteInfo -> OpenApi
 fromApiInfo = \case
