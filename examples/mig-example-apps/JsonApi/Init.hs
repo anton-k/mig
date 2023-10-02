@@ -4,13 +4,16 @@ module Init (
 ) where
 
 import Control.Monad
+import Data.Aeson ((.=))
+import Data.Aeson qualified as Json
 import Data.IORef
 import Data.List qualified as List
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
 import Data.Text qualified as Text
-import Data.Text.IO qualified as Text
 import Data.Time
+import Data.Yaml qualified as Yaml
+import System.Log.FastLogger
 import System.Random
 
 import Interface
@@ -24,11 +27,17 @@ atomicModify ref f = atomicModifyIORef' ref (\st -> (f st, ()))
 initEnv :: IO Env
 initEnv = do
   st <- initSt =<< initStateConfig
+  (writeLog, closeLogger) <- newFastLogger (LogStdout defaultBufSize)
+  let
+    logger = initLogger writeLog
   pure $
     Env
       { weather = initWeather st
       , auth = initAuth st
-      , logger = initLogger st
+      , logger = logger
+      , cleanup = do
+          logger.info $ Json.toJSON ("Site shutdown" :: Text)
+          closeLogger
       }
 
 initAuth :: St -> Auth
@@ -62,15 +71,29 @@ toDaySpan day (DayInterval count) = List.unfoldr go (day, count)
       | n <= 0 = Nothing
       | otherwise = Just (succ d, (succ d, n - 1))
 
-initLogger :: St -> Logger
-initLogger _st =
+initLogger :: (LogStr -> IO ()) -> Logger
+initLogger writeLog =
   Logger
     { error = logBy "ERROR"
     , info = logBy "INFO"
     , debug = logBy "DEBUG"
     }
   where
-    logBy level msg = Text.putStrLn $ mconcat ["[", level, "]: ", msg]
+    logBy :: Text -> LogFun
+    logBy level msg = do
+      now <- getCurrentTime
+      writeLog $
+        toLogStr $
+          (<> "\n") $
+            Yaml.encode $
+              Json.object
+                [ "log"
+                    .= Json.object
+                      [ "message" .= msg
+                      , "level" .= level
+                      , "time" .= now
+                      ]
+                ]
 
 initStateConfig :: IO InitSt
 initStateConfig = do

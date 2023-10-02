@@ -16,6 +16,7 @@ module Mig.Core.Class.Route (
   Header (..),
   OptionalHeader (..),
   PathInfo (..),
+  RawRequest (..),
 
   -- * Output methods
   Send (..),
@@ -171,6 +172,15 @@ instance (ToRouteInfo b) => ToRouteInfo (PathInfo -> b) where
 instance (ToRoute b) => ToRoute (PathInfo -> b) where
   type RouteMonad (PathInfo -> b) = RouteMonad b
   toRouteFun f = withPathInfo (toRouteFun . f . PathInfo)
+
+newtype RawRequest = RawRequest Request
+
+instance (ToRouteInfo b) => ToRouteInfo (RawRequest -> b) where
+  toRouteInfo = toRouteInfo @b
+
+instance (ToRoute b) => ToRoute (RawRequest -> b) where
+  type RouteMonad (RawRequest -> b) = RouteMonad b
+  toRouteFun f = \req -> toRouteFun (f (RawRequest req)) req
 
 -------------------------------------------------------------------------------------
 -- outputs

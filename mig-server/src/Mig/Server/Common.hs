@@ -50,6 +50,7 @@ module Mig.Server.Common (
   ReqBody (..),
   Header (..),
   PathInfo (..),
+  RawRequest (..),
 
   -- ** response
 

@@ -7,14 +7,19 @@ module Main (
   main,
 ) where
 
+import Control.Exception
+import Data.Text qualified as Text
 import Init (initEnv)
+import Interface
 import Mig.Json.IO (runServer)
 import Server (server)
 
 main :: IO ()
 main = do
   env <- initEnv
-  putStrLn ("The weather forecast JSON API server listens on port: " <> show port)
+  logInfo env greeting
   runServer port (server env)
+    `finally` env.cleanup
   where
     port = 8085
+    greeting = "The weather forecast JSON API server listens on port: " <> Text.pack (show port)

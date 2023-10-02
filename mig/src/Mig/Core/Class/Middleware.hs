@@ -74,6 +74,11 @@ instance (ToMiddleware a) => ToMiddleware (PathInfo -> a) where
   type MiddlewareMonad (PathInfo -> a) = MiddlewareMonad a
   toMiddleware f = \fun -> withPathInfo (\path -> toMiddleware (f (PathInfo path)) fun)
 
+-- raw request
+instance (ToMiddleware a) => ToMiddleware (RawRequest -> a) where
+  type MiddlewareMonad (RawRequest -> a) = MiddlewareMonad a
+  toMiddleware f = \fun -> \req -> (toMiddleware (f (RawRequest req)) fun) req
+
 -- request body
 instance (FromReqBody media a, ToMiddleware b) => ToMiddleware (ReqBody media a -> b) where
   type MiddlewareMonad (ReqBody media a -> b) = MiddlewareMonad b

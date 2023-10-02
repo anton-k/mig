@@ -8,7 +8,6 @@ module Server (
 import Control.Monad
 import Data.ByteString (ByteString)
 import Data.Text qualified as Text
-import Data.Time
 import FileEmbedLzma
 import Safe (headMay)
 
@@ -108,8 +107,7 @@ handleListPosts site = Send $ do
 -- | Logs the route info
 logRoute :: Site -> Text -> IO ()
 logRoute site route = do
-  time <- getCurrentTime
-  site.logInfo $ route <> " page visited at: " <> Text.pack (show time)
+  site.logInfo $ route <> " page visited"
 
 -- | Get random blog post
 randomBlogPost :: Site -> IO BlogPost
