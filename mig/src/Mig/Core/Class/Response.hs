@@ -18,6 +18,7 @@ import Data.Text.Encoding qualified as Text
 import Network.HTTP.Media.RenderHeader (RenderHeader (..))
 import Network.HTTP.Types.Header (HeaderName, ResponseHeaders)
 import Network.HTTP.Types.Status (Status, internalServerError500, notImplemented501, ok200, status302, status400)
+import Web.HttpApiData
 
 import Mig.Core.Class.MediaType (MediaType, ToMediaType (..), ToRespBody (..))
 import Mig.Core.Types.Http (Response, ResponseBody (..), noContentResponse)
@@ -50,15 +51,15 @@ class IsResp a where
   setStatus :: Status -> a -> a
 
   setMedia :: MediaType -> a -> a
-  setMedia = setHeader "Content-Type"
+  setMedia media = addHeaders [("Content-Type", renderHeader media)]
 
   getMedia :: MediaType
 
   toResponse :: a -> Response
 
 -- | Set header for response
-setHeader :: (IsResp a, RenderHeader h) => HeaderName -> h -> a -> a
-setHeader name val = addHeaders [(name, renderHeader val)]
+setHeader :: (IsResp a, ToHttpApiData h) => HeaderName -> h -> a -> a
+setHeader name val = addHeaders [(name, toHeader val)]
 
 instance (ToRespBody ty a) => IsResp (Resp ty a) where
   type RespBody (Resp ty a) = a
@@ -90,7 +91,7 @@ instance IsResp Response where
 
   toResponse = id
 
-  setMedia media = setHeader "Content-Type" media . updateBody
+  setMedia media = addHeaders [("Content-Type", renderHeader media)] . updateBody
     where
       updateBody response = response{Response.body = setBodyMedia response.body}
 
@@ -122,3 +123,5 @@ notImplemented = bad notImplemented501
 
 redirect :: (IsResp a) => Text -> a
 redirect url = addHeaders [("Location", Text.encodeUtf8 url)] $ noContent status302
+
+-------------------------------------------------------------------------------------
