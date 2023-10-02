@@ -150,13 +150,9 @@ ppResp verbosity now dur req resp =
       , ["headers" .= fromHeaders resp.headers]
       ]
   where
-    fromHeaders headers = Json.object $ fmap go $ onVerbosity $ headers
+    fromHeaders headers = Json.object $ fmap go $ headers
       where
         go (name, val) = headerName name .= Text.decodeUtf8 val
-
-        onVerbosity
-          | verbosity < V3 = filter ((\name -> name == "Accept" || name == "Content-Type") . fst)
-          | otherwise = id
 
     fromBody = \case
       RawResp mediaType bs | mediaType == "application/json" -> jsonBody bs

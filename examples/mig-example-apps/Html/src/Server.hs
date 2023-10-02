@@ -19,8 +19,6 @@ import Interface
 import Types
 import View ()
 
--- import ToMarkup instances for Html rendering
-
 -- | Server definition. Note how we assemble it from parts with monoid method mconcat.
 server :: Site -> Server IO
 server site =

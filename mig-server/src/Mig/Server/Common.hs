@@ -17,7 +17,14 @@ module Mig.Server.Common (
   MediaType,
   ToMediaType (..),
   ToRespBody (..),
+
+  -- ** response
   IsResp (..),
+  badReq,
+  internalServerError,
+  notImplemented,
+  redirect,
+  setHeader,
 
   -- ** methods
   Send (..),
