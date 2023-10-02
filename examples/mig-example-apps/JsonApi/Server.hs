@@ -11,20 +11,22 @@ import Mig.Json.IO
 import Mig.Swagger
 
 import Interface
+import Mig.Core.Trace qualified as Trace
 import Types
 
 server :: Env -> Server IO
 server env =
-  withSwagger config $
-    "api/v1/weather"
-      /. mconcat
-        [ "get"
-            /. mconcat
-              [ "weather/*/*/*" /. handleGetWeather env
-              , "auth-token" /. handleAuthToken env
-              ]
-        , "update" /. handleUpdateWeather env
-        ]
+  withTrace $
+    withSwagger config $
+      "api/v1/weather"
+        /. mconcat
+          [ "get"
+              /. mconcat
+                [ "weather/*/*/*" /. handleGetWeather env
+                , "auth-token" /. handleAuthToken env
+                ]
+          , "update" /. handleUpdateWeather env
+          ]
   where
     config =
       (def :: SwaggerConfig IO)
@@ -45,9 +47,11 @@ server env =
         , version = "0.1.0"
         }
 
+    withTrace = Trace.logHttpBy (logInfo env) Trace.V2
+
 handleAuthToken :: Env -> Body User -> Post (RespOr Text AuthToken)
 handleAuthToken env (Body user) = Send $ do
-  env.logger.info ("get new auth token for: " <> user.name)
+  logInfo env ("get new auth token for: " <> user.name)
   isValid <- env.auth.validUser user
   if isValid
     then do
@@ -55,7 +59,7 @@ handleAuthToken env (Body user) = Send $ do
       void $ forkIO $ setExpireTimer token
       pure $ ok token
     else do
-      env.logger.error "User does not have access to service"
+      logError env $ Text.unwords ["User", user.name, "does not have access to the service"]
       pure $ bad unauthorized401 "User is not valid"
   where
     setExpireTimer :: AuthToken -> IO ()
@@ -65,12 +69,12 @@ handleAuthToken env (Body user) = Send $ do
 
 handleGetWeather ::
   Env ->
-  Query "auth" AuthToken ->
+  Header "auth" AuthToken ->
   Capture "location" Location ->
   Capture "day" Day ->
   Capture "day-interval" DayInterval ->
   Get (RespOr Text (Timed WeatherData))
-handleGetWeather env (Query token) (Capture location) (Capture fromDay) (Capture interval) = Send $ do
+handleGetWeather env (Header token) (Capture location) (Capture fromDay) (Capture interval) = Send $ do
   env.logger.info "get the weather forecast"
   whenAuth env token $ do
     mResult <- env.weather.get location fromDay interval
@@ -80,10 +84,10 @@ handleGetWeather env (Query token) (Capture location) (Capture fromDay) (Capture
 
 handleUpdateWeather ::
   Env ->
-  Query "auth" AuthToken ->
+  Header "auth" AuthToken ->
   Body UpdateData ->
   Post (RespOr Text ())
-handleUpdateWeather env (Query token) (Body updateData) = Send $ do
+handleUpdateWeather env (Header token) (Body updateData) = Send $ do
   env.logger.info "update the weather data"
   whenAuth env token $
     ok <$> env.weather.update updateData
@@ -94,7 +98,7 @@ whenAuth env token act = do
   if isOk
     then act
     else do
-      env.logger.error errMessage
+      logError env errMessage
       pure (bad status500 errMessage)
   where
     errMessage = "Token is invalid"

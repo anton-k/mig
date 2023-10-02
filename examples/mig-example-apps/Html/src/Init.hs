@@ -5,8 +5,9 @@ module Init (
 import Data.IORef
 import Data.List qualified as List
 import Data.Text (Text)
-import Data.Text.IO qualified as Text
+import Data.Text qualified as Text
 import Data.Time
+import System.Log.FastLogger
 import System.Random
 
 import Content
@@ -22,13 +23,28 @@ Also we init all actions. Note how we hide the mutable state Env with interface 
 initSite :: IO Site
 initSite = do
   env <- initEnv
+  (writeLog, closeLogger) <- newFastLogger (LogStdout defaultBufSize)
+  let
+    logInfo msg = do
+      now <- getCurrentTime
+      writeLog $
+        toLogStr $
+          Text.unwords
+            [ "[INFO]:"
+            , msg <> "."
+            , "at"
+            , Text.pack (show now) <> "\n"
+            ]
   pure $
     Site
       { readBlogPost = mockRead env
       , writeBlogPost = mockWriteBlogPost env
       , listBlogPosts = readIORef env.blogPosts
       , readQuote = Quote <$> randomQuote
-      , logInfo = Text.putStrLn . mappend "[INFO]: "
+      , logInfo = logInfo
+      , cleanup = do
+          logInfo "Blog site shutdown"
+          closeLogger
       }
 
 -------------------------------------------------------------------------------------

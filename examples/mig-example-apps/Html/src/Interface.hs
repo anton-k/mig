@@ -17,4 +17,5 @@ data Site = Site
   , listBlogPosts :: IO [BlogPost]
   , readQuote :: IO Quote
   , logInfo :: Text -> IO ()
+  , cleanup :: IO ()
   }

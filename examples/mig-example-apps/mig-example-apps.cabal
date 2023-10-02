@@ -195,6 +195,7 @@ executable html-mig-example-app
     , blaze-html
     , bytestring
     , containers
+    , fast-logger
     , file-embed-lzma
     , http-api-data
     , http-types
@@ -247,6 +248,7 @@ executable json-api-mig-example-app
     , base >=4.7 && <5
     , bytestring
     , containers
+    , fast-logger
     , http-types
     , mig
     , mig-server
@@ -257,6 +259,7 @@ executable json-api-mig-example-app
     , safe
     , text
     , time
+    , yaml
 
   default-language:   GHC2021
 

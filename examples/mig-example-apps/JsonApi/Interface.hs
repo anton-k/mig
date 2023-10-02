@@ -1,10 +1,15 @@
 module Interface (
   Env (..),
+  LogFun,
   Logger (..),
+  logInfo,
+  logDebug,
+  logError,
   Auth (..),
   Weather (..),
 ) where
 
+import Data.Aeson (ToJSON (..), Value)
 import Types
 
 -- | Site's environment. It contains all interfaces
@@ -12,13 +17,25 @@ data Env = Env
   { weather :: Weather
   , auth :: Auth
   , logger :: Logger
+  , cleanup :: IO ()
   }
+
+type LogFun = Value -> IO ()
+
+logInfo :: (ToJSON a) => Env -> a -> IO ()
+logInfo env = env.logger.info . toJSON
+
+logDebug :: (ToJSON a) => Env -> a -> IO ()
+logDebug env = env.logger.debug . toJSON
+
+logError :: (ToJSON a) => Env -> a -> IO ()
+logError env = env.logger.error . toJSON
 
 -- logger interface
 data Logger = Logger
-  { info :: Text -> IO ()
-  , debug :: Text -> IO ()
-  , error :: Text -> IO ()
+  { info :: LogFun
+  , debug :: LogFun
+  , error :: LogFun
   }
 
 -- authorization interface

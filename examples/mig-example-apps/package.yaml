@@ -102,7 +102,9 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-      - containers
+    - containers
+    - fast-logger
+    - yaml
 
   counter-mig-example-app:
     main:                Main.hs
@@ -126,5 +128,6 @@ executables:
     - file-embed-lzma
     - uuid
     - http-api-data
+    - fast-logger
 
 

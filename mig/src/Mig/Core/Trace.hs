@@ -10,6 +10,7 @@ module Mig.Core.Trace (
   logRespBy,
   logHttp,
   logHttpBy,
+  ppReq,
   Verbosity (..),
 ) where
 
@@ -74,19 +75,19 @@ logReqBy printer verbosity = mapServerFun $ \f -> \req -> do
     reqTrace <- liftIO $ do
       eBody <- req.readBody
       now <- getCurrentTime
-      pure $ ppReq verbosity now eBody req
+      pure $ ppReq verbosity (Just now) eBody req
     printer reqTrace
   f req
 
-ppReq :: Verbosity -> UTCTime -> Either Text BL.ByteString -> Request -> Json.Value
+ppReq :: Verbosity -> Maybe UTCTime -> Either Text BL.ByteString -> Request -> Json.Value
 ppReq verbosity now body req =
   Json.object $
     concat $
       [ ifLevel verbosity V1 $
           mconcat
-            [
-              [ "time" .= now
-              , "type" .= ("http-request" :: Text)
+            [ maybe [] (pure . ("time" .=)) now
+            ,
+              [ "type" .= ("http-request" :: Text)
               , "path" .= toPath req
               , "method" .= Text.decodeUtf8 (renderHeader req.method)
               ]

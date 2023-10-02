@@ -12,15 +12,19 @@ module Main (
   main,
 ) where
 
+import Control.Exception (finally)
+import Data.Text qualified as Text
 import Init (initSite)
+import Interface
 import Mig.Html.IO (runServer)
 import Server (server)
 
 -- run blog post server
 main :: IO ()
 main = do
-  putStrLn ("The blog post server listens on port: " <> show port)
   site <- initSite
-  runServer port $ server site
+  site.logInfo ("The blog post server listens on port: " <> Text.pack (show port))
+  runServer port (server site)
+    `finally` site.cleanup
   where
     port = 8085
