@@ -100,7 +100,6 @@ module Mig (
   okResponse,
   badResponse,
   redirectResponse,
-  mapServerFun,
   ServerFun,
   handleRespError,
 
@@ -125,7 +124,10 @@ module Mig (
 
   -- ** Server
   mapRouteInfo,
+  mapServerFun,
   mapResponse,
+  atPath,
+  addPathLink,
 
   -- ** OpenApi
   toOpenApi,
