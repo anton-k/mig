@@ -1,0 +1,6 @@
+[book]
+authors = ["Anton Kholomiov"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Mig by example"
