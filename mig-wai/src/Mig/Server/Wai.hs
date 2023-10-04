@@ -1,3 +1,4 @@
+-- | Converts mig server to WAI-application.
 module Mig.Server.Wai (
   ServerConfig (..),
   Kilobytes,
@@ -24,6 +25,7 @@ type Kilobytes = Int
 -- | Server config
 data ServerConfig = ServerConfig
   { maxBodySize :: Maybe Kilobytes
+  -- ^ limit the request body size. By default it is unlimited.
   }
 
 -- | Convert server to WAI-application

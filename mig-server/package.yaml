@@ -1,14 +1,13 @@
 name:                mig-server
 version:             0.1.0.0
-github:              "githubuser/mig-server"
+github:              "anton-k/mig"
 license:             BSD3
 author:              "Anton Kholomiov"
-maintainer:          "example@example.com"
+maintainer:          "anton.kholomiov@gmail.com"
 copyright:           "2023 Anton Kholomiov"
 
 extra-source-files:
 - README.md
-- CHANGELOG.md
 
 # Metadata used when publishing your package
 category:            Web
@@ -45,8 +44,7 @@ description: |
   > main :: IO ()
   > main = runServer 8085 server
   >
-  > -- | Init simple hello world server which
-  > -- replies on a single route
+  > -- | Init simple hello world server whith two routes:
   > server :: Server IO
   > server =
   >   "api" /. "v1" /.
@@ -56,13 +54,13 @@ description: |
   >       ]
   >
   > -- | Handler takes no inputs and marked as Get HTTP-request that returns Text.
-  > hello :: Get Text
-  > hello = Get $ pure "Hello World"
+  > hello :: Get (Resp Text)
+  > hello = Get $ pure $ ok "Hello World"
   >
   > -- | Handle with URL-param query and json body input as Post HTTP-request that returns Text.
-  > bye :: Query "name" Text -> Body ByeRequest -> Post Text
-  > bye (Query name) (Body req) = Post $
-  >   pure $ "Bye to " <> name <> " " <> req.greeting
+  > bye :: Query "name" Text -> Body Text -> Post (Resp Text)
+  > bye (Query name) (Body greeting) = Post $
+  >   pure $ ok $ "Bye to " <> name <> " " <> greeting
   .
   Please see:
   .

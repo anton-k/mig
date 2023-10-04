@@ -6,11 +6,8 @@ module Mig.Core.Class.Server (
   hoistServer,
   fromReader,
   fromReaderExcept,
-  handleRespError,
 ) where
 
-import Control.Exception (Exception)
-import Control.Monad.Catch (MonadCatch, try)
 import Control.Monad.Except
 import Control.Monad.Reader
 import Data.Kind
@@ -28,6 +25,22 @@ import Web.HttpApiData
 
 infixr 4 /.
 
+{-| Constructs server which can handle given path. Example:
+
+> "api/v1/get/info" /. handleInfo
+
+For captures we use wild-cards:
+
+> "api/v1/get/info/*" /. handleInfo
+
+And handle info has capture argument:
+
+> handleInfo :: Capture "nameA" -> Get IO (Resp Json value)
+
+The name for the capture is derived from the type signature of the route handler.
+Note that if capture is in the last position of the path we can omit wild cards.
+The proper amount of captures will be derived from the type signature of the handler.
+-}
 (/.) :: (ToServer a) => Api.Path -> a -> Server (ServerMonad a)
 (/.) path api
   | null path.unPath = toServer api
@@ -38,8 +51,12 @@ infixr 4 /.
   where
     go rest a = Server $ Api.WithPath (path <> rest) a
 
+-- | Values that can be converted to server
 class ToServer a where
+  -- | Underlying server monad
   type ServerMonad a :: Type -> Type
+
+  -- | Convert value to server
   toServer :: a -> Server (ServerMonad a)
 
 -- identity
@@ -119,6 +136,7 @@ instance HasServer (ReaderT env (ExceptT Text IO)) where
 
   renderServer server initEnv = fromReaderExcept initEnv server
 
+-- | Render reader with expetT server to IO-based server
 fromReaderExcept ::
   forall env.
   env ->
@@ -137,15 +155,3 @@ fromReaderExcept env server =
     handleError = \case
       Right mResp -> mResp
       Left err -> Just $ badRequest @Text err
-
-handleRespError ::
-  forall a m.
-  (MonadCatch m, Exception a) =>
-  (a -> m (Maybe Response)) ->
-  Server m ->
-  Server m
-handleRespError handle = mapServerFun $ \f -> \req -> do
-  eResult <- try @m @a (f req)
-  case eResult of
-    Right res -> pure res
-    Left err -> handle err

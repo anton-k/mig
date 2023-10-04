@@ -1,4 +1,4 @@
--- | Types that describe route info
+-- | Types that describe route info. We use it to derive OpenApi schema or clients.
 module Mig.Core.Types.Info (
   RouteInfo (..),
   RouteInput (..),
@@ -15,7 +15,6 @@ module Mig.Core.Types.Info (
   addRouteInput,
   setOutputMedia,
   setMethod,
-  setJsonMethod,
   emptyRouteInfo,
   describeInfoInputs,
 
@@ -42,25 +41,34 @@ import Mig.Core.Class.MediaType
 import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status
 
+-- | Information on route
 data RouteInfo = RouteInfo
   { method :: Maybe Method
+  -- ^ http method
   , inputs :: [Describe RouteInput]
+  -- ^ route inputs
   , output :: RouteOutput
+  -- ^ route outputs
   , tags :: [Text]
+  -- ^ open-api tags
   , description :: Text
+  -- ^ open-api description
   , summary :: Text
+  -- ^ open-api summary
   }
   deriving (Show, Eq)
 
 newtype IsRequired = IsRequired Bool
   deriving newtype (Show, Eq)
 
+-- | Values which have human-readable description.
 data Describe a = Describe
   { description :: Maybe Text
   , content :: a
   }
   deriving (Show, Eq)
 
+-- | no description provided
 noDescription :: a -> Describe a
 noDescription = Describe Nothing
 
@@ -85,6 +93,7 @@ describeInfoInputs descs routeInfo = routeInfo{inputs = fmap addDesc routeInfo.i
 
     descMap = Map.fromList descs
 
+-- | Route inputs
 data RouteInput
   = ReqBodyInput MediaType SchemaDefs
   | RawBodyInput
@@ -94,6 +103,7 @@ data RouteInput
   | HeaderInput IsRequired Text Schema
   deriving (Show, Eq)
 
+-- | Get input media-type
 getInputType :: RouteInfo -> MediaType
 getInputType route = fromMaybe "*/*" $ firstJust (fromInput . (.content)) route.inputs
   where
@@ -101,43 +111,58 @@ getInputType route = fromMaybe "*/*" $ firstJust (fromInput . (.content)) route.
       ReqBodyInput ty _ -> Just ty
       _ -> Nothing
 
+-- | Input schema
 type InputSchema = SchemaDefs
 
+-- | Route output
 data RouteOutput = RouteOutput
   { status :: Status
+  -- ^ http status
   , media :: MediaType
+  -- ^ media type
   , schema :: OutputSchema
+  -- ^ open-api schema
   }
   deriving (Show, Eq)
 
+-- | Output schema
 type OutputSchema = SchemaDefs
 
+-- | Schem definition with references to the used sub-values
 data SchemaDefs = SchemaDefs
   { defs :: Definitions Schema
   , ref :: Maybe (Referenced Schema)
   }
   deriving (Show, Eq)
 
+-- | Create schema definition
 toSchemaDefs :: forall a. (ToSchema a) => SchemaDefs
 toSchemaDefs =
   SchemaDefs defs (Just ref)
   where
     (defs, ref) = runDeclare (declareSchemaRef (Proxy @a)) mempty
 
+-- | An empty schema definition
 emptySchemaDefs :: SchemaDefs
 emptySchemaDefs = SchemaDefs mempty Nothing
 
+-- | Add route input to route info list of inputs
 addRouteInput :: RouteInput -> RouteInfo -> RouteInfo
 addRouteInput inp = addRouteInputWithDescriptiton (noDescription inp)
 
+-- | Adds route input with description
 addRouteInputWithDescriptiton :: Describe RouteInput -> RouteInfo -> RouteInfo
 addRouteInputWithDescriptiton inp routeInfo =
   routeInfo{inputs = inp : routeInfo.inputs}
 
+{-| Default empty route info. We update it as we construct the route with type-safe DSL.
+Almost all values are derived from type signatures
+-}
 emptyRouteInfo :: RouteInfo
 emptyRouteInfo =
   RouteInfo Nothing [] (RouteOutput ok200 "*/*" emptySchemaDefs) [] "" ""
 
+-- | Set http-method of the route
 setMethod :: Method -> MediaType -> RouteInfo -> RouteInfo
 setMethod method mediaType routeInfo =
   routeInfo
@@ -145,40 +170,42 @@ setMethod method mediaType routeInfo =
     , output = RouteOutput routeInfo.output.status mediaType emptySchemaDefs
     }
 
+-- | Set output meida-type for the route
 setOutputMedia :: MediaType -> RouteInfo -> RouteInfo
 setOutputMedia mediaType routeInfo =
   routeInfo{output = setMedia routeInfo.output}
   where
     setMedia outp = outp{media = mediaType}
 
-setJsonMethod :: Method -> MediaType -> OutputSchema -> RouteInfo -> RouteInfo
-setJsonMethod method mediaType apiSchema routeInfo =
-  routeInfo
-    { method = Just method
-    , output = RouteOutput routeInfo.output.status mediaType apiSchema
-    }
+-- | Add parameter to the inputs of the route
+addParamInfoBy :: forall sym a. (KnownSymbol sym, ToParamSchema a) => (Text -> Schema -> RouteInput) -> RouteInfo -> RouteInfo
+addParamInfoBy cons = addRouteInput (cons (getName @sym) (toParamSchema (Proxy @a)))
 
-addParamBy :: forall sym a. (KnownSymbol sym, ToParamSchema a) => (Text -> Schema -> RouteInput) -> RouteInfo -> RouteInfo
-addParamBy cons = addRouteInput (cons (getName @sym) (toParamSchema (Proxy @a)))
-
+-- | Adds required header info to API schema
 addHeaderInfo :: forall sym a. (KnownSymbol sym, ToParamSchema a) => RouteInfo -> RouteInfo
-addHeaderInfo = addParamBy @sym @a (HeaderInput (IsRequired True))
+addHeaderInfo = addParamInfoBy @sym @a (HeaderInput (IsRequired True))
 
+-- | Adds optional header info to API schema
 addOptionalHeaderInfo :: forall sym a. (KnownSymbol sym, ToParamSchema a) => RouteInfo -> RouteInfo
-addOptionalHeaderInfo = addParamBy @sym @a (HeaderInput (IsRequired False))
+addOptionalHeaderInfo = addParamInfoBy @sym @a (HeaderInput (IsRequired False))
 
+-- | Adds required query info to API schema
 addQueryInfo :: forall sym a. (KnownSymbol sym, ToParamSchema a) => RouteInfo -> RouteInfo
-addQueryInfo = addParamBy @sym @a (QueryInput (IsRequired True))
+addQueryInfo = addParamInfoBy @sym @a (QueryInput (IsRequired True))
 
+-- | Adds optional query info to API schema
 addOptionalInfo :: forall sym a. (KnownSymbol sym, ToParamSchema a) => RouteInfo -> RouteInfo
-addOptionalInfo = addParamBy @sym @a (QueryInput (IsRequired False))
+addOptionalInfo = addParamInfoBy @sym @a (QueryInput (IsRequired False))
 
+-- | Adds capture info to API schema
 addCaptureInfo :: forall sym a. (KnownSymbol sym, ToParamSchema a) => RouteInfo -> RouteInfo
-addCaptureInfo = addParamBy @sym @a CaptureInput
+addCaptureInfo = addParamInfoBy @sym @a CaptureInput
 
+-- | Adds query flag to API schema
 addQueryFlagInfo :: forall sym. (KnownSymbol sym) => RouteInfo -> RouteInfo
 addQueryFlagInfo = addRouteInput (QueryFlagInput (getName @sym))
 
+-- | Adds request body to API schema
 addBodyInfo :: forall ty a. (ToMediaType ty, ToSchema a) => RouteInfo -> RouteInfo
 addBodyInfo = addRouteInput (ReqBodyInput (toMediaType @ty) (toSchemaDefs @a))
 

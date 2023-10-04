@@ -1,4 +1,4 @@
-cabal-version:      2.2
+cabal-version:      1.12
 
 -- This file has been generated from package.yaml by hpack version 0.35.2.
 --
@@ -7,36 +7,34 @@ cabal-version:      2.2
 name:               mig-extra
 version:            0.1.0.0
 synopsis:           Extra utils for Mig core library
-description:
-  Please see the README on GitHub at <https://github.com/githubuser/mig-extra#readme>
-
+description:        Extra utils for mig server library
 category:           Web
-homepage:           https://github.com/githubuser/mig-extra#readme
-bug-reports:        https://github.com/githubuser/mig-extra/issues
-author:             Author name here
-maintainer:         example@example.com
-copyright:          2023 Author name here
-license:            BSD-3-Clause
+homepage:           https://github.com/anton-k/mig#readme
+bug-reports:        https://github.com/anton-k/mig/issues
+author:             Anton Kholomiov
+maintainer:         anton.kholomiov@gmail.com
+copyright:          2023 Anton Kholomiov
+license:            BSD3
 build-type:         Simple
 extra-source-files: README.md
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/mig-extra
+  location: https://github.com/anton-k/mig
 
 library
   exposed-modules:
-    Mig.Extra.Html
-    Mig.Extra.Html.IO
-    Mig.Extra.IO
-    Mig.Extra.Json
-    Mig.Extra.Json.IO
     Mig.Extra.Middleware.Auth
+    Mig.Extra.Middleware.Exception
     Mig.Extra.Middleware.Trace
     Mig.Extra.Server.Common
+    Mig.Extra.Server.Html
+    Mig.Extra.Server.Html.IO
+    Mig.Extra.Server.IO
+    Mig.Extra.Server.Json
+    Mig.Extra.Server.Json.IO
 
   other-modules:      Paths_mig_extra
-  autogen-modules:    Paths_mig_extra
   hs-source-dirs:     src
   default-extensions:
     DataKinds
@@ -53,12 +51,13 @@ library
     -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
 
   build-depends:
-    , aeson
+      aeson
     , base >=4.7 && <5
     , blaze-html
     , bytestring
     , case-insensitive
     , containers
+    , exceptions
     , extra
     , http-api-data
     , http-media

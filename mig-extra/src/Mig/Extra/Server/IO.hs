@@ -1,5 +1,5 @@
 -- | IO-servers
-module Mig.Extra.IO (
+module Mig.Extra.Server.IO (
   -- * Http verbs
   Get,
   Post,

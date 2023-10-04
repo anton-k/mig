@@ -2,6 +2,8 @@
 Also we can use real logging functions with ***By versions.
 Simple variants are only for manual testing. It prints to stdout
 with no ordering of the concurrent prints.
+
+It can be useful for fast setup of debug for your application.
 -}
 module Mig.Extra.Middleware.Trace (
   logReq,
@@ -59,18 +61,22 @@ ifLevel current level vals
 -------------------------------------------------------------------------------------
 -- through
 
+-- | Logging of requests and responses
 logHttp :: (MonadIO m) => Verbosity -> Middleware m
 logHttp verbosity = logResp verbosity <> logReq verbosity
 
+-- | Logging of requests and responses with custom logger
 logHttpBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Middleware m
 logHttpBy printer verbosity = logRespBy printer verbosity <> logReqBy printer verbosity
 
 -------------------------------------------------------------------------------------
 -- request
 
+-- | Logs requests
 logReq :: (MonadIO m) => Verbosity -> Middleware m
 logReq = logReqBy defaultPrinter
 
+-- | Logs requests with custom logger
 logReqBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Middleware m
 logReqBy printer verbosity = toMiddleware $ \(RawRequest req) -> prependServerAction $ do
   when (verbosity > V0) $ do
@@ -80,6 +86,7 @@ logReqBy printer verbosity = toMiddleware $ \(RawRequest req) -> prependServerAc
       pure $ ppReq verbosity (Just now) eBody req
     printer reqTrace
 
+-- | Pretty prints the request
 ppReq :: Verbosity -> Maybe UTCTime -> Either Text BL.ByteString -> Request -> Json.Value
 ppReq verbosity now body req =
   Json.object $
@@ -120,9 +127,11 @@ ppReq verbosity now body req =
 -------------------------------------------------------------------------------------
 -- response
 
+-- | Logs response
 logResp :: (MonadIO m) => Verbosity -> Middleware m
 logResp = logRespBy defaultPrinter
 
+-- | Logs response with custom logger
 logRespBy :: forall m. (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Middleware m
 logRespBy printer verbosity = toMiddleware go
   where
@@ -134,6 +143,7 @@ logRespBy printer verbosity = toMiddleware go
         mapM_ (printer . ppResp verbosity now dur req) resp
       pure resp
 
+-- | Pretty prints the response
 ppResp :: Verbosity -> UTCTime -> Seconds -> Request -> Response -> Json.Value
 ppResp verbosity now dur req resp =
   Json.object $
@@ -168,6 +178,7 @@ ppResp verbosity now dur req resp =
 -------------------------------------------------------------------------------------
 -- utils
 
+-- | Default printer
 defaultPrinter :: (MonadIO m) => Json.Value -> m ()
 defaultPrinter =
   liftIO . B.putStrLn . Yaml.encode . addLogPrefix

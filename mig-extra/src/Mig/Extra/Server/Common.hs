@@ -74,7 +74,6 @@ module Mig.Extra.Server.Common (
   badResponse,
   badRequest,
   ServerFun,
-  handleRespError,
 
   -- ** Render
 

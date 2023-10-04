@@ -1,5 +1,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 
+-- | Server definition
 module Mig.Core.Server (
   Server (..),
   mapServerFun,
@@ -54,7 +55,7 @@ Example:
 >        , "bar" /. handleBar
 >        ]
 >
-> handleFoo :: Query "name" Int -> Get Json IO Text
+> handleFoo :: Query "name" Int -> Get IO (Resp Json Text)
 > handleBar :: Post Json IO Text
 
 Note that server is monoid and it can be constructed with Monoid functions and
@@ -62,35 +63,34 @@ path constructor @(/.)@. To pass inputs for handler we can use special newtype w
 
 * @Query@ - for required query parameters
 * @Optional@ - for optional query parameters
+* @QueryFlag@ - for boolean query flags
 * @Capture@ - for parsing elements of URI
-* @Body@ - fot JSON-body input
-* @RawBody@ - for raw ByteString input
-* @Header@ - for headers
+* @Header@ - for parsing headers
+* @OptionalHeader@ - for parsing optional headers
+* @Body@ - fot request-body input
+
+and other request types.
 
 To distinguish by HTTP-method we use corresponding constructors: Get, Post, Put, etc.
 Let's discuss the structure of the constructor. Let's take Get for example:
 
-> newtype Get ty m a = Get (m a)
+> type Get ty m a = Send GET ty m a
+> newtype Send ty m a = Send (m a)
 
  Let's look at the arguments of he type
 
-* @ty@ - type of the response. it can be: Text, Html, Json, ByteString
+* @ty@ - media-type of the response. it can be: Text, Html, Json, OctetStream, AnyMedia, FormUrlEncoded
 * @m@ - underlying server monad
-* @a@ - result type. It should be convertible to the type of the response.
-
-also result can be wrapped to special data types to modify Http-response.
-we have wrappers:
-
-* @SetStatus@ - to set status
-* @AddHeaders@ - to append headers
-* @Either (Error err)@ - to response with errors
+* @a@ - response type. It should be convertible to the type of the response (see @IsResp@ class).
 -}
 newtype Server m = Server {unServer :: Api (Route m)}
   deriving newtype (Semigroup, Monoid)
 
+-- | Applies server function to all routes
 mapServerFun :: (ServerFun m -> ServerFun n) -> Server m -> Server n
 mapServerFun f (Server server) = Server $ fmap (\x -> Route x.info (f x.run)) server
 
+-- | Mapps response of the server
 mapResponse :: (Functor m) => (Response -> Response) -> Server m -> Server m
 mapResponse f = mapServerFun $ \fun -> fmap (fmap f) . fun
 
@@ -191,9 +191,11 @@ setDescription desc = mapRouteInfo $ \info -> info{description = desc}
 setSummary :: Text -> Server m -> Server m
 setSummary val = mapRouteInfo $ \info -> info{summary = val}
 
+-- | Maps over route API-information
 mapRouteInfo :: (RouteInfo -> RouteInfo) -> Server m -> Server m
 mapRouteInfo f (Server srv) = Server $ fmap (\route -> route{info = f route.info}) srv
 
+-- | Adds OpenApi tag to the route
 insertTag :: Text -> RouteInfo -> RouteInfo
 insertTag tag info = info{tags = tag : info.tags}
 
@@ -204,7 +206,13 @@ nd raw-input is dedicated to raw input
 describeInputs :: [(Text, Text)] -> Server m -> Server m
 describeInputs descs = mapRouteInfo (describeInfoInputs descs)
 
--- | Serves static files
+{-| Serves static files. The file path is a path to where to server the file.
+The media-type is derived from the extension. There is a special case if we need
+to server the file from the rooot of the server we can omit everything from the path
+but keep extension. Otherwise it is not able to derive the media type.
+
+It is convenient to use it with function @embedRecursiveDir@ from the library @file-embed@ or @file-embed-lzma@.
+-}
 staticFiles :: forall m. (MonadIO m) => [(FilePath, ByteString)] -> Server m
 staticFiles files =
   Server $ foldMap (uncurry serveFile) files

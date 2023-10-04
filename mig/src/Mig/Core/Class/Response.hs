@@ -25,36 +25,63 @@ import Mig.Core.Types.Http (Response, ResponseBody (..), noContentResponse)
 import Mig.Core.Types.Http qualified as Response (Response (..))
 import Mig.Core.Types.Http qualified as Types
 
+-- | Response with info on the media-type encoded as type.
 data Resp media a = Resp
   { status :: Status
+  -- ^ response status
   , headers :: ResponseHeaders
+  -- ^ response headers
   , body :: Maybe a
+  -- ^ response body. Nothing means "no content" in the body
   }
   deriving (Show, Functor)
 
-okResp :: a -> Resp ty a
-okResp = Resp ok200 [] . Just
-
+-- | Response that can contain an error. The error is represented with left case of an @Either@-type.
 newtype RespOr ty err a = RespOr {unRespOr :: Either (Resp ty err) (Resp ty a)}
 
 -------------------------------------------------------------------------------------
 -- response class
 
+{-| Values that can be converted to low-level response.
+
+The repsonse value is usually one of two cases:
+
+* @Resp a@ -- for routes which always produce a value
+
+* @RespOr err a@ - for routes that can also produce an error or value.
+
+* @Response@ - low-level HTTP-response.
+-}
 class IsResp a where
+  -- | the type of response body value
   type RespBody a :: Type
+
+  -- | the type of an error
   type RespError a :: Type
 
+  -- | Returns valid repsonse with 200 status
   ok :: RespBody a -> a
+
+  -- | Returns an error with given status
   bad :: Status -> RespError a -> a
+
+  -- | response with no content
   noContent :: Status -> a
+
+  -- | Add some header to the response
   addHeaders :: ResponseHeaders -> a -> a
+
+  -- | Sets repsonse status
   setStatus :: Status -> a -> a
 
+  -- | Set the media type of the response
   setMedia :: MediaType -> a -> a
   setMedia media = addHeaders [("Content-Type", renderHeader media)]
 
+  -- | Reads the media type by response type
   getMedia :: MediaType
 
+  -- | Converts value to low-level response
   toResponse :: a -> Response
 
 -- | Set header for response
@@ -103,7 +130,7 @@ instance (ToRespBody ty err, ToRespBody ty a) => IsResp (RespOr ty err a) where
   type RespBody (RespOr ty err a) = a
   type RespError (RespOr ty err a) = err
 
-  ok = RespOr . Right . okResp
+  ok = RespOr . Right . Resp ok200 [] . Just
   bad status = RespOr . Left . bad status
   addHeaders hs = RespOr . bimap (addHeaders hs) (addHeaders hs) . unRespOr
   noContent st = RespOr $ Right (noContent st)
@@ -112,14 +139,18 @@ instance (ToRespBody ty err, ToRespBody ty a) => IsResp (RespOr ty err a) where
 
   toResponse = either toResponse toResponse . unRespOr
 
+-- | Bad request. The @bad@ response with 400 status.
 badReq :: (IsResp a) => RespError a -> a
 badReq = bad status400
 
+-- | Internal server error. The @bad@ response with 500 status.
 internalServerError :: (IsResp a) => RespError a -> a
 internalServerError = bad internalServerError500
 
+-- | Not implemented route. The @bad@ response with 501 status.
 notImplemented :: (IsResp a) => RespError a -> a
 notImplemented = bad notImplemented501
 
+-- | Redirect to url. It is @bad@ response with 302 status and set header of "Location" to a given URL.
 redirect :: (IsResp a) => Text -> a
 redirect url = addHeaders [("Location", Text.encodeUtf8 url)] $ noContent status302

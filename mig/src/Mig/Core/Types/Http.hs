@@ -44,11 +44,9 @@ data Response = Response
   -- ^ response body
   }
 
+-- | Response with no content
 noContentResponse :: Status -> Response
 noContentResponse status = Response status [] (RawResp "*/*" "")
-
-instance IsString Response where
-  fromString = okResponse @Text @Text . fromString
 
 -- | Http response body
 data ResponseBody
@@ -74,8 +72,10 @@ data Request = Request
   -- ^ was this request made over SSL connection
   }
 
+-- | Headers as map
 type HeaderMap = Map HeaderName ByteString
 
+-- | Captures as map
 type CaptureMap = Map Text Text
 
 -- | Map of query parameters for fast-access
