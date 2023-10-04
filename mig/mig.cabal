@@ -35,7 +35,6 @@ library
     Mig.Core.OpenApi
     Mig.Core.Server
     Mig.Core.ServerFun
-    Mig.Core.Trace
     Mig.Core.Types
     Mig.Core.Types.Http
     Mig.Core.Types.Info
