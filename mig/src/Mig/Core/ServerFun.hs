@@ -1,4 +1,12 @@
--- | input implementation
+{-| Low-level server representarion.
+The server is a function from @Request@ to @Response@.
+
+> type ServerFun m = Request -> m (Maybe Response)
+
+To use the mig library with some server library like wai/warp we need
+to provide conversion of type @ServerFun@ to the representarion of the given library.
+We can convert mig server to @ServerFun@ with function @toServerFun@.
+-}
 module Mig.Core.ServerFun (
   ServerFun,
   sendResponse,
@@ -10,7 +18,6 @@ module Mig.Core.ServerFun (
   withCapture,
   withHeader,
   withOptionalHeader,
-  withFormBody,
   withPathInfo,
   handleError,
 ) where
@@ -29,8 +36,7 @@ import Data.Text.Encoding qualified as Text
 import Mig.Core.Class.MediaType
 import Mig.Core.Types
 import Network.HTTP.Types.Header (HeaderName)
-import Network.HTTP.Types.Status (status413, status500)
-import Web.FormUrlEncoded
+import Network.HTTP.Types.Status (status500)
 import Web.HttpApiData
 
 {-| Low-level representation of the server.
@@ -38,12 +44,14 @@ Missing route for a given request returns @Nothing@.
 -}
 type ServerFun m = Request -> m (Maybe Response)
 
+-- | Reads request body.
 withBody :: forall media a m. (MonadIO m, FromReqBody media a) => (a -> ServerFun m) -> ServerFun m
 withBody f = withRawBody $ \val -> \req ->
   case fromReqBody @media val of
     Right v -> f v req
     Left err -> pure $ Just $ badRequest @Text $ "Failed to parse request body: " <> err
 
+-- | Reads low-level request body as byte string
 withRawBody :: (MonadIO m) => (BL.ByteString -> ServerFun m) -> ServerFun m
 withRawBody act = \req -> do
   eBody <- liftIO req.readBody
@@ -51,6 +59,7 @@ withRawBody act = \req -> do
     Right body -> act body req
     Left err -> pure $ Just $ setRespStatus status500 (okResponse @Text err)
 
+-- | Reads required query parameter
 withQuery :: (Monad m, FromHttpApiData a) => Text -> (a -> ServerFun m) -> ServerFun m
 withQuery name act = withQueryBy (join . getQuery name) processResponse
   where
@@ -58,6 +67,7 @@ withQuery name act = withQueryBy (join . getQuery name) processResponse
 
     errorMessage = "Failed to parse arg: " <> name
 
+-- | Reads query flag
 withQueryFlag :: Text -> (Bool -> ServerFun m) -> ServerFun m
 withQueryFlag name act = \req ->
   let
@@ -90,9 +100,11 @@ handleMaybeInput message act = \case
   Just arg -> \req -> act arg req
   Nothing -> const $ pure $ Just $ badRequest @Text message
 
+-- | reads optional query parameter
 withOptional :: (FromHttpApiData a) => Text -> (Maybe a -> ServerFun m) -> ServerFun m
 withOptional name act = withQueryBy (join . getQuery name) act
 
+-- | Generic query parameter reader
 withQueryBy ::
   (FromHttpApiData a) =>
   (Request -> Maybe Text) ->
@@ -105,6 +117,7 @@ withQueryBy getVal act = \req ->
    in
     act mArg req
 
+-- | Reads capture from the path
 withCapture :: (Monad m, FromHttpApiData a) => Text -> (a -> ServerFun m) -> ServerFun m
 withCapture name act = withQueryBy getVal processResponse
   where
@@ -114,6 +127,7 @@ withCapture name act = withQueryBy getVal processResponse
 
     errorMessage = "Failed to parse capture: " <> name
 
+-- | reads request header
 withHeader :: (Monad m, FromHttpApiData a) => HeaderName -> (a -> ServerFun m) -> ServerFun m
 withHeader name act = withQueryBy getVal processResponse
   where
@@ -126,17 +140,13 @@ withHeader name act = withQueryBy getVal processResponse
 headerNameToText :: CI.CI ByteString -> Text
 headerNameToText name = fromRight "" $ Text.decodeUtf8' $ CI.original name
 
+-- | Reads optional request header
 withOptionalHeader :: (FromHttpApiData a) => HeaderName -> (Maybe a -> ServerFun m) -> ServerFun m
 withOptionalHeader name act = withQueryBy getVal act
   where
     getVal req = eitherToMaybe . parseHeader =<< Map.lookup name req.headers
 
-withFormBody :: (MonadIO m, FromForm a) => (a -> ServerFun m) -> ServerFun m
-withFormBody act = withRawBody $ \body -> \req -> do
-  case urlDecodeForm body >>= fromForm of
-    Right a -> act a req
-    Left err -> pure $ Just $ setRespStatus status413 $ badRequest @Text err
-
+-- | Reads full path (without qury parameters)
 withPathInfo :: ([Text] -> ServerFun m) -> ServerFun m
 withPathInfo act = \req -> act req.path req
 

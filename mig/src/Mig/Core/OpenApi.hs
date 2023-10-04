@@ -1,3 +1,4 @@
+-- | Renders mig-servers as OpenApi schemas
 module Mig.Core.OpenApi (
   toOpenApi,
 ) where
@@ -24,6 +25,7 @@ addCapture :: Text -> OpenApi -> OpenApi
 addCapture captureName =
   prependPath ("{" <> Text.unpack captureName <> "}")
 
+-- | Reads OpenApi schema for a server
 toOpenApi :: Server m -> OpenApi
 toOpenApi (Server x) = fromApiInfo (fmap (.info) $ fillCaptures x)
 

@@ -35,8 +35,7 @@ description:
   > main :: IO ()
   > main = runServer 8085 server
   >
-  > -- | Init simple hello world server which
-  > -- replies on a single route
+  > -- | Init simple hello world server whith two routes:
   > server :: Server IO
   > server =
   >   "api" /. "v1" /.
@@ -46,13 +45,13 @@ description:
   >       ]
   >
   > -- | Handler takes no inputs and marked as Get HTTP-request that returns Text.
-  > hello :: Get Text
-  > hello = Get $ pure "Hello World"
+  > hello :: Get (Resp Text)
+  > hello = Get $ pure $ ok "Hello World"
   >
   > -- | Handle with URL-param query and json body input as Post HTTP-request that returns Text.
-  > bye :: Query "name" Text -> Body ByeRequest -> Post Text
-  > bye (Query name) (Body req) = Post $
-  >   pure $ "Bye to " <> name <> " " <> req.greeting
+  > bye :: Query "name" Text -> Body Text -> Post (Resp Text)
+  > bye (Query name) (Body greeting) = Post $
+  >   pure $ ok $ "Bye to " <> name <> " " <> greeting
   .
   Please see:
   .
@@ -61,21 +60,19 @@ description:
   * examples directory for more fun servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
 
 category:           Web
-homepage:           https://github.com/githubuser/mig-server#readme
-bug-reports:        https://github.com/githubuser/mig-server/issues
+homepage:           https://github.com/anton-k/mig#readme
+bug-reports:        https://github.com/anton-k/mig/issues
 author:             Anton Kholomiov
-maintainer:         example@example.com
+maintainer:         anton.kholomiov@gmail.com
 copyright:          2023 Anton Kholomiov
 license:            BSD3
 license-file:       LICENSE
 build-type:         Simple
-extra-source-files:
-  CHANGELOG.md
-  README.md
+extra-source-files: README.md
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/mig-server
+  location: https://github.com/anton-k/mig
 
 library
   exposed-modules:

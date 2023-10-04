@@ -30,11 +30,16 @@ import Network.HTTP.Types.Method
 import System.FilePath
 import Web.HttpApiData
 
+-- | HTTP API container
 data Api a
-  = Append (Api a) (Api a)
-  | Empty
-  | WithPath Path (Api a)
-  | HandleRoute a
+  = -- | alternative between two API's
+    Append (Api a) (Api a)
+  | -- | an empty API that does nothing
+    Empty
+  | -- | path prefix for an API
+    WithPath Path (Api a)
+  | -- | handle route
+    HandleRoute a
   deriving (Functor, Foldable, Traversable, Show, Eq)
 
 instance Monoid (Api a) where
@@ -43,6 +48,7 @@ instance Monoid (Api a) where
 instance Semigroup (Api a) where
   (<>) = Append
 
+-- | Filters routes in the API with predicate
 filterApi :: (a -> Bool) -> Api a -> Api a
 filterApi check = \case
   HandleRoute a -> if check a then HandleRoute a else Empty
@@ -60,6 +66,7 @@ filterApi check = \case
   where
     rec = filterApi check
 
+-- | converts API to efficient representation to fetch the route handlers by path
 toNormalApi :: forall m. Api (Route.Route m) -> ApiNormal (Route.Route m)
 toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (toMethodMap api)
   where
@@ -94,15 +101,18 @@ toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (to
 
         toMediaApi media = (media, filterApi (\route -> getMedia route.info == media) a)
 
+-- | Read sub-api by HTTP method, accept-type and content-type
 fromNormalApi :: Method -> ByteString -> ByteString -> ApiNormal a -> Maybe (Api a)
 fromNormalApi method outputAccept inputContentType (ApiNormal methodMap) = do
   OutputMediaMap outputMediaMap <- Map.lookup method methodMap
   InputMediaMap inputMediaMap <- lookupMediaMapBy mapAcceptMedia outputMediaMap outputAccept
   lookupMediaMapBy mapContentMedia inputMediaMap inputContentType
 
+-- | Efficient representation of API to fetch routes
 newtype ApiNormal a = ApiNormal (MethodMap (OutputMediaMap (InputMediaMap (Api a))))
   deriving (Show, Eq, Functor)
 
+-- | Mthod map
 type MethodMap a = Map Method a
 
 -- | filter by Content-Type header
@@ -113,17 +123,25 @@ newtype InputMediaMap a = InputMediaMap (MediaMap a)
 newtype OutputMediaMap a = OutputMediaMap (MediaMap a)
   deriving (Show, Eq, Functor)
 
+-- | Map by media type
 data MediaMap a = MediaMap
   { mapValues :: [(MediaType, a)]
   , matchAll :: a
   }
   deriving (Show, Eq, Functor)
 
+-- | Lookup value by media type key
 lookupMediaMapBy :: ([(MediaType, a)] -> ByteString -> Maybe a) -> MediaMap a -> ByteString -> Maybe a
 lookupMediaMapBy getter (MediaMap m matchAll) media
   | media == "*/*" = Just matchAll
   | otherwise = getter m media
 
+{-| Path is a chain of elements which can be static types or capture.
+There is @IsString@ instance which allows us to create paths from strings. Examples:
+
+> "api/v1/foo" ==> Path [StaticPath "api", StaticPath "v1", StaticPath "foo"]
+> "api/v1/*" ==> Path [StaticPath "api", StaticPath "v1", CapturePath "*"]
+-}
 newtype Path = Path {unPath :: [PathItem]}
   deriving newtype (Show, Eq, Ord, Semigroup, Monoid)
 
@@ -151,6 +169,9 @@ data PathItem
   | CapturePath Text
   deriving (Show, Eq, Ord)
 
+{-| Map of capture values extracted from path.
+Keys are capture names.
+-}
 type CaptureMap = Map Text Text
 
 -- | Find an api item by path. Also it accumulates capture map along the way.
@@ -189,6 +210,7 @@ getPath mainPath = go mempty (filter (not . Text.null) mainPath)
           nextPathHead : nextPathTail -> goPath captureMap nextPathHead nextPathTail (Path templateRest) restApi
           [] -> Nothing
 
+-- | Flattens API. Creates a flat list of paths and route handlers.
 flatApi :: Api a -> [(Path, a)]
 flatApi = go mempty
   where
@@ -198,5 +220,6 @@ flatApi = go mempty
       WithPath path a -> go (prefix <> path) a
       HandleRoute a -> [(prefix, a)]
 
+-- | Constructs API from flat list of pairs of paths and route handlers.
 fromFlatApi :: [(Path, a)] -> Api a
 fromFlatApi = foldMap (\(path, route) -> WithPath path (HandleRoute route))

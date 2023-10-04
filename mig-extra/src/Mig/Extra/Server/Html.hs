@@ -1,6 +1,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 
-module Mig.Extra.Html (
+-- | Html servers
+module Mig.Extra.Server.Html (
   -- * Http verbs
   Get,
   Post,

@@ -1,5 +1,5 @@
 name:                mig
-version:             0.1.0.3
+version:             0.2.0.0
 github:              "anton-k/mig"
 license:             BSD3
 author:              "Anton Kholomiov"
@@ -17,7 +17,17 @@ category:            Web
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
 description: |
-  Core
+  Core for the mig server library.
+description: |
+  With library mig we can build lightweight and composable servers.
+  There are only couple of combinators to assemble servers from parts.
+  It supports generic handler functions as servant does. But strives to use more
+  simple model for API. It does not go to describing Server API at type level which
+  leads to simpler error messages.
+  .
+  * quick start guide at <https://github.com/anton-k/mig#readme>
+  .
+  * examples directory for more fun servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
 
 dependencies:
 - base >= 4.7 && < 5

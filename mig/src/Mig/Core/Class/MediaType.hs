@@ -1,3 +1,6 @@
+{-| Classes for MediaType and proper converters of Http values
+from/to parameters or request/response bodies.
+-}
 module Mig.Core.Class.MediaType (
   MediaType,
   ToMediaType (..),
@@ -34,6 +37,7 @@ import Text.Blaze.Html (Html, ToMarkup (..))
 import Text.Blaze.Html.Renderer.Utf8 (renderHtml)
 import Web.FormUrlEncoded (FromForm, ToForm, urlDecodeAsForm, urlEncodeAsForm)
 
+-- | Conversion of type-level tags to media type values
 class ToMediaType a where
   toMediaType :: MediaType
 
@@ -43,6 +47,9 @@ instance ToMediaType Text where
 instance ToMediaType Html where
   toMediaType = "text/html"
 
+{-| Media type octet stream is for passing raw byte-strings in the request body.
+It is converted to "application/octet-stream"
+-}
 data OctetStream
 
 instance ToMediaType OctetStream where
@@ -51,16 +58,30 @@ instance ToMediaType OctetStream where
 instance ToMediaType BL.ByteString where
   toMediaType = "application/octet-stream"
 
+{-| Type-level tag for JSON media type
+It is converted to "application/json"
+-}
 data Json
 
 instance ToMediaType Json where
   toMediaType = "application/json"
 
+{-| Type-level tag for FORM url encoded media-type.
+It is converted to "application/x-www-form-urlencoded"
+-}
 data FormUrlEncoded
 
 instance ToMediaType FormUrlEncoded where
   toMediaType = "application/x-www-form-urlencoded"
 
+{-| Signifies any media. It prescribes the server renderer to lookup
+media-type at run-time in the "Conten-Type" header.
+As media-type it is rendered to "*/*".
+
+It is useful for values for which we want to derive content type
+from run-time values. For example it is used for static file servers
+to get media type from file extension.
+-}
 data AnyMedia
 
 instance ToMediaType AnyMedia where
@@ -69,6 +90,7 @@ instance ToMediaType AnyMedia where
 ------------------------------------------------------------------------------------
 -- mime render (everything that can be rendered as HTTP-output)
 
+-- | Values that can be rendered to response body byte string.
 class (ToMediaType ty) => ToRespBody ty b where
   toRespBody :: b -> BL.ByteString
 
@@ -102,6 +124,7 @@ instance ToRespBody AnyMedia ByteString where
 -------------------------------------------------------------------------------------
 -- mime unrender (everything that can be parsed from HTTP-input)
 
+-- | Values that can be parsed from request byte string.
 class (ToMediaType ty) => FromReqBody ty b where
   fromReqBody :: BL.ByteString -> Either Text b
 

@@ -1,3 +1,4 @@
+-- | Re-export mig classes
 module Mig.Core.Class (
   module X,
 ) where

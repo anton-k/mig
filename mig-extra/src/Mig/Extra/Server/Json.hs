@@ -1,7 +1,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 
 -- | Json servers
-module Mig.Extra.Json (
+module Mig.Extra.Server.Json (
   -- * Http verbs
   Get,
   Post,

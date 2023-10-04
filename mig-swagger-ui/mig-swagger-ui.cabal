@@ -6,11 +6,11 @@ cabal-version:      1.12
 
 name:               mig-swagger-ui
 version:            0.1.0.0
-description:
-  Please see the README on GitHub at <https://github.com/githubuser/mig-swagger-ui#readme>
-
-homepage:           https://github.com/githubuser/mig-swagger-ui#readme
-bug-reports:        https://github.com/githubuser/mig-swagger-ui/issues
+synopsis:           Swagger servers for mig library
+description:        Swagger servers for mig library
+category:           Web
+homepage:           https://github.com/anton-k/mig#readme
+bug-reports:        https://github.com/anton-k/mig/issues
 author:             Anton Kholomiov
 maintainer:         example@example.com
 copyright:          2023 Anton Kholomiov
@@ -39,7 +39,7 @@ extra-source-files:
 
 source-repository head
   type:     git
-  location: https://github.com/githubuser/mig-swagger-ui
+  location: https://github.com/anton-k/mig
 
 library
   exposed-modules:    Mig.Swagger

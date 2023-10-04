@@ -1,3 +1,4 @@
+-- | Middleware to handle authorization. Just a sketch for now.
 module Mig.Extra.Middleware.Auth (
   WithAuth (..),
   withHeaderAuth,

@@ -1,4 +1,5 @@
-module Mig.Extra.Html.IO (
+-- | Html IO-based servers
+module Mig.Extra.Server.Html.IO (
   -- * Http verbs
   Get,
   Post,
@@ -19,8 +20,8 @@ module Mig.Extra.Html.IO (
 ) where
 
 import Mig.Core (Body (..))
-import Mig.Extra.Html (Resp (..), RespOr)
 import Mig.Extra.Server.Common as X
+import Mig.Extra.Server.Html (Resp (..), RespOr)
 
 type Get a = Send GET IO (Resp a)
 type Post a = Send POST IO (Resp a)

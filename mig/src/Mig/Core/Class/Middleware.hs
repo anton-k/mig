@@ -36,6 +36,7 @@ module Mig.Core.Class.Middleware (
   Middleware (..),
   MiddlewareFun,
   toMiddleware,
+  fromMiddlewareFun,
   ($:),
   applyMiddleware,
   RawResponse (..),
@@ -63,11 +64,19 @@ import Mig.Core.Server
 import Mig.Core.ServerFun
 import Mig.Core.Types
 
+-- | Low-level middleware function.
 type MiddlewareFun m = ServerFun m -> ServerFun m
 
+{-| Middleware can convert all routes of the server.
+It is wrapper on top of @ServerFun m -> ServerFun m@.
+We can apply middlewares to servers with @applyMiddleware@ function
+also middleware has Monoid instance which is like Monoid.Endo or functional composition @(.)@.
+-}
 data Middleware m = Middleware
   { info :: RouteInfo -> RouteInfo
+  -- ^ update api schema
   , run :: MiddlewareFun m
+  -- ^ run the middleware
   }
 
 instance Monoid (Middleware m) where
@@ -76,18 +85,23 @@ instance Monoid (Middleware m) where
 instance Semigroup (Middleware m) where
   (<>) a b = Middleware (a.info . b.info) (a.run . b.run)
 
--- | Infix operator for applyMiddleware
+-- | Infix operator for @applyMiddleware@
 ($:) :: forall f. (ToMiddleware f) => f -> Server (MiddlewareMonad f) -> Server (MiddlewareMonad f)
 ($:) = applyMiddleware
 
+-- | Applies middleware to all routes of the server.
 applyMiddleware :: forall f. (ToMiddleware f) => f -> Server (MiddlewareMonad f) -> Server (MiddlewareMonad f)
 applyMiddleware a = mapRouteInfo (toMiddlewareInfo @f) . mapServerFun (toMiddlewareFun a)
 
+{-| Values that can represent a middleware.
+We use various newtype-wrappers to query type-safe info from request.
+-}
 class (MonadIO (MiddlewareMonad f)) => ToMiddleware f where
   type MiddlewareMonad f :: Type -> Type
   toMiddlewareInfo :: RouteInfo -> RouteInfo
   toMiddlewareFun :: f -> ServerFun (MiddlewareMonad f) -> ServerFun (MiddlewareMonad f)
 
+-- | Convert middleware-like value to middleware.
 toMiddleware :: forall f. (ToMiddleware f) => f -> Middleware (MiddlewareMonad f)
 toMiddleware a = Middleware (toMiddlewareInfo @f) (toMiddlewareFun a)
 
@@ -101,6 +115,9 @@ instance (MonadIO m) => ToMiddleware (Middleware m) where
   type MiddlewareMonad (Middleware m) = m
   toMiddlewareInfo = id
   toMiddlewareFun = (.run)
+
+fromMiddlewareFun :: (MonadIO m) => MiddlewareFun m -> Middleware m
+fromMiddlewareFun = toMiddleware
 
 -- path info
 instance (ToMiddleware a) => ToMiddleware (PathInfo -> a) where

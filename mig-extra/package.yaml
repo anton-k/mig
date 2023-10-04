@@ -1,10 +1,10 @@
 name:                mig-extra
 version:             0.1.0.0
-github:              "githubuser/mig-extra"
-license:             BSD-3-Clause
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2023 Author name here"
+github:              "anton-k/mig"
+license:             BSD3
+author:              "Anton Kholomiov"
+maintainer:          "anton.kholomiov@gmail.com"
+copyright:           "2023 Anton Kholomiov"
 
 extra-source-files:
 - README.md
@@ -16,7 +16,7 @@ category:            Web
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/mig-extra#readme>
+description:         Extra utils for mig server library
 
 language: GHC2021
 
@@ -45,6 +45,7 @@ dependencies:
 - case-insensitive
 - bytestring
 - extra
+- exceptions
 
 ghc-options:
 - -Wall

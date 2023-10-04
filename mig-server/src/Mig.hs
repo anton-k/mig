@@ -1,6 +1,6 @@
 {-| Main module to write servers
 
-Server is a function from response (Resp) to request (Req). Request is wrapped into monad.
+Server is a function from response to request. Request is wrapped into monad.
 Library supports IO-monad and ReaderT over IO like monads.
 
 We can build servers from parts with flexible combinators.
@@ -13,8 +13,8 @@ Let's build hello-world server:
 > server =
 >   "api" /. "v1" /. "hello" /. handleHello
 >
-> handleHello :: Get Text IO Text
-> handleHello = Send $ pure "Hello World"
+> handleHello :: Get IO (Resp Text Text)
+> handleHello = Send $ pure $ ok "Hello World"
 
 We can iuse monoids to combine servers and newtype-wrappers to read various inputs.
 See readme of the repo for tutorial and docs.
@@ -94,6 +94,7 @@ module Mig (
   MiddlewareFun,
   ToMiddleware (..),
   applyMiddleware,
+  ($:),
   prependServerAction,
   appendServerAction,
   processResponse,
@@ -104,7 +105,6 @@ module Mig (
   okResponse,
   badResponse,
   ServerFun,
-  handleRespError,
   -- | Run server application
   runServer,
   runServer',
