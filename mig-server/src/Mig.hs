@@ -33,7 +33,6 @@ module Mig (
   OctetStream,
   ToServer (..),
   ToRoute (..),
-  ToRouteInfo (..),
   MediaType,
   ToMediaType (..),
   ToRespBody (..),
@@ -91,7 +90,8 @@ module Mig (
   staticFiles,
 
   -- ** Middlewares
-  Middleware,
+  Middleware (..),
+  MiddlewareFun,
   ToMiddleware (..),
   applyMiddleware,
   prependServerAction,

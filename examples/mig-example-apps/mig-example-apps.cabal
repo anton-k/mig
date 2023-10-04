@@ -220,6 +220,7 @@ executable json-api-mig-example-app
     Internal.State
     Paths_mig_example_apps
     Server
+    Server.Swagger
     Types
 
   hs-source-dirs:     JsonApi

@@ -123,5 +123,3 @@ notImplemented = bad notImplemented501
 
 redirect :: (IsResp a) => Text -> a
 redirect url = addHeaders [("Location", Text.encodeUtf8 url)] $ noContent status302
-
--------------------------------------------------------------------------------------

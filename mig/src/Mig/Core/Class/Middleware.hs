@@ -33,7 +33,10 @@ Thus we gain type-safety and get convenient interface to request the various par
 module Mig.Core.Class.Middleware (
   -- * class
   ToMiddleware (..),
-  Middleware,
+  Middleware (..),
+  MiddlewareFun,
+  toMiddleware,
+  ($:),
   applyMiddleware,
 
   -- * specific middlewares
@@ -44,6 +47,7 @@ module Mig.Core.Class.Middleware (
 
 import Control.Monad.IO.Class
 import Data.Kind
+import Data.OpenApi (ToParamSchema (..), ToSchema (..))
 import Data.Proxy
 import Data.String
 import GHC.TypeLits
@@ -55,85 +59,127 @@ import Mig.Core.Server
 import Mig.Core.ServerFun
 import Mig.Core.Types
 
-type Middleware m = ServerFun m -> ServerFun m
+type MiddlewareFun m = ServerFun m -> ServerFun m
+
+data Middleware m = Middleware
+  { info :: RouteInfo -> RouteInfo
+  , run :: MiddlewareFun m
+  }
+
+instance Monoid (Middleware m) where
+  mempty = Middleware id id
+
+instance Semigroup (Middleware m) where
+  (<>) a b = Middleware (a.info . b.info) (a.run . b.run)
+
+-- | Infix operator for applyMiddleware
+($:) :: forall f. (ToMiddleware f) => f -> Server (MiddlewareMonad f) -> Server (MiddlewareMonad f)
+($:) = applyMiddleware
+
+applyMiddleware :: forall f. (ToMiddleware f) => f -> Server (MiddlewareMonad f) -> Server (MiddlewareMonad f)
+applyMiddleware a = mapRouteInfo (toMiddlewareInfo @f) . mapServerFun (toMiddlewareFun a)
 
 class (MonadIO (MiddlewareMonad f)) => ToMiddleware f where
   type MiddlewareMonad f :: Type -> Type
-  toMiddleware :: f -> Middleware (MiddlewareMonad f)
+  toMiddlewareInfo :: RouteInfo -> RouteInfo
+  toMiddlewareFun :: f -> ServerFun (MiddlewareMonad f) -> ServerFun (MiddlewareMonad f)
 
-applyMiddleware :: (ToMiddleware f) => f -> Server (MiddlewareMonad f) -> Server (MiddlewareMonad f)
-applyMiddleware a = mapServerFun (toMiddleware a)
+toMiddleware :: forall f. (ToMiddleware f) => f -> Middleware (MiddlewareMonad f)
+toMiddleware a = Middleware (toMiddlewareInfo @f) (toMiddlewareFun a)
 
 -- identity
-instance (MonadIO m) => ToMiddleware (ServerFun m -> ServerFun m) where
+instance (MonadIO m) => ToMiddleware (MiddlewareFun m) where
   type MiddlewareMonad (ServerFun m -> ServerFun m) = m
-  toMiddleware = id
+  toMiddlewareInfo = id
+  toMiddlewareFun = id
+
+instance (MonadIO m) => ToMiddleware (Middleware m) where
+  type MiddlewareMonad (Middleware m) = m
+  toMiddlewareInfo = id
+  toMiddlewareFun = (.run)
 
 -- path info
 instance (ToMiddleware a) => ToMiddleware (PathInfo -> a) where
   type MiddlewareMonad (PathInfo -> a) = MiddlewareMonad a
-  toMiddleware f = \fun -> withPathInfo (\path -> toMiddleware (f (PathInfo path)) fun)
+  toMiddlewareInfo = id
+  toMiddlewareFun f = \fun -> withPathInfo (\path -> toMiddlewareFun (f (PathInfo path)) fun)
 
--- raw request
 instance (ToMiddleware a) => ToMiddleware (RawRequest -> a) where
   type MiddlewareMonad (RawRequest -> a) = MiddlewareMonad a
-  toMiddleware f = \fun -> \req -> (toMiddleware (f (RawRequest req)) fun) req
+  toMiddlewareInfo = id
+  toMiddlewareFun f = \fun -> \req -> (toMiddlewareFun (f (RawRequest req)) fun) req
 
 -- request body
-instance (FromReqBody media a, ToMiddleware b) => ToMiddleware (ReqBody media a -> b) where
-  type MiddlewareMonad (ReqBody media a -> b) = MiddlewareMonad b
-  toMiddleware f = \fun -> withBody @media (\body -> toMiddleware (f (ReqBody body)) fun)
+instance (FromReqBody ty a, ToSchema a, ToMiddleware b) => ToMiddleware (ReqBody ty a -> b) where
+  type MiddlewareMonad (ReqBody ty a -> b) = MiddlewareMonad b
+  toMiddlewareInfo = addBodyInfo @ty @a . toMiddlewareInfo @b
+  toMiddlewareFun f = \fun -> withBody @ty (\body -> toMiddlewareFun (f (ReqBody body)) fun)
 
 -- header
-instance (FromHttpApiData a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (Header sym a -> b) where
+instance (FromHttpApiData a, ToParamSchema a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (Header sym a -> b) where
   type MiddlewareMonad (Header sym a -> b) = MiddlewareMonad b
-  toMiddleware f = \fun -> withHeader (getName @sym) (\a -> toMiddleware (f (Header a)) fun)
+  toMiddlewareInfo = addHeaderInfo @sym @a . toMiddlewareInfo @b
+  toMiddlewareFun f = \fun -> withHeader (getName @sym) (\a -> toMiddlewareFun (f (Header a)) fun)
 
 -- optional header
-instance (FromHttpApiData a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (OptionalHeader sym a -> b) where
+instance (FromHttpApiData a, ToParamSchema a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (OptionalHeader sym a -> b) where
   type MiddlewareMonad (OptionalHeader sym a -> b) = MiddlewareMonad b
-  toMiddleware f = \fun -> withOptionalHeader (getName @sym) (\a -> toMiddleware (f (OptionalHeader a)) fun)
+  toMiddlewareInfo = addOptionalHeaderInfo @sym @a . toMiddlewareInfo @b
+  toMiddlewareFun f = \fun -> withOptionalHeader (getName @sym) (\a -> toMiddlewareFun (f (OptionalHeader a)) fun)
 
 -- query
-instance (FromHttpApiData a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (Query sym a -> b) where
+instance (FromHttpApiData a, ToParamSchema a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (Query sym a -> b) where
   type MiddlewareMonad (Query sym a -> b) = MiddlewareMonad b
-  toMiddleware f = \fun -> withQuery (getName @sym) (\a -> toMiddleware (f (Query a)) fun)
+  toMiddlewareInfo = addQueryInfo @sym @a . toMiddlewareInfo @b
+  toMiddlewareFun f = \fun -> withQuery (getName @sym) (\a -> toMiddlewareFun (f (Query a)) fun)
 
 -- optional query
-instance (FromHttpApiData a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (Optional sym a -> b) where
+instance (FromHttpApiData a, ToParamSchema a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (Optional sym a -> b) where
   type MiddlewareMonad (Optional sym a -> b) = MiddlewareMonad b
-  toMiddleware f = \fun -> withOptional (getName @sym) (\a -> toMiddleware (f (Optional a)) fun)
+  toMiddlewareInfo = addOptionalInfo @sym @a . toMiddlewareInfo @b
+  toMiddlewareFun f = \fun -> withOptional (getName @sym) (\a -> toMiddlewareFun (f (Optional a)) fun)
+
+-- capture
+instance (FromHttpApiData a, ToParamSchema a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (Capture sym a -> b) where
+  type MiddlewareMonad (Capture sym a -> b) = MiddlewareMonad b
+  toMiddlewareInfo = addCaptureInfo @sym @a . toMiddlewareInfo @b
+  toMiddlewareFun f = \fun -> withCapture (getName @sym) (\a -> toMiddlewareFun (f (Capture a)) fun)
 
 -- query flag
 instance (ToMiddleware b, KnownSymbol sym) => ToMiddleware (QueryFlag sym -> b) where
   type MiddlewareMonad (QueryFlag sym -> b) = MiddlewareMonad b
-  toMiddleware f = \fun -> withQueryFlag (getName @sym) (\a -> toMiddleware (f (QueryFlag a)) fun)
-
--- capture
-instance (FromHttpApiData a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (Capture sym a -> b) where
-  type MiddlewareMonad (Capture sym a -> b) = MiddlewareMonad b
-  toMiddleware f = \fun -> withCapture (getName @sym) (\a -> toMiddleware (f (Capture a)) fun)
+  toMiddlewareInfo = addQueryFlagInfo @sym . toMiddlewareInfo @b
+  toMiddlewareFun f = \fun -> withQueryFlag (getName @sym) (\a -> toMiddlewareFun (f (QueryFlag a)) fun)
 
 ---------------------------------------------
 -- specific middlewares
 
 -- | Prepends action to the server
-prependServerAction :: (Monad m) => m () -> Middleware m
-prependServerAction act f = \req -> do
-  act
-  f req
+prependServerAction :: forall m. (MonadIO m) => m () -> Middleware m
+prependServerAction act = toMiddleware go
+  where
+    go :: ServerFun m -> ServerFun m
+    go f = \req -> do
+      act
+      f req
 
 -- | Post appends action to the server
-appendServerAction :: (Monad m) => m () -> Middleware m
-appendServerAction act f = \req -> do
-  resp <- f req
-  act
-  pure resp
+appendServerAction :: forall m. (MonadIO m) => m () -> Middleware m
+appendServerAction act = toMiddleware go
+  where
+    go :: ServerFun m -> ServerFun m
+    go f = \req -> do
+      resp <- f req
+      act
+      pure resp
 
 -- | Applies transformation to the response
-processResponse :: (m (Maybe Response) -> m (Maybe Response)) -> Middleware m
-processResponse act f = \req -> do
-  act (f req)
+processResponse :: forall m. (MonadIO m) => (m (Maybe Response) -> m (Maybe Response)) -> Middleware m
+processResponse act = toMiddleware go
+  where
+    go :: ServerFun m -> ServerFun m
+    go f = \req -> do
+      act (f req)
 
 ---------------------------------------------
 -- utils

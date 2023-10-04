@@ -1,7 +1,7 @@
 .PHONY: build test run
 
 build:
-	stack build  
+	stack build 
 
 test:
 	stack test
