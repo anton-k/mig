@@ -46,6 +46,7 @@ extra-deps:
   - ../../mig-server
   - ../../mig-swagger-ui
   - ../../mig-wai
+  - ../../mig-extra
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

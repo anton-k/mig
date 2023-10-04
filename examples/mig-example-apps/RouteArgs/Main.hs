@@ -7,9 +7,8 @@ module Main (
   main,
 ) where
 
-import Mig.Core.Trace qualified as Trace
+import Mig.Extra.Middleware.Trace qualified as Trace
 import Mig.Json.IO
-import Mig.Swagger
 
 main :: IO ()
 main = do
@@ -21,7 +20,7 @@ main = do
 -- | Let's define a server
 routeArgs :: Server IO
 routeArgs =
-  Trace.logHttp Trace.V2 $
+  withTrace $
     "hello"
       /. "api"
       /. mconcat
@@ -40,6 +39,8 @@ routeArgs =
         , -- json body as input
           "add-json" /. handleAddJson
         ]
+  where
+    withTrace = applyMiddleware (Trace.logHttp Trace.V2)
 
 -- | Simple getter
 helloWorld :: Get (Resp Text)
