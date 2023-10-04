@@ -46,7 +46,6 @@ module Mig.Server.Common (
   Query (..),
   QueryFlag (..),
   Optional (..),
-  ReqBody (..),
   Header (..),
   PathInfo (..),
   RawRequest (..),

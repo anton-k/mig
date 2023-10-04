@@ -75,6 +75,7 @@ fromRequest maxSize req = do
       , method = Wai.requestMethod req
       , readBody = readBodyCache getBody bodyCache
       , capture = mempty
+      , isSecure = Wai.isSecure req
       }
   where
     getBody =

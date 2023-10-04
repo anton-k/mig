@@ -15,10 +15,11 @@ module Mig.IO (
   RespOr,
 
   -- * re-exports
+  Body (..),
   module X,
 ) where
 
-import Mig (Resp (..), RespOr)
+import Mig (Body (..), Resp (..), RespOr)
 import Mig.Server.Common as X
 
 type Get a = Send GET IO a

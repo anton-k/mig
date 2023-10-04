@@ -43,6 +43,8 @@ module Mig.Core.Class.Middleware (
   prependServerAction,
   appendServerAction,
   processResponse,
+  whenSecure,
+  processNoResponse,
 ) where
 
 import Control.Monad.IO.Class
@@ -54,6 +56,7 @@ import GHC.TypeLits
 import Web.HttpApiData
 
 import Mig.Core.Class.MediaType
+import Mig.Core.Class.Response
 import Mig.Core.Class.Route
 import Mig.Core.Server
 import Mig.Core.ServerFun
@@ -104,16 +107,22 @@ instance (ToMiddleware a) => ToMiddleware (PathInfo -> a) where
   toMiddlewareInfo = id
   toMiddlewareFun f = \fun -> withPathInfo (\path -> toMiddlewareFun (f (PathInfo path)) fun)
 
+-- path info
+instance (ToMiddleware a) => ToMiddleware (IsSecure -> a) where
+  type MiddlewareMonad (IsSecure -> a) = MiddlewareMonad a
+  toMiddlewareInfo = id
+  toMiddlewareFun f = \fun -> \req -> (toMiddlewareFun (f (IsSecure req.isSecure)) fun) req
+
 instance (ToMiddleware a) => ToMiddleware (RawRequest -> a) where
   type MiddlewareMonad (RawRequest -> a) = MiddlewareMonad a
   toMiddlewareInfo = id
   toMiddlewareFun f = \fun -> \req -> (toMiddlewareFun (f (RawRequest req)) fun) req
 
 -- request body
-instance (FromReqBody ty a, ToSchema a, ToMiddleware b) => ToMiddleware (ReqBody ty a -> b) where
-  type MiddlewareMonad (ReqBody ty a -> b) = MiddlewareMonad b
+instance (FromReqBody ty a, ToSchema a, ToMiddleware b) => ToMiddleware (Body ty a -> b) where
+  type MiddlewareMonad (Body ty a -> b) = MiddlewareMonad b
   toMiddlewareInfo = addBodyInfo @ty @a . toMiddlewareInfo @b
-  toMiddlewareFun f = \fun -> withBody @ty (\body -> toMiddlewareFun (f (ReqBody body)) fun)
+  toMiddlewareFun f = \fun -> withBody @ty (\body -> toMiddlewareFun (f (Body body)) fun)
 
 -- header
 instance (FromHttpApiData a, ToParamSchema a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (Header sym a -> b) where
@@ -180,6 +189,27 @@ processResponse act = toMiddleware go
     go :: ServerFun m -> ServerFun m
     go f = \req -> do
       act (f req)
+
+-- | Execute request only if it is secure (made with SSL connection)
+whenSecure :: forall m. (MonadIO m) => Middleware m
+whenSecure = toMiddleware go
+  where
+    go :: IsSecure -> MiddlewareFun m
+    go (IsSecure isSecure) fun = \req -> do
+      if isSecure
+        then fun req
+        else pure Nothing
+
+-- | Sets default response if server response with Nothing. If it can not handle the request.
+processNoResponse :: forall m a. (MonadIO m, IsResp a) => m a -> Middleware m
+processNoResponse defaultResponse = toMiddleware go
+  where
+    go :: MiddlewareFun m
+    go fun = \req -> do
+      mResp <- fun req
+      case mResp of
+        Just resp -> pure (Just resp)
+        Nothing -> Just . toResponse <$> defaultResponse
 
 ---------------------------------------------
 -- utils

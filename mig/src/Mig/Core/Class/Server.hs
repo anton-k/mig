@@ -49,8 +49,8 @@ instance (MonadIO m, IsResp a, IsMethod method) => ToServer (Send method m a) wh
 
 -- inputs
 
-instance (ToSchema a, FromReqBody media a, ToRoute b) => ToServer (ReqBody media a -> b) where
-  type ServerMonad (ReqBody media a -> b) = RouteMonad b
+instance (ToSchema a, FromReqBody media a, ToRoute b) => ToServer (Body media a -> b) where
+  type ServerMonad (Body media a -> b) = RouteMonad b
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Query sym a -> b) where

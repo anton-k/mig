@@ -70,6 +70,8 @@ data Request = Request
   -- ^ request method
   , readBody :: IO (Either Text BL.ByteString)
   -- ^ lazy body reader. Error can happen if size is too big (configured on running the server)
+  , isSecure :: Bool
+  -- ^ was this request made over SSL connection
   }
 
 type HeaderMap = Map HeaderName ByteString
