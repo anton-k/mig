@@ -85,8 +85,7 @@ library
     Mig.IO
     Mig.Json
     Mig.Json.IO
-    Mig.Server.Class
-    Mig.Server.Common
+    Mig.Server.Warp
 
   other-modules:      Paths_mig_server
   hs-source-dirs:     src
@@ -111,13 +110,17 @@ library
     , blaze-markup
     , bytestring
     , containers
+    , data-default
     , exceptions
     , http-api-data
     , http-types
     , mig
+    , mig-extra
+    , mig-swagger-ui
     , mig-wai
     , mtl
     , openapi3
     , text
+    , warp
 
   default-language:   GHC2021

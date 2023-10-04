@@ -31,11 +31,13 @@ import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Data.Time
 import Data.Yaml qualified as Yaml
-import Mig.Core.Server
-import Mig.Core.Types.Http
 import Network.HTTP.Media.RenderHeader (renderHeader)
 import Network.HTTP.Types.Status (Status (..))
 import System.Time.Extra
+
+import Mig.Core.Class.Middleware
+import Mig.Core.Class.Route
+import Mig.Core.Types.Http
 
 -- | Verbosity level of echo prints
 data Verbosity
@@ -57,27 +59,26 @@ ifLevel current level vals
 -------------------------------------------------------------------------------------
 -- through
 
-logHttp :: (MonadIO m) => Verbosity -> Server m -> Server m
-logHttp verbosity = logResp verbosity . logReq verbosity
+logHttp :: (MonadIO m) => Verbosity -> Middleware m
+logHttp verbosity = logResp verbosity <> logReq verbosity
 
-logHttpBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Server m -> Server m
-logHttpBy printer verbosity = logRespBy printer verbosity . logReqBy printer verbosity
+logHttpBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Middleware m
+logHttpBy printer verbosity = logRespBy printer verbosity <> logReqBy printer verbosity
 
 -------------------------------------------------------------------------------------
 -- request
 
-logReq :: (MonadIO m) => Verbosity -> Server m -> Server m
+logReq :: (MonadIO m) => Verbosity -> Middleware m
 logReq = logReqBy defaultPrinter
 
-logReqBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Server m -> Server m
-logReqBy printer verbosity = mapServerFun $ \f -> \req -> do
+logReqBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Middleware m
+logReqBy printer verbosity = toMiddleware $ \(RawRequest req) -> prependServerAction $ do
   when (verbosity > V0) $ do
     reqTrace <- liftIO $ do
       eBody <- req.readBody
       now <- getCurrentTime
       pure $ ppReq verbosity (Just now) eBody req
     printer reqTrace
-  f req
 
 ppReq :: Verbosity -> Maybe UTCTime -> Either Text BL.ByteString -> Request -> Json.Value
 ppReq verbosity now body req =
@@ -119,16 +120,19 @@ ppReq verbosity now body req =
 -------------------------------------------------------------------------------------
 -- response
 
-logResp :: (MonadIO m) => Verbosity -> Server m -> Server m
+logResp :: (MonadIO m) => Verbosity -> Middleware m
 logResp = logRespBy defaultPrinter
 
-logRespBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Server m -> Server m
-logRespBy printer verbosity = mapServerFun $ \f -> \req -> do
-  (dur, resp) <- duration (f req)
-  when (verbosity > V0) $ do
-    now <- liftIO getCurrentTime
-    mapM_ (printer . ppResp verbosity now dur req) resp
-  pure resp
+logRespBy :: forall m. (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Middleware m
+logRespBy printer verbosity = toMiddleware go
+  where
+    go :: MiddlewareFun m
+    go = \f -> \req -> do
+      (dur, resp) <- duration (f req)
+      when (verbosity > V0) $ do
+        now <- liftIO getCurrentTime
+        mapM_ (printer . ppResp verbosity now dur req) resp
+      pure resp
 
 ppResp :: Verbosity -> UTCTime -> Seconds -> Request -> Response -> Json.Value
 ppResp verbosity now dur req resp =

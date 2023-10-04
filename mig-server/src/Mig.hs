@@ -105,11 +105,9 @@ module Mig (
   badResponse,
   ServerFun,
   handleRespError,
-
-  -- * Run
-
   -- | Run server application
   runServer,
+  runServer',
   ServerConfig (..),
   toApplication,
 
@@ -138,10 +136,20 @@ module Mig (
   describeInputs,
   setSummary,
   module X,
+
+  -- ** Swagger
+  withSwagger,
+  swagger,
+  DefaultInfo (..),
+  addDefaultInfo,
+  writeOpenApi,
+  printOpenApi,
 ) where
 
 -- common codecs and types
+
 import Data.Aeson as X (FromJSON (..), ToJSON (..))
+import Data.Default as X
 import Data.OpenApi as X (OpenApi, ToParamSchema (..), ToSchema (..))
 import Data.Text as X (Text)
 import GHC.Generics as X (Generic)
@@ -151,20 +159,7 @@ import Text.Blaze.Html as X (Html, ToMarkup (..))
 import Web.FormUrlEncoded as X
 import Web.HttpApiData as X
 
-import Control.Exception (Exception)
-import Control.Monad.Catch (MonadCatch, try)
 import Mig.Core
-import Mig.Server.Class
 import Mig.Server.Wai
-
-handleRespError ::
-  forall a m.
-  (MonadCatch m, Exception a) =>
-  (a -> m (Maybe Response)) ->
-  Server m ->
-  Server m
-handleRespError handle = mapServerFun $ \f -> \req -> do
-  eResult <- try @m @a (f req)
-  case eResult of
-    Right res -> pure res
-    Left err -> handle err
+import Mig.Server.Warp
+import Mig.Swagger

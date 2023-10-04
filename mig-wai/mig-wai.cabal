@@ -48,6 +48,5 @@ library
     , mig
     , text
     , wai
-    , warp
 
   default-language:   GHC2021

@@ -85,6 +85,7 @@ dependencies:
 - aeson
 - base >= 4.7 && < 5
 - mig
+- mig-extra
 - mig-wai
 - blaze-markup
 - http-types
@@ -96,6 +97,9 @@ dependencies:
 - http-api-data
 - openapi3
 - blaze-html
+- warp
+- mig-swagger-ui
+- data-default
 
 ghc-options:
 - -Wall

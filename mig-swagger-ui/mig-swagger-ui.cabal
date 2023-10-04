@@ -68,7 +68,6 @@ library
     , http-api-data
     , lens
     , mig
-    , mig-server
     , mtl
     , openapi3
     , text

@@ -2,8 +2,6 @@ module Mig.Server.Wai (
   ServerConfig (..),
   Kilobytes,
   toApplication,
-  runServer,
-  module X,
 ) where
 
 import Control.Monad.Catch
@@ -17,15 +15,8 @@ import Data.Sequence (Seq (..), (|>))
 import Data.Sequence qualified as Seq
 import Data.Text (Text)
 import Network.Wai qualified as Wai
-import Network.Wai.Handler.Warp qualified as Warp
 
-import Mig.Core.Api as X (Api (..), Path (..), PathItem (..))
-import Mig.Core.Class.Route as X
-import Mig.Core.Class.Server as X
-import Mig.Core.Server as X
-import Mig.Core.ServerFun (handleError)
-import Mig.Core.Types (Request (..), Response (..), ResponseBody (..), ToText (..), badRequest)
-import Mig.Core.Types.Info as X
+import Mig.Core
 
 -- | Size of the input body
 type Kilobytes = Int
@@ -35,16 +26,11 @@ data ServerConfig = ServerConfig
   { maxBodySize :: Maybe Kilobytes
   }
 
-runServer :: Int -> Server IO -> IO ()
-runServer port server = Warp.run port (toApplication config server)
-  where
-    config = ServerConfig{maxBodySize = Nothing}
-
 -- | Convert server to WAI-application
 toApplication :: ServerConfig -> Server IO -> Wai.Application
-toApplication config server req processResponse = do
+toApplication config server req procResponse = do
   mResp <- handleError onErr (fromServer server) =<< fromRequest config.maxBodySize req
-  processResponse $ toWaiResponse $ fromMaybe noResult mResp
+  procResponse $ toWaiResponse $ fromMaybe noResult mResp
   where
     noResult = badRequest @Text ("Server produces nothing" :: Text)
 
