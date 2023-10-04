@@ -3,7 +3,7 @@ Also we can use real logging functions with ***By versions.
 Simple variants are only for manual testing. It prints to stdout
 with no ordering of the concurrent prints.
 -}
-module Mig.Core.Trace (
+module Mig.Extra.Middleware.Trace (
   logReq,
   logResp,
   logReqBy,

@@ -32,6 +32,7 @@ library
     Mig.Extra.Json
     Mig.Extra.Json.IO
     Mig.Extra.Middleware.Auth
+    Mig.Extra.Middleware.Trace
     Mig.Extra.Server.Common
 
   other-modules:      Paths_mig_extra
@@ -41,7 +42,9 @@ library
     DataKinds
     DerivingStrategies
     DuplicateRecordFields
+    LambdaCase
     OverloadedRecordDot
+    OverloadedStrings
     TypeFamilies
 
   ghc-options:
@@ -53,11 +56,17 @@ library
     , aeson
     , base >=4.7 && <5
     , blaze-html
+    , bytestring
+    , case-insensitive
+    , containers
+    , extra
     , http-api-data
     , http-media
     , http-types
     , mig
     , openapi3
     , text
+    , time
+    , yaml
 
   default-language:   GHC2021

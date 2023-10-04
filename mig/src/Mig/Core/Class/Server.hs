@@ -12,7 +12,6 @@ module Mig.Core.Class.Server (
 import Control.Exception (Exception)
 import Control.Monad.Catch (MonadCatch, try)
 import Control.Monad.Except
-import Control.Monad.IO.Class
 import Control.Monad.Reader
 import Data.Kind
 import Data.OpenApi (ToParamSchema, ToSchema)

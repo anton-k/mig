@@ -25,7 +25,9 @@ default-extensions:
   - TypeFamilies
   - DataKinds
   - OverloadedRecordDot
+  - OverloadedStrings
   - DuplicateRecordFields
+  - LambdaCase
 
 dependencies:
 - base >= 4.7 && < 5
@@ -37,6 +39,12 @@ dependencies:
 - text
 - openapi3
 - aeson
+- yaml
+- time
+- containers
+- case-insensitive
+- bytestring
+- extra
 
 ghc-options:
 - -Wall
