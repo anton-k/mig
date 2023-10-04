@@ -13,7 +13,6 @@ module Mig.Server.Common (
   FormUrlEncoded,
   ToServer (..),
   ToRoute (..),
-  ToRouteInfo (..),
   MediaType,
   ToMediaType (..),
   ToRespBody (..),
@@ -60,7 +59,8 @@ module Mig.Server.Common (
   staticFiles,
 
   -- ** Middlewares
-  Middleware,
+  Middleware (..),
+  MiddlewareFun,
   ToMiddleware (..),
   applyMiddleware,
   prependServerAction,

@@ -57,9 +57,12 @@ import Mig.Core.Types
 import Network.HTTP.Types.Method
 import Web.HttpApiData
 
-class (MonadIO (RouteMonad a), ToRouteInfo a) => ToRoute a where
+class (MonadIO (RouteMonad a)) => ToRoute a where
   -- | Underyling server monad
   type RouteMonad a :: Type -> Type
+
+  -- | Update API info
+  toRouteInfo :: RouteInfo -> RouteInfo
 
   -- | Convert to route
   toRouteFun :: a -> ServerFun (RouteMonad a)
@@ -82,11 +85,9 @@ toRoute a =
 -------------------------------------------------------------------------------------
 -- identity instances
 
-instance ToRouteInfo (Route m) where
-  toRouteInfo = id
-
 instance (MonadIO m) => ToRoute (Route m) where
   type RouteMonad (Route m) = m
+  toRouteInfo = id
   toRouteFun = (.run)
 
 -------------------------------------------------------------------------------------
@@ -95,91 +96,74 @@ instance (MonadIO m) => ToRoute (Route m) where
 -- | Generic case for request body
 newtype ReqBody media a = ReqBody a
 
-instance (ToSchema a, ToMediaType ty, ToRouteInfo b) => ToRouteInfo (ReqBody ty a -> b) where
-  toRouteInfo = addRouteInput (ReqBodyInput (toMediaType @ty) (toSchemaDefs @a)) . toRouteInfo @b
-
 instance (ToSchema a, FromReqBody media a, ToRoute b) => ToRoute (ReqBody media a -> b) where
   type RouteMonad (ReqBody media a -> b) = RouteMonad b
 
+  toRouteInfo = addBodyInfo @media @a . toRouteInfo @b
   toRouteFun f = withBody @media (toRouteFun . f . ReqBody)
 
 newtype Query (sym :: Symbol) a = Query a
 
-instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Query sym a -> b) where
-  toRouteInfo = addRouteInput (QueryInput (IsRequired True) (getName @sym) (toParamSchema (Proxy @a))) . toRouteInfo @b
-
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (Query sym a -> b) where
   type RouteMonad (Query sym a -> b) = RouteMonad b
 
+  toRouteInfo = addQueryInfo @sym @a . toRouteInfo @b
   toRouteFun f = withQuery (getName @sym) (toRouteFun . f . Query)
 
 newtype Optional (sym :: Symbol) a = Optional (Maybe a)
 
-instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Optional sym a -> b) where
-  toRouteInfo = addRouteInput (QueryInput (IsRequired False) (getName @sym) (toParamSchema (Proxy @a))) . toRouteInfo @b
-
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (Optional sym a -> b) where
   type RouteMonad (Optional sym a -> b) = RouteMonad b
 
+  toRouteInfo = addOptionalInfo @sym @a . toRouteInfo @b
   toRouteFun f = withOptional (getName @sym) (toRouteFun . f . Optional)
 
 newtype QueryFlag (sym :: Symbol) = QueryFlag Bool
 
-instance (KnownSymbol sym, ToRouteInfo b) => ToRouteInfo (QueryFlag sym -> b) where
-  toRouteInfo = addRouteInput (QueryFlagInput (getName @sym)) . toRouteInfo @b
-
 instance (ToRoute b, KnownSymbol sym) => ToRoute (QueryFlag sym -> b) where
   type RouteMonad (QueryFlag sym -> b) = RouteMonad b
 
+  toRouteInfo = addQueryFlagInfo @sym . toRouteInfo @b
   toRouteFun f = withQueryFlag (getName @sym) (toRouteFun . f . QueryFlag)
 
 newtype Capture (sym :: Symbol) a = Capture a
 
-instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Capture sym a -> b) where
-  toRouteInfo = addRouteInput (CaptureInput (getName @sym) (toParamSchema (Proxy @a))) . toRouteInfo @b
-
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (Capture sym a -> b) where
   type RouteMonad (Capture sym a -> b) = RouteMonad b
 
+  toRouteInfo = addCaptureInfo @sym @a . toRouteInfo @b
   toRouteFun f = withCapture (getName @sym) (toRouteFun . f . Capture)
 
 newtype Header (sym :: Symbol) a = Header a
 
-instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (Header sym a -> b) where
-  toRouteInfo = addRouteInput (HeaderInput (IsRequired True) (getName @sym) (toParamSchema (Proxy @a))) . toRouteInfo @b
-
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (Header sym a -> b) where
   type RouteMonad (Header sym a -> b) = RouteMonad b
 
+  toRouteInfo = addHeaderInfo @sym @a . toRouteInfo @b
   toRouteFun f = withHeader (getName @sym) (toRouteFun . f . Header)
 
 newtype OptionalHeader (sym :: Symbol) a = OptionalHeader (Maybe a)
 
-instance (KnownSymbol sym, ToParamSchema a, ToRouteInfo b) => ToRouteInfo (OptionalHeader sym a -> b) where
-  toRouteInfo = addRouteInput (HeaderInput (IsRequired False) (getName @sym) (toParamSchema (Proxy @a))) . toRouteInfo @b
-
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (OptionalHeader sym a -> b) where
   type RouteMonad (OptionalHeader sym a -> b) = RouteMonad b
 
+  toRouteInfo = addOptionalHeaderInfo @sym @a . toRouteInfo @b
   toRouteFun f = withOptionalHeader (getName @sym) (toRouteFun . f . OptionalHeader)
 
 -- | Reads current path info
 newtype PathInfo = PathInfo [Text]
 
-instance (ToRouteInfo b) => ToRouteInfo (PathInfo -> b) where
-  toRouteInfo = toRouteInfo @b
-
 instance (ToRoute b) => ToRoute (PathInfo -> b) where
   type RouteMonad (PathInfo -> b) = RouteMonad b
+  toRouteInfo = toRouteInfo @b
   toRouteFun f = withPathInfo (toRouteFun . f . PathInfo)
 
+-- | Read low-level request. Note that it does not affect the API schema
 newtype RawRequest = RawRequest Request
-
-instance (ToRouteInfo b) => ToRouteInfo (RawRequest -> b) where
-  toRouteInfo = toRouteInfo @b
 
 instance (ToRoute b) => ToRoute (RawRequest -> b) where
   type RouteMonad (RawRequest -> b) = RouteMonad b
+  toRouteInfo = toRouteInfo @b
   toRouteFun f = \req -> toRouteFun (f (RawRequest req)) req
 
 -------------------------------------------------------------------------------------
@@ -232,11 +216,9 @@ instance IsMethod TRACE where
 
 newtype Send method m a = Send {unSend :: m a}
 
-instance {-# OVERLAPPABLE #-} (IsMethod method, IsResp a) => ToRouteInfo (Send method m a) where
-  toRouteInfo = setMethod (toMethod @method) (getMedia @a)
-
 instance {-# OVERLAPPABLE #-} (MonadIO m, IsResp a, IsMethod method) => ToRoute (Send method m a) where
   type RouteMonad (Send method m a) = m
+  toRouteInfo = setMethod (toMethod @method) (getMedia @a)
   toRouteFun (Send a) = sendResponse $ toResponse <$> a
 
 ---------------------------------------------

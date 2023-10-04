@@ -17,8 +17,16 @@ module Mig.Core.Types.Info (
   setMethod,
   setJsonMethod,
   emptyRouteInfo,
-  ToRouteInfo (..),
   describeInfoInputs,
+
+  -- * api updates
+  addBodyInfo,
+  addHeaderInfo,
+  addOptionalHeaderInfo,
+  addQueryInfo,
+  addQueryFlagInfo,
+  addOptionalInfo,
+  addCaptureInfo,
 ) where
 
 import Data.List.Extra (firstJust)
@@ -27,7 +35,9 @@ import Data.Maybe
 import Data.OpenApi
 import Data.OpenApi.Declare (runDeclare)
 import Data.Proxy
+import Data.String
 import Data.Text (Text)
+import GHC.TypeLits
 import Mig.Core.Class.MediaType
 import Network.HTTP.Types.Method
 import Network.HTTP.Types.Status
@@ -148,5 +158,32 @@ setJsonMethod method mediaType apiSchema routeInfo =
     , output = RouteOutput routeInfo.output.status mediaType apiSchema
     }
 
-class ToRouteInfo a where
-  toRouteInfo :: RouteInfo -> RouteInfo
+addParamBy :: forall sym a. (KnownSymbol sym, ToParamSchema a) => (Text -> Schema -> RouteInput) -> RouteInfo -> RouteInfo
+addParamBy cons = addRouteInput (cons (getName @sym) (toParamSchema (Proxy @a)))
+
+addHeaderInfo :: forall sym a. (KnownSymbol sym, ToParamSchema a) => RouteInfo -> RouteInfo
+addHeaderInfo = addParamBy @sym @a (HeaderInput (IsRequired True))
+
+addOptionalHeaderInfo :: forall sym a. (KnownSymbol sym, ToParamSchema a) => RouteInfo -> RouteInfo
+addOptionalHeaderInfo = addParamBy @sym @a (HeaderInput (IsRequired False))
+
+addQueryInfo :: forall sym a. (KnownSymbol sym, ToParamSchema a) => RouteInfo -> RouteInfo
+addQueryInfo = addParamBy @sym @a (QueryInput (IsRequired True))
+
+addOptionalInfo :: forall sym a. (KnownSymbol sym, ToParamSchema a) => RouteInfo -> RouteInfo
+addOptionalInfo = addParamBy @sym @a (QueryInput (IsRequired False))
+
+addCaptureInfo :: forall sym a. (KnownSymbol sym, ToParamSchema a) => RouteInfo -> RouteInfo
+addCaptureInfo = addParamBy @sym @a CaptureInput
+
+addQueryFlagInfo :: forall sym. (KnownSymbol sym) => RouteInfo -> RouteInfo
+addQueryFlagInfo = addRouteInput (QueryFlagInput (getName @sym))
+
+addBodyInfo :: forall ty a. (ToMediaType ty, ToSchema a) => RouteInfo -> RouteInfo
+addBodyInfo = addRouteInput (ReqBodyInput (toMediaType @ty) (toSchemaDefs @a))
+
+---------------------------------------------
+-- utils
+
+getName :: forall sym a. (KnownSymbol sym, IsString a) => a
+getName = fromString (symbolVal (Proxy @sym))

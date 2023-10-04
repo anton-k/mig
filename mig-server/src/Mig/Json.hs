@@ -49,11 +49,10 @@ newtype RespOr err a = RespOr (Core.RespOr Json err a)
 -- | Special case for ReqBody with JSON.
 newtype Body a = Body a
 
-instance (ToSchema a, ToRouteInfo b) => ToRouteInfo (Body a -> b) where
-  toRouteInfo = toRouteInfo @(ReqBody Json a -> b)
-
 instance (ToSchema a, FromJSON a, ToRoute b) => ToRoute (Body a -> b) where
   type RouteMonad (Body a -> b) = RouteMonad b
+
+  toRouteInfo = toRouteInfo @(ReqBody Json a -> b)
 
   toRouteFun f =
     (toRouteFun :: ((ReqBody Json a -> b) -> ServerFun (RouteMonad b)))
@@ -65,9 +64,11 @@ instance (ToSchema a, FromJSON a, ToRoute b) => ToServer (Body a -> b) where
     (toServer :: ((ReqBody Json a -> b) -> Server (RouteMonad b)))
       (\(ReqBody a) -> f (Body a))
 
-instance (FromJSON a, ToMiddleware b) => ToMiddleware (Body a -> b) where
+instance (FromJSON a, ToSchema a, ToMiddleware b) => ToMiddleware (Body a -> b) where
   type MiddlewareMonad (Body a -> b) = MiddlewareMonad b
 
-  toMiddleware f =
-    (toMiddleware :: ((ReqBody Json a -> b) -> Middleware (MiddlewareMonad b)))
+  toMiddlewareInfo = toMiddlewareInfo @(ReqBody Json a -> b)
+
+  toMiddlewareFun f =
+    (toMiddlewareFun :: ((ReqBody Json a -> b) -> MiddlewareFun (MiddlewareMonad b)))
       (\(ReqBody a) -> f (Body a))
