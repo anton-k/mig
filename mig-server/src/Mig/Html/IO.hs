@@ -14,9 +14,11 @@ module Mig.Html.IO (
   RespOr,
 
   -- * re-exports
+  Body (..),
   module X,
 ) where
 
+import Mig.Core (Body (..))
 import Mig.Html (Resp (..), RespOr)
 import Mig.Server.Common as X
 

@@ -8,7 +8,7 @@ module Mig.Core.Class.Route (
   ServerFun,
 
   -- * Inputs
-  ReqBody (..),
+  Body (..),
   Query (..),
   QueryFlag (..),
   Optional (..),
@@ -17,6 +17,7 @@ module Mig.Core.Class.Route (
   OptionalHeader (..),
   PathInfo (..),
   RawRequest (..),
+  IsSecure (..),
 
   -- * Output methods
   Send (..),
@@ -94,13 +95,13 @@ instance (MonadIO m) => ToRoute (Route m) where
 -- request inputs
 
 -- | Generic case for request body
-newtype ReqBody media a = ReqBody a
+newtype Body media a = Body a
 
-instance (ToSchema a, FromReqBody media a, ToRoute b) => ToRoute (ReqBody media a -> b) where
-  type RouteMonad (ReqBody media a -> b) = RouteMonad b
+instance (ToSchema a, FromReqBody media a, ToRoute b) => ToRoute (Body media a -> b) where
+  type RouteMonad (Body media a -> b) = RouteMonad b
 
   toRouteInfo = addBodyInfo @media @a . toRouteInfo @b
-  toRouteFun f = withBody @media (toRouteFun . f . ReqBody)
+  toRouteFun f = withBody @media (toRouteFun . f . Body)
 
 newtype Query (sym :: Symbol) a = Query a
 
@@ -165,6 +166,14 @@ instance (ToRoute b) => ToRoute (RawRequest -> b) where
   type RouteMonad (RawRequest -> b) = RouteMonad b
   toRouteInfo = toRouteInfo @b
   toRouteFun f = \req -> toRouteFun (f (RawRequest req)) req
+
+-- | Is connection secure (made over SSL)
+data IsSecure = IsSecure Bool
+
+instance (ToRoute b) => ToRoute (IsSecure -> b) where
+  type RouteMonad (IsSecure -> b) = RouteMonad b
+  toRouteInfo = toRouteInfo @b
+  toRouteFun f = \req -> toRouteFun (f (IsSecure req.isSecure)) req
 
 -------------------------------------------------------------------------------------
 -- outputs

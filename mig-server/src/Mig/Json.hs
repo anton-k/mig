@@ -46,29 +46,29 @@ newtype RespOr err a = RespOr (Core.RespOr Json err a)
 
 -- request
 
--- | Special case for ReqBody with JSON.
+-- | Special case for request Body with JSON.
 newtype Body a = Body a
 
 instance (ToSchema a, FromJSON a, ToRoute b) => ToRoute (Body a -> b) where
   type RouteMonad (Body a -> b) = RouteMonad b
 
-  toRouteInfo = toRouteInfo @(ReqBody Json a -> b)
+  toRouteInfo = toRouteInfo @(Core.Body Json a -> b)
 
   toRouteFun f =
-    (toRouteFun :: ((ReqBody Json a -> b) -> ServerFun (RouteMonad b)))
-      (\(ReqBody a) -> f (Body a))
+    (toRouteFun :: ((Core.Body Json a -> b) -> ServerFun (RouteMonad b)))
+      (\(Core.Body a) -> f (Body a))
 
 instance (ToSchema a, FromJSON a, ToRoute b) => ToServer (Body a -> b) where
   type ServerMonad (Body a -> b) = RouteMonad b
   toServer f =
-    (toServer :: ((ReqBody Json a -> b) -> Server (RouteMonad b)))
-      (\(ReqBody a) -> f (Body a))
+    (toServer :: ((Core.Body Json a -> b) -> Server (RouteMonad b)))
+      (\(Core.Body a) -> f (Body a))
 
 instance (FromJSON a, ToSchema a, ToMiddleware b) => ToMiddleware (Body a -> b) where
   type MiddlewareMonad (Body a -> b) = MiddlewareMonad b
 
-  toMiddlewareInfo = toMiddlewareInfo @(ReqBody Json a -> b)
+  toMiddlewareInfo = toMiddlewareInfo @(Core.Body Json a -> b)
 
   toMiddlewareFun f =
-    (toMiddlewareFun :: ((ReqBody Json a -> b) -> MiddlewareFun (MiddlewareMonad b)))
-      (\(ReqBody a) -> f (Body a))
+    (toMiddlewareFun :: ((Core.Body Json a -> b) -> MiddlewareFun (MiddlewareMonad b)))
+      (\(Core.Body a) -> f (Body a))

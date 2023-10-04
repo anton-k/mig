@@ -16,9 +16,11 @@ module Mig.Html (
   RespOr,
 
   -- * re-exports
+  Body (..),
   module X,
 ) where
 
+import Mig.Core (Body (..))
 import Mig.Core qualified as Core
 import Mig.Server.Common as X
 
