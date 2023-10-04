@@ -31,7 +31,6 @@ dependencies:
 - text
 - lens
 - mig
-- mig-server
 - file-embed-lzma
 - blaze-html
 - blaze-markup

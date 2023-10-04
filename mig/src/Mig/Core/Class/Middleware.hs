@@ -38,6 +38,7 @@ module Mig.Core.Class.Middleware (
   toMiddleware,
   ($:),
   applyMiddleware,
+  RawResponse (..),
 
   -- * specific middlewares
   prependServerAction,
@@ -117,6 +118,16 @@ instance (ToMiddleware a) => ToMiddleware (RawRequest -> a) where
   type MiddlewareMonad (RawRequest -> a) = MiddlewareMonad a
   toMiddlewareInfo = id
   toMiddlewareFun f = \fun -> \req -> (toMiddlewareFun (f (RawRequest req)) fun) req
+
+-- | Read low-level response. Note that it does not affect the API schema
+newtype RawResponse = RawResponse (Maybe Response)
+
+instance (ToMiddleware a) => ToMiddleware (RawResponse -> a) where
+  type MiddlewareMonad (RawResponse -> a) = MiddlewareMonad a
+  toMiddlewareInfo = id
+  toMiddlewareFun f = \fun -> \req -> do
+    resp <- fun req
+    (toMiddlewareFun (f (RawResponse resp)) fun) req
 
 -- request body
 instance (FromReqBody ty a, ToSchema a, ToMiddleware b) => ToMiddleware (Body ty a -> b) where

@@ -1,8 +1,8 @@
 module Mig.Json.IO (
-  -- * re-exports
   module X,
 ) where
 
-import Mig.IO as X (Delete, Get, Head, Options, Patch, Post, Put, Trace)
-import Mig.Json as X (Body (..), Resp, RespOr)
-import Mig.Server.Common as X
+import Mig.Extra.Json.IO as X
+import Mig.Server.Wai as X
+import Mig.Server.Warp as X
+import Mig.Swagger as X

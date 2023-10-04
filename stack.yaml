@@ -33,6 +33,7 @@ packages:
 - mig
   # - mig-client
 - mig-server
+- mig-extra
 - mig-swagger-ui
 - mig-wai
 - mig-rio

@@ -1,0 +1,63 @@
+cabal-version:      2.2
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:               mig-extra
+version:            0.1.0.0
+synopsis:           Extra utils for Mig core library
+description:
+  Please see the README on GitHub at <https://github.com/githubuser/mig-extra#readme>
+
+category:           Web
+homepage:           https://github.com/githubuser/mig-extra#readme
+bug-reports:        https://github.com/githubuser/mig-extra/issues
+author:             Author name here
+maintainer:         example@example.com
+copyright:          2023 Author name here
+license:            BSD-3-Clause
+build-type:         Simple
+extra-source-files: README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/mig-extra
+
+library
+  exposed-modules:
+    Mig.Extra.Html
+    Mig.Extra.Html.IO
+    Mig.Extra.IO
+    Mig.Extra.Json
+    Mig.Extra.Json.IO
+    Mig.Extra.Middleware.Auth
+    Mig.Extra.Server.Common
+
+  other-modules:      Paths_mig_extra
+  autogen-modules:    Paths_mig_extra
+  hs-source-dirs:     src
+  default-extensions:
+    DataKinds
+    DerivingStrategies
+    DuplicateRecordFields
+    OverloadedRecordDot
+    TypeFamilies
+
+  ghc-options:
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wmissing-export-lists
+    -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+
+  build-depends:
+    , aeson
+    , base >=4.7 && <5
+    , blaze-html
+    , http-api-data
+    , http-media
+    , http-types
+    , mig
+    , openapi3
+    , text
+
+  default-language:   GHC2021

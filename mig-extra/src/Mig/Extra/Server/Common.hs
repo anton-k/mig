@@ -1,5 +1,5 @@
 -- | Module for common re-exports
-module Mig.Server.Common (
+module Mig.Extra.Server.Common (
   -- * types
   Server (..),
   Api (..),
@@ -75,13 +75,6 @@ module Mig.Server.Common (
   ServerFun,
   handleRespError,
 
-  -- * Run
-
-  -- | Run server application
-  runServer,
-  ServerConfig (..),
-  toApplication,
-
   -- ** Render
 
   -- | Render Reader-IO monad servers to IO servers.
@@ -106,7 +99,7 @@ module Mig.Server.Common (
   module X,
 ) where
 
-import Mig hiding (
+import Mig.Core hiding (
   Delete,
   Get,
   Head,
