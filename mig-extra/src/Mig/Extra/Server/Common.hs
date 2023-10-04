@@ -62,6 +62,7 @@ module Mig.Extra.Server.Common (
   MiddlewareFun,
   ToMiddleware (..),
   applyMiddleware,
+  ($:),
   prependServerAction,
   appendServerAction,
   processResponse,

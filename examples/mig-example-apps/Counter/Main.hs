@@ -13,12 +13,9 @@ module Main (
   main,
 ) where
 
--- import Json based server
-
 import Control.Monad.Reader
 import Data.IORef
 import Mig.Json
-import Mig.Swagger
 
 main :: IO ()
 main = do
