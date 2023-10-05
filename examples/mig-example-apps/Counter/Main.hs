@@ -19,15 +19,11 @@ import Mig.Json
 
 main :: IO ()
 main = do
+  env <- initEnv
   putStrLn ("The counter server listens on port: " <> show port)
-  runServer port . withSwagger def =<< counter
+  runServer port . withSwagger def =<< (renderServer server env)
   where
     port = 8085
-
--- | render server to IO-based one. We can run only IO-based servers
-counter :: IO (Server IO)
-counter =
-  renderServer server =<< initEnv
 
 -------------------------------------------------------------------------------------
 -- server types
@@ -61,10 +57,9 @@ initEnv = Env <$> newIORef 0
 server :: Server App
 server =
   "counter"
-    /. "api"
     /. mconcat
       [ "get" /. handleGet
-      , "put" /. "*" /. handlePut
+      , "put" /. handlePut
       ]
 
 -- | Get handler. It logs the call and returns current state

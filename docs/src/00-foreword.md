@@ -10,15 +10,19 @@ The main features are:
 
 * easy to use. It has simple design on purpose
 
+* it defines no custom server monads. I promise you
+
 * expressive DSL to compose servers
 
-* type-safe handlers
+* type-safe route handlers and conversions
 
 * handlers are encoded with generic haskell functions
 
 * built on top of WAI and warp server libraries.
 
 * provides Swagger to your server with one-line of code
+
+* relies on standard classes to compose servers. The server is a monoid 
 
 Example of hello world server:
 
