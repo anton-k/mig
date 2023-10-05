@@ -1,6 +1,6 @@
 # Anatomy of the request
 
-For the next example we are going to try all sorts of inputs and outputs
+For the next example we are going to try all sorts of inputs 
 which are possible for the handler. 
 
 ## Useful presets for servers
@@ -105,7 +105,7 @@ and it accepts all sorts of inputs. One of them states:
 > then `Query name value -> a` is also convertible to server
 
 and by this magic as all haskell functions are curried we can use any number of
-queries in the hander. for example if we want greet two persons we can write:
+queries in the handler. For example if we want to greet two persons we can write:
 
 ```haskell
 hello :: Query "personA" Text -> Query "personB" Text -> Get (Resp Text)
@@ -113,7 +113,7 @@ hello (Query nameA) (Query nameB) = Send $
   pure $ ok $ "Hello " <> nameA <> " and " <> nameB   
 ```
 
-Also we can input anything of the instance of classes `FromHttpApiData` and `ToParamSchema`.
+Also we can input any type if it has instance of the classes `FromHttpApiData` and `ToParamSchema`.
 For example let's add two numbers:
 
 ```haskell
@@ -209,7 +209,7 @@ api/v1/{int}/{int}/add-me
 
 ### Json request body
 
-I guess that JSON body as request is going to be the most popular case among all inuts.
+I guess that JSON body as request is going to be the most popular case among all inputs.
 So let's take a closer look at it as it often requires the custom type.
 
 Let's add two numbers and provide input with request body:
@@ -227,7 +227,7 @@ handleAddJson (Body (AddInput a b)) = Send $
   pure $ ok $ a + b
 ```
 
-In the mig body has two type arguments. But as we use Json specification
+In the core mig library the type `Body` has two type arguments. But as we use Json specification
 the first argument for `Mig.Json.IO` as for `Mig.Json` is always `Json`-tag.
 So those modules provide special case alternative for type `Body`. But in the `mig`
 library it uses the same idea as we saw in the query parameter. It is just a 
@@ -256,10 +256,267 @@ create custom derivings for those classes: `deriving-aeson`, `aeson-deriving` an
 So to use JSON request body we can define our own type, derive proper classes and
 we are done.
 
-## Http response
+## Let's build a server
 
-For short explanation sometimes things go bad and we would like to send errors.
-For HTML we use the same type for errors and result values most of the time. It is an Html page.
-But for JSON applications often errors would have different type than values.
-And we have special type of response for that. That is why we would like to keep
-the value type of the `Send` type general and not to restrict it as in HTML case.
+Let's recap on what we have learned and build server
+with various request inputs:
+
+```haskell
+module Main (main) where
+
+import Mig.Json.IO
+
+main :: IO ()
+main = runServer 8085 server
+
+-- | Let's define a server
+server :: Server IO
+server = 
+  "api"
+  /. mconcat
+    -- no args, constnat output
+    [ "hello/world" /. helloWorld
+    , -- required query param and custom header
+      "succ" /. handleSucc
+    , -- optional query param
+      "succ-opt" /. handleSuccOpt
+    , -- several query params
+      "add" /. handleAdd
+    , -- query flag
+      "add-if" /. handleAddIf
+    , -- capture
+      "mul" /. handleMul
+    , -- json body as input
+      "add-json" /. handleAddJson
+    ]
+
+-- | Simple getter
+helloWorld :: Get (Resp Text)
+helloWorld = Send $ do
+  pure $ ok "Hello world!"
+
+newtype TraceId = TraceId Text
+  deriving newtype (FromHttpApiData, ToHttpApiData, ToText, ToParamSchema)
+
+{-| Using several inputs: header argument and required query
+and using conditional output status
+-}
+handleSucc :: Header "Trace-Id" TraceId -> Query "value" Int -> Get (Resp Int)
+handleSucc (Header _traceId) (Query n) = Send $ do
+  pure $ ok (succ n)
+
+-- | Using optional query parameters.
+handleSuccOpt :: Optional "value" Int -> Get (Resp Int)
+handleSuccOpt (Optional n) = Send $ do
+  pure $ case n of
+    Just val -> ok (succ val)
+    Nothing -> ok 0 
+
+{-| Using several query parameters
+-}
+handleAdd :: Query "a" Int -> Query "b" Int -> Get (Resp Int)
+handleAdd (Query a) (Query b) = Send $ do
+  pure $ ok $ a + b
+
+-- | Using query flag if flag is false returns 0
+handleAddIf :: Query "a" Int -> Query "b" Int -> QueryFlag "perform" -> Get (Resp Int)
+handleAddIf (Query a) (Query b) (QueryFlag addFlag) = Send $ do
+  pure $
+    ok $
+      if addFlag
+        then (a + b)
+        else 0
+
+{-| Using capture as arguments. This route expects two arguments
+captured in URL. For example:
+
+> http://localhost:8085/hello/api/mul/3/100
+-}
+handleMul :: Capture "a" Int -> Capture "b" Int -> Get (Resp Int)
+handleMul (Capture a) (Capture b) = Send $ do
+  pure $ ok (a * b)
+
+data AddInput = AddInput
+  { a :: Int
+  , b :: Int
+  }
+  deriving (Generic, ToJSON, FromJSON, ToSchema)
+
+-- | Using JSON as input
+handleAddJson :: Body AddInput -> Post (Resp Int)
+handleAddJson (Body (AddInput a b)) = Send $ do
+  pure $ ok $ a + b
+```
+
+Curls to test the routes:
+
+```
+curl http://localhost:8085/api/hello/world
+
+curl -X 'GET' \
+  'http://localhost:8085/api/succ?value=2' \
+  -H 'accept: application/json' \
+  -H 'Trace-Id: xyz-trace'
+
+curl -X 'GET' \
+  'http://localhost:8085/api/add-if?a=2&b=4&perform=true' \
+  -H 'accept: application/json'
+
+curl -X 'GET' \
+  'http://localhost:8085/api/mul/100/23' \
+  -H 'accept: application/json'
+```
+
+## Adding some goodies to the servers
+
+There are some useful addons that make development of the servers
+much more pleasant. Let's discuss couple of them.
+
+### Add swagger
+
+Making `curl` request can quickly become hard to manage as
+our servers become more complicated. There is OpenAPI standard 
+that defines how to describe HTTP-server API. Also it provides
+Swagger. It is a tool to make it easy to check how server behaves.
+It pprovides an HTTP-client for the server which allows us to 
+query server routes.
+
+Let's add a swagger to our server. Just add this line:
+
+```haskell
+server :: IO
+server = 
+  withSwagger def $ 
+    "api" /. 
+      mcomcat [ {- the rest of the code -} ]
+```
+
+Let's add this line to our example and restart the server.
+By default it creates a route for the server that serves Swagger UI client
+at the path: [http://localhost:8085/swagger-ui/](http://localhost:8085/swagger-ui/).
+It is easy to query the routes with swagger ui.
+
+We can add swagger to any server with function:
+
+```haskell
+withSwagger :: SwaggerConfig m -> Server m -> Server m
+```
+
+We will study the `ServerConfig` in details in one of the next chapters
+but for now the default value whcih is set with `def` from library `data-default`
+is fine.
+
+### Add simple logs to the server
+
+We can look at the request and trsponse data with tracing functions
+which come from library `mig-extra` from the module `Mig.Extra.Middleware.Trace`:
+
+```haskell
+data Verbosity = V0 | V1  | V2 | V3
+
+-- log http requests and responses
+logHttp :: Verbosity -> Middleware m
+
+-- | log requests
+logReq :: Verbosity -> Middleware m
+
+-- | Log responses
+logResp :: Verbosity -> Middleware m
+```
+
+The `Middleware m` is a function that can be applied to all routes of the server
+and modify their behavior. To apply middleware to server we can use functions:
+
+```haskell
+applyMiddleware :: Middleware m -> Server m -> Server m
+
+($:) :: Middleware m -> Server m -> Server m
+```
+
+We show simplified signatures here. The real ones are overloaded by the first argument.
+but we will dicuss middlewares in depth in the separate chapter. For now it's
+ok to assume that those functions are defined in that simplified way.
+
+So let's look at the data that goes through our server:
+
+```haskell
+import Mig.Extra.Middleware.Trace qualified as Trace
+
+...
+
+server = 
+  withSwagger def $ 
+    withTrace $ {-# the rest of the server code #-}
+  where
+    withTrace = applyMiddleware (Trace.logHttp Trace.V2)
+```
+
+Let's restart the server and see what it logs:
+
+```yaml
+log:
+  body: ''
+  headers:
+    accept: application/json
+  method: GET
+  path: api/add?a=12&b=45
+  time: 2023-10-05T16:29:16.262934Z
+  type: http-request
+
+log:
+  body: 57
+  duration: 9.750000000000001e-4
+  headers:
+    content-type: application/json
+  method: GET
+  path: api/add?a=12&b=45
+  status: 200
+  time: 2023-10-05T16:29:16.263903Z
+  type: http-response
+```
+
+This isan easy way to add addhock logs to the application.
+Note that those logs are not aware of concurrency and will 
+report intermingled messages on concurrent queries.
+
+We can add real loggs with more generic versions of the functions
+which accept callback and we can pass the logger function defined in terms
+of one of the standard haskell logging libraries, say `katip` or `fast-logger`:
+
+```haskell
+import Data.Aeson as Json
+
+logHttpBy :: (Json.Value -> m ()) -> Verbosity -> Middleware m
+```
+
+## Summary
+
+We have learned how various parts of the requests can be queries
+with newtype wrappers. There are only handful of them.
+we can query
+
+* `Query name value` - for required queries
+* `Body media value` - for request body
+* `Optional name value` - for optional queries
+* `Header name value` - for required headers
+* `OptionalHeader name value` - for optional headers
+* `Capture name value` - for path captures
+* `QueryFlag` - for booleab query that can be missing in the path (and then it is `false`)
+
+We have learned to use specialized versions for servers which operate
+only in terms of `IO` or `Json`. We can import the module `Mig.Json.IO`
+and our signatures would bcome more simple and specific.
+
+we have learned how by ony-liners we can add to the server some useful features:
+
+* swagger: `(withSwagger def server)` 
+    For calls to the server in the UI  
+
+* trace logs: `(applyMiddleware (logHttp V2))` 
+  To see the data that flows through the server
+
+Both expressions transform servers and have signatures: 
+
+```haskell
+Server m -> Server m
+```

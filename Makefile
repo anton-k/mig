@@ -1,4 +1,4 @@
-.PHONY: build test run
+.PHONY: build test run docs
 
 build:
 	stack build mig-server
@@ -8,3 +8,7 @@ test:
 
 run:
 	stack run
+
+docs:
+	mdbook serve docs
+
