@@ -3,8 +3,6 @@
 Mig is a lightweight and easy to use library to build servers in Haskell.
 It is sort of servant for Simple/Boring Haskell.
 This book is a example driven guide to the library.
-We can build lightweight and composable servers. 
-There are only couple of combinators to assemble servers from parts.
 
 The main features are:
 
@@ -38,7 +36,7 @@ server = "api/v1/hello" /. hello
 
 -- | The handler definition as function
 hello :: Get (Resp Text)
-hello = Get $ pure $ ok "Hello World"
+hello = Send $ pure $ ok "Hello World"
 ```
 
 
@@ -47,13 +45,13 @@ hello = Get $ pure $ ok "Hello World"
 We can install it from hackage. 
 we need to use the library [mig-server](https://hackage.haskell.org/package/mig-server)
 
-So to use with cabal we can:
+With cabal we can install it from Hackage:
 
 ```
 cabal install mig-server --lib
 ```
 
-To use with stack we can link to the repo in extra-deps
+With stack we can link to the repo in extra-deps
 
 ```
 TODO: example here
@@ -66,9 +64,9 @@ There are several libraries:
 - `mig` - core library which defines DSL to build servers with API-schemas and functions to render it to low-level representation. 
 - `mig-extra` - extra addons to the core library
 - `mig-server` - mig core with batteries and functions to run servers on top of warp.
-- `mig-client` - how to build HTTP-clients from the server code
-- `mig-wai` - how to connvert low-level representation to WAI-application
-- `mig-swagger-ui` - how to serve swagger for you app.
+- `mig-client` - HTTP-clients from the server code
+- `mig-wai` - connvert mig servers to WAI-applications
+- `mig-swagger-ui` - serve swagger for you app.
 
 ## Source code for examples
 

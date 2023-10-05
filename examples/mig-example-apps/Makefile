@@ -7,7 +7,7 @@ test:
 	stack test
 
 run:
-	stack run html-mig-example-app
+	stack run route-args-mig-example-app
 	
 run-hello-wrold:
 	stack run hello-world-mig-example-app	

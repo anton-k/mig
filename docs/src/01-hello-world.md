@@ -28,7 +28,7 @@ Let's cover the types first.
 
 ### The server type
 
-The server is an description of both API for our server and low-level function
+The server is a description of both OpenAPI schema for our server and low-level function
 to run it. In the library it is a newtype wrapper:
 
 ```haskell
@@ -45,7 +45,7 @@ It means that all our hadnlers are going to return `IO`-values.
 To bind path "api/v1/hello" to handler `hello` we use function `(/.)`. Let's look at it's type signature:
 
 ```haskell
-(/.) :: (ToServer a) => Api.Path -> a -> Server (ServerMonad a)
+(/.) :: (ToServer a) => Path -> a -> Server (ServerMonad a)
 ```
 
 It expects the `Path` which has instance of class `IsString` that is why we can
@@ -218,7 +218,7 @@ We can add it to the server with monoid method as `Server m` is a `Monoid`:
 ```haskell
 server :: Server IO
 server = 
-  "api/v1/" /.
+  "api/v1" /.
     mconcat
       [ "hello" /. hello
       , "bye" /. bye
@@ -237,7 +237,7 @@ So we have just two functions to build nested trees of servers:
 * `mconcat [a, b, c, d]` - to combine several servers into one
 
 Note that we can have several handlers on the same path if they
-have different methods or media-types for output:
+have different methods or media-types for output or input:
 
 ```haskell
 server = 
@@ -254,8 +254,8 @@ helloPost :: Post IO (Resp Json Text)
 Servers on the same path are also distinguished by:
 
 * http-method
-* media-type of the result 
-* media-type of the request 
+* media-type of the result (value of "Accept" header) 
+* media-type of the request (value of "Content-Type" header)
 
 ### Subtle nuance on Monoid instance for Server
 
@@ -270,10 +270,10 @@ server =
       ]
 ```
 
-There is  asubtle nuance here. The `Server m` is a `Monoid`.
+There is  a subtle nuance here. The `Server m` is a `Monoid`.
 But the value `Send method m a` is not. So we use the function `(/.)`
 which converts the second argument to `Server`. If we want to convert
-we can use the method of the clas `ToServer`:
+we can use the method of the class `ToServer`:
 
 ```haskell
 toServer :: ToServer a => a -> Server (ServerMonad a)

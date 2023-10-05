@@ -20,25 +20,28 @@ main = do
 -- | Let's define a server
 routeArgs :: Server IO
 routeArgs =
-  withTrace $
-    "hello"
-      /. "api"
-      /. mconcat
-        -- no args, constnat output
-        [ "world" /. helloWorld
-        , -- required query param and custom header
-          "succ" /. handleSucc
-        , -- optional query param
-          "succ-opt" /. handleSuccOpt
-        , -- several query params
-          "add" /. handleAdd
-        , -- query flag
-          "add-if" /. handleAddIf
-        , -- capture
-          "mul" /. "*" /. "*" /. handleMul
-        , -- json body as input
-          "add-json" /. handleAddJson
-        ]
+  withSwagger def $
+    withTrace $
+      "hello"
+        /. "api"
+        /. mconcat
+          -- no args, constnat output
+          [ "world" /. helloWorld
+          , -- required query param and custom header
+            "succ" /. handleSucc
+          , -- optional query param
+            "succ-opt" /. handleSuccOpt
+          , -- several query params
+            "add" /. handleAdd
+          , -- query flag
+            "add-if" /. handleAddIf
+          , -- capture
+            "mul" /. "*" /. "*" /. handleMul
+          , -- json body as input
+            "add-json" /. handleAddJson
+          , -- return error
+            "square-root" /. handleSquareRoot
+          ]
   where
     withTrace = applyMiddleware (Trace.logHttp Trace.V2)
 
@@ -106,3 +109,11 @@ data AddInput = AddInput
 handleAddJson :: Body AddInput -> Post (Resp Int)
 handleAddJson (Body (AddInput a b)) = Send $ do
   pure $ setStatus ok200 $ ok $ a + b
+
+handleSquareRoot :: Body Float -> Post (RespOr Text Float)
+handleSquareRoot (Body arg) =
+  Send $
+    pure $
+      if arg >= 0
+        then ok (sqrt arg)
+        else bad badRequest400 "Argument for square root should be non-negative"
