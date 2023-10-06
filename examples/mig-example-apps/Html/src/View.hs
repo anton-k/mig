@@ -15,7 +15,6 @@ import Web.HttpApiData (toUrlPiece)
 instance (ToMarkup a) => ToMarkup (Page a) where
   toMarkup page = case page of
     Page a -> siteTemplate (H.toMarkup a)
-    PostNotFound _pid -> siteTemplate $ H.p (H.text "Post not found")
 
 -- | Main site template
 siteTemplate :: Html -> Html
@@ -71,6 +70,11 @@ instance ToMarkup WritePost where
 
       submit :: Text -> Html
       submit name = H.div $ H.input H.! HA.type_ "submit" H.! HA.value (H.toValue name)
+
+instance ToMarkup BlogPostView where
+  toMarkup = \case
+    ViewBlogPost post -> toMarkup post
+    PostNotFound _pid -> H.p (H.text "Post not found")
 
 -- | Rendering of a single blog post
 instance ToMarkup BlogPost where

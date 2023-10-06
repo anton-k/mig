@@ -75,11 +75,15 @@ handleGreeting site =
   Send $ ok . Page . Greeting <$> site.listBlogPosts
 
 -- | Read blog post by id
-handleBlogPost :: Site -> Optional "id" BlogPostId -> Get (Page BlogPost)
+handleBlogPost :: Site -> Optional "id" BlogPostId -> Get (Page BlogPostView)
 handleBlogPost site (Optional mBlogId) = Send $
   case mBlogId of
-    Nothing -> ok . Page <$> randomBlogPost site
-    Just blogId -> bad notFound404 . maybe (PostNotFound blogId) Page <$> site.readBlogPost blogId
+    Nothing -> ok . Page . ViewBlogPost <$> randomBlogPost site
+    Just blogId ->
+      maybe
+        (bad notFound404 $ Page $ PostNotFound blogId)
+        (ok . Page . ViewBlogPost)
+        <$> site.readBlogPost blogId
 
 -- | Read random quote
 handleQuote :: Site -> Get (Page Quote)
@@ -94,10 +98,13 @@ handleWriteForm _site =
         Page WritePost
 
 -- | Submit form with data provided by the user
-handleWriteSubmit :: Site -> Body FormUrlEncoded SubmitBlogPost -> Post (Page BlogPost)
-handleWriteSubmit site (Body (SubmitBlogPost title content)) = Send $ do
-  pid <- site.writeBlogPost title content
-  bad notFound404 . maybe (PostNotFound pid) Page <$> site.readBlogPost pid
+handleWriteSubmit :: Site -> Body FormUrlEncoded SubmitBlogPost -> Post (Page BlogPostView)
+handleWriteSubmit site (Body submitData) = Send $ do
+  pid <- site.writeBlogPost submitData
+  maybe
+    (bad notFound404 $ Page $ PostNotFound pid)
+    (ok . Page . ViewBlogPost)
+    <$> site.readBlogPost pid
 
 -- | List all posts so far
 handleListPosts :: Site -> Get (Page ListPosts)
