@@ -477,3 +477,7 @@ You can find the complete code of the example in the [`mig` repo](https://github
   The code for the server should stay the same and only initialization
   of interface should change. Use one of the DB libraries for haskell: `hasql`, `postgresql-simple`
 
+## Summary 
+
+In this chapter we have defined a more substantial example of JSON HTTP application
+and saw how we can apply various concepts in practice.

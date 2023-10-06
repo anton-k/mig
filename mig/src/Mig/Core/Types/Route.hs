@@ -39,7 +39,7 @@ import Data.Text (Text)
 import GHC.TypeLits
 import Network.HTTP.Types.Method
 
-import Mig.Core.Types.Http (Request, Response)
+import Mig.Core.Types.Http (Request)
 
 -------------------------------------------------------------------------------------
 -- inputs

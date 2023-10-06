@@ -13,7 +13,7 @@ with outside world: DBs, logger.
 -}
 data Site = Site
   { readBlogPost :: BlogPostId -> IO (Maybe BlogPost)
-  , writeBlogPost :: Text -> Text -> IO BlogPostId
+  , writeBlogPost :: SubmitBlogPost -> IO BlogPostId
   , listBlogPosts :: IO [BlogPost]
   , readQuote :: IO Quote
   , logInfo :: Text -> IO ()

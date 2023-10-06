@@ -59,8 +59,8 @@ mockRead env postId = do
   pure (List.find (\post -> post.id == postId) blogPosts)
 
 -- | Write new blog post
-mockWriteBlogPost :: Env -> Text -> Text -> IO BlogPostId
-mockWriteBlogPost env title content = do
+mockWriteBlogPost :: Env -> SubmitBlogPost -> IO BlogPostId
+mockWriteBlogPost env (SubmitBlogPost title content) = do
   pid <- randomBlogPostId
   time <- getCurrentTime
   -- unsafe in concurrent, it is here just for example (use TVar or atomicModifyIORef)

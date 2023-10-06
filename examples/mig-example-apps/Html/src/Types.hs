@@ -5,6 +5,7 @@ module Types (
   WritePost (..),
   ListPosts (..),
   BlogPostId (..),
+  BlogPostView (..),
   BlogPost (..),
   Quote (..),
   SubmitBlogPost (..),
@@ -18,11 +19,7 @@ import GHC.Generics
 import Mig (FromForm, FromHttpApiData, ToHttpApiData, ToParamSchema, ToSchema)
 
 -- | Web-page for our site
-data Page a
-  = -- | page with some content
-    Page a
-  | -- | error: post not found by id
-    PostNotFound BlogPostId
+newtype Page a = Page a
 
 -- | Greeting page
 data Greeting = Greeting [BlogPost]
@@ -36,6 +33,11 @@ newtype ListPosts = ListPosts [BlogPost]
 -- | Blog post id
 newtype BlogPostId = BlogPostId {unBlogPostId :: UUID}
   deriving newtype (FromHttpApiData, ToHttpApiData, Eq, Show, FromJSON, ToParamSchema)
+
+data BlogPostView
+  = ViewBlogPost BlogPost
+  | -- | error: post not found by id
+    PostNotFound BlogPostId
 
 -- | Blog post
 data BlogPost = BlogPost
