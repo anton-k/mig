@@ -45,7 +45,7 @@ It means that all our hadnlers are going to return `IO`-values.
 To bind path "api/v1/hello" to handler `hello` we use function `(/.)`. Let's look at it's type signature:
 
 ```haskell
-(/.) :: (ToServer a) => Path -> a -> Server (ServerMonad a)
+(/.) :: (ToServer a) => Path -> a -> Server (MonadOf a)
 ```
 
 It expects the `Path` which has instance of class `IsString` that is why we can
@@ -53,10 +53,10 @@ use plain strings for it. the second argument is something that is convertible t
 Here we use trick to be able to use arbitrary haskell functions as handlers.
 We have special class called `ToServer` which can convert many different types to `Server`.
 
-The output type is abit tricky: `Server (ServerMonad a)`.
-The `ServerMonad` is a type function which can extract `m` from `(Server m)`.
+The output type is abit tricky: `Server (MonadOf a)`.
+The `MonadOf` is a type function which can extract `m` from `(Server m)`.
 Or for example it can extract `m` from the function `request -> m response`.
-So the `ServerMonad` is a way to get underlying server monad from any value.
+So the `MonadOf` is a way to get underlying server monad from any value.
 
 Let's be more specific and study our example. 
 The type of the handler is `Get IO (Resp Text)`
@@ -66,7 +66,7 @@ In our case we get:
 (/.) :: Path -> Get IO (Resp Text) -> Server IO
 ```
 
-The type-level function `ServerMonad` knows how to extract `IO` from `Get IO (Resp Text)`.
+The type-level function `MonadOf` knows how to extract `IO` from `Get IO (Resp Text)`.
 
 ### The type of response
 
@@ -276,7 +276,7 @@ which converts the second argument to `Server`. If we want to convert
 we can use the method of the class `ToServer`:
 
 ```haskell
-toServer :: ToServer a => a -> Server (ServerMonad a)
+toServer :: ToServer a => a -> Server (MonadOf a)
 ```
 
 So the right way to avoid duplication in path is:

@@ -58,6 +58,7 @@ import GHC.TypeLits
 import Web.HttpApiData
 
 import Mig.Core.Class.MediaType
+import Mig.Core.Class.Monad
 import Mig.Core.Class.Response
 import Mig.Core.Class.Route
 import Mig.Core.Server
@@ -86,33 +87,30 @@ instance Semigroup (Middleware m) where
   (<>) a b = Middleware (a.info . b.info) (a.run . b.run)
 
 -- | Infix operator for @applyMiddleware@
-($:) :: forall f. (ToMiddleware f) => f -> Server (MiddlewareMonad f) -> Server (MiddlewareMonad f)
+($:) :: forall f. (ToMiddleware f) => f -> Server (MonadOf f) -> Server (MonadOf f)
 ($:) = applyMiddleware
 
 -- | Applies middleware to all routes of the server.
-applyMiddleware :: forall f. (ToMiddleware f) => f -> Server (MiddlewareMonad f) -> Server (MiddlewareMonad f)
+applyMiddleware :: forall f. (ToMiddleware f) => f -> Server (MonadOf f) -> Server (MonadOf f)
 applyMiddleware a = mapRouteInfo (toMiddlewareInfo @f) . mapServerFun (toMiddlewareFun a)
 
 {-| Values that can represent a middleware.
 We use various newtype-wrappers to query type-safe info from request.
 -}
-class (MonadIO (MiddlewareMonad f)) => ToMiddleware f where
-  type MiddlewareMonad f :: Type -> Type
+class (MonadIO (MonadOf f)) => ToMiddleware f where
   toMiddlewareInfo :: RouteInfo -> RouteInfo
-  toMiddlewareFun :: f -> ServerFun (MiddlewareMonad f) -> ServerFun (MiddlewareMonad f)
+  toMiddlewareFun :: f -> ServerFun (MonadOf f) -> ServerFun (MonadOf f)
 
 -- | Convert middleware-like value to middleware.
-toMiddleware :: forall f. (ToMiddleware f) => f -> Middleware (MiddlewareMonad f)
+toMiddleware :: forall f. (ToMiddleware f) => f -> Middleware (MonadOf f)
 toMiddleware a = Middleware (toMiddlewareInfo @f) (toMiddlewareFun a)
 
 -- identity
 instance (MonadIO m) => ToMiddleware (MiddlewareFun m) where
-  type MiddlewareMonad (ServerFun m -> ServerFun m) = m
   toMiddlewareInfo = id
   toMiddlewareFun = id
 
 instance (MonadIO m) => ToMiddleware (Middleware m) where
-  type MiddlewareMonad (Middleware m) = m
   toMiddlewareInfo = id
   toMiddlewareFun = (.run)
 
@@ -121,18 +119,15 @@ fromMiddlewareFun = toMiddleware
 
 -- path info
 instance (ToMiddleware a) => ToMiddleware (PathInfo -> a) where
-  type MiddlewareMonad (PathInfo -> a) = MiddlewareMonad a
   toMiddlewareInfo = id
   toMiddlewareFun f = \fun -> withPathInfo (\path -> toMiddlewareFun (f (PathInfo path)) fun)
 
 -- path info
 instance (ToMiddleware a) => ToMiddleware (IsSecure -> a) where
-  type MiddlewareMonad (IsSecure -> a) = MiddlewareMonad a
   toMiddlewareInfo = id
   toMiddlewareFun f = \fun -> \req -> (toMiddlewareFun (f (IsSecure req.isSecure)) fun) req
 
 instance (ToMiddleware a) => ToMiddleware (RawRequest -> a) where
-  type MiddlewareMonad (RawRequest -> a) = MiddlewareMonad a
   toMiddlewareInfo = id
   toMiddlewareFun f = \fun -> \req -> (toMiddlewareFun (f (RawRequest req)) fun) req
 
@@ -140,7 +135,6 @@ instance (ToMiddleware a) => ToMiddleware (RawRequest -> a) where
 newtype RawResponse = RawResponse (Maybe Response)
 
 instance (ToMiddleware a) => ToMiddleware (RawResponse -> a) where
-  type MiddlewareMonad (RawResponse -> a) = MiddlewareMonad a
   toMiddlewareInfo = id
   toMiddlewareFun f = \fun -> \req -> do
     resp <- fun req
@@ -148,43 +142,36 @@ instance (ToMiddleware a) => ToMiddleware (RawResponse -> a) where
 
 -- request body
 instance (FromReqBody ty a, ToSchema a, ToMiddleware b) => ToMiddleware (Body ty a -> b) where
-  type MiddlewareMonad (Body ty a -> b) = MiddlewareMonad b
   toMiddlewareInfo = addBodyInfo @ty @a . toMiddlewareInfo @b
   toMiddlewareFun f = \fun -> withBody @ty (\body -> toMiddlewareFun (f (Body body)) fun)
 
 -- header
 instance (FromHttpApiData a, ToParamSchema a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (Header sym a -> b) where
-  type MiddlewareMonad (Header sym a -> b) = MiddlewareMonad b
   toMiddlewareInfo = addHeaderInfo @sym @a . toMiddlewareInfo @b
   toMiddlewareFun f = \fun -> withHeader (getName @sym) (\a -> toMiddlewareFun (f (Header a)) fun)
 
 -- optional header
 instance (FromHttpApiData a, ToParamSchema a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (OptionalHeader sym a -> b) where
-  type MiddlewareMonad (OptionalHeader sym a -> b) = MiddlewareMonad b
   toMiddlewareInfo = addOptionalHeaderInfo @sym @a . toMiddlewareInfo @b
   toMiddlewareFun f = \fun -> withOptionalHeader (getName @sym) (\a -> toMiddlewareFun (f (OptionalHeader a)) fun)
 
 -- query
 instance (FromHttpApiData a, ToParamSchema a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (Query sym a -> b) where
-  type MiddlewareMonad (Query sym a -> b) = MiddlewareMonad b
   toMiddlewareInfo = addQueryInfo @sym @a . toMiddlewareInfo @b
   toMiddlewareFun f = \fun -> withQuery (getName @sym) (\a -> toMiddlewareFun (f (Query a)) fun)
 
 -- optional query
 instance (FromHttpApiData a, ToParamSchema a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (Optional sym a -> b) where
-  type MiddlewareMonad (Optional sym a -> b) = MiddlewareMonad b
   toMiddlewareInfo = addOptionalInfo @sym @a . toMiddlewareInfo @b
   toMiddlewareFun f = \fun -> withOptional (getName @sym) (\a -> toMiddlewareFun (f (Optional a)) fun)
 
 -- capture
 instance (FromHttpApiData a, ToParamSchema a, ToMiddleware b, KnownSymbol sym) => ToMiddleware (Capture sym a -> b) where
-  type MiddlewareMonad (Capture sym a -> b) = MiddlewareMonad b
   toMiddlewareInfo = addCaptureInfo @sym @a . toMiddlewareInfo @b
   toMiddlewareFun f = \fun -> withCapture (getName @sym) (\a -> toMiddlewareFun (f (Capture a)) fun)
 
 -- query flag
 instance (ToMiddleware b, KnownSymbol sym) => ToMiddleware (QueryFlag sym -> b) where
-  type MiddlewareMonad (QueryFlag sym -> b) = MiddlewareMonad b
   toMiddlewareInfo = addQueryFlagInfo @sym . toMiddlewareInfo @b
   toMiddlewareFun f = \fun -> withQueryFlag (getName @sym) (\a -> toMiddlewareFun (f (QueryFlag a)) fun)
 
@@ -220,13 +207,8 @@ processResponse act = toMiddleware go
 
 -- | Execute request only if it is secure (made with SSL connection)
 whenSecure :: forall m. (MonadIO m) => Middleware m
-whenSecure = toMiddleware go
-  where
-    go :: IsSecure -> MiddlewareFun m
-    go (IsSecure isSecure) fun = \req -> do
-      if isSecure
-        then fun req
-        else pure Nothing
+whenSecure = toMiddleware $ \(IsSecure isSecure) ->
+  processResponse (if isSecure then id else const (pure Nothing))
 
 -- | Sets default response if server response with Nothing. If it can not handle the request.
 processNoResponse :: forall m a. (MonadIO m, IsResp a) => m a -> Middleware m

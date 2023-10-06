@@ -37,9 +37,7 @@ import Network.HTTP.Media.RenderHeader (renderHeader)
 import Network.HTTP.Types.Status (Status (..))
 import System.Time.Extra
 
-import Mig.Core.Class.Middleware
-import Mig.Core.Class.Route
-import Mig.Core.Types.Http
+import Mig.Core
 
 -- | Verbosity level of echo prints
 data Verbosity

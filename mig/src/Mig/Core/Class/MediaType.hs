@@ -14,16 +14,6 @@ module Mig.Core.Class.MediaType (
 
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Aeson qualified as Json
-import Data.Aeson.Parser qualified
-import Data.Aeson.Types (
-  parseEither,
- )
-import Data.Attoparsec.ByteString.Char8 (
-  endOfInput,
-  parseOnly,
-  skipSpace,
-  (<?>),
- )
 import Data.Bifunctor
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BL
@@ -138,29 +128,7 @@ instance FromReqBody OctetStream ByteString where
   fromReqBody = Right . BL.toStrict
 
 instance (FromJSON a) => FromReqBody Json a where
-  fromReqBody = eitherDecodeLenient
+  fromReqBody = first Text.pack . Json.eitherDecode
 
 instance (FromForm a) => FromReqBody FormUrlEncoded a where
   fromReqBody = urlDecodeAsForm
-
-{-| Like 'Data.Aeson.eitherDecode' but allows all JSON values instead of just
-objects and arrays.
-
-Will handle trailing whitespace, but not trailing junk. ie.
-
->>> eitherDecodeLenient "1 " :: Either String Int
-Right 1
-
->>> eitherDecodeLenient "1 junk" :: Either String Int
-Left "trailing junk after valid JSON: endOfInput"
--}
-eitherDecodeLenient :: (FromJSON a) => BL.ByteString -> Either Text a
-eitherDecodeLenient input =
-  first Text.pack $
-    parseOnly parser (BL.toStrict input) >>= parseEither Json.parseJSON
-  where
-    parser =
-      skipSpace
-        *> Data.Aeson.Parser.value
-        <* skipSpace
-        <* (endOfInput <?> "trailing junk after valid JSON")

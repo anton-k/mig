@@ -2,7 +2,7 @@
 
 Mig is a lightweight and easy to use library to build servers in Haskell.
 It is sort of servant for Simple/Boring Haskell.
-This book is a example driven guide to the library.
+This book is an example driven guide to the library.
 
 The main features are:
 
@@ -38,7 +38,7 @@ main = runServer 8085 server
 server :: Server IO
 server = "api/v1/hello" /. hello
 
--- | The handler definition as function
+-- | The handler definition as a function
 hello :: Get (Resp Text)
 hello = Send $ pure $ ok "Hello World"
 ```

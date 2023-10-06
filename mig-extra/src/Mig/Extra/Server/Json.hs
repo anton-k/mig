@@ -50,25 +50,20 @@ newtype RespOr err a = RespOr (Core.RespOr Json err a)
 newtype Body a = Body a
 
 instance (ToSchema a, FromJSON a, ToRoute b) => ToRoute (Body a -> b) where
-  type RouteMonad (Body a -> b) = RouteMonad b
-
   toRouteInfo = toRouteInfo @(Core.Body Json a -> b)
 
   toRouteFun f =
-    (toRouteFun :: ((Core.Body Json a -> b) -> ServerFun (RouteMonad b)))
+    (toRouteFun :: ((Core.Body Json a -> b) -> ServerFun (Core.MonadOf b)))
       (\(Core.Body a) -> f (Body a))
 
 instance (ToSchema a, FromJSON a, ToRoute b) => ToServer (Body a -> b) where
-  type ServerMonad (Body a -> b) = RouteMonad b
   toServer f =
-    (toServer :: ((Core.Body Json a -> b) -> Server (RouteMonad b)))
+    (toServer :: ((Core.Body Json a -> b) -> Server (Core.MonadOf b)))
       (\(Core.Body a) -> f (Body a))
 
 instance (FromJSON a, ToSchema a, ToMiddleware b) => ToMiddleware (Body a -> b) where
-  type MiddlewareMonad (Body a -> b) = MiddlewareMonad b
-
   toMiddlewareInfo = toMiddlewareInfo @(Core.Body Json a -> b)
 
   toMiddlewareFun f =
-    (toMiddlewareFun :: ((Core.Body Json a -> b) -> MiddlewareFun (MiddlewareMonad b)))
+    (toMiddlewareFun :: ((Core.Body Json a -> b) -> MiddlewareFun (Core.MonadOf b)))
       (\(Core.Body a) -> f (Body a))
