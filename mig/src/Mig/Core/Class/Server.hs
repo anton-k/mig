@@ -14,13 +14,14 @@ import Data.Kind
 import Data.OpenApi (ToParamSchema, ToSchema)
 import Data.Text (Text)
 import GHC.TypeLits
-import Mig.Core.Api (Api)
 import Mig.Core.Api qualified as Api
 import Mig.Core.Class.MediaType (FromReqBody (..))
+import Mig.Core.Class.Monad
 import Mig.Core.Class.Response (IsResp)
 import Mig.Core.Class.Route
 import Mig.Core.Server (Server (..), mapServerFun)
-import Mig.Core.Types.Http (Response, badRequest)
+import Mig.Core.ServerFun (ServerFun)
+import Mig.Core.Types
 import Web.HttpApiData
 
 infixr 4 /.
@@ -41,7 +42,7 @@ The name for the capture is derived from the type signature of the route handler
 Note that if capture is in the last position of the path we can omit wild cards.
 The proper amount of captures will be derived from the type signature of the handler.
 -}
-(/.) :: (ToServer a) => Api.Path -> a -> Server (ServerMonad a)
+(/.) :: (ToServer a) => Api.Path -> a -> Server (MonadOf a)
 (/.) path api
   | null path.unPath = toServer api
   | otherwise =
@@ -53,51 +54,36 @@ The proper amount of captures will be derived from the type signature of the han
 
 -- | Values that can be converted to server
 class ToServer a where
-  -- | Underlying server monad
-  type ServerMonad a :: Type -> Type
-
   -- | Convert value to server
-  toServer :: a -> Server (ServerMonad a)
+  toServer :: a -> Server (MonadOf a)
 
 -- identity
 
-instance ToServer (Api (Route m)) where
-  type ServerMonad (Api (Route m)) = m
-  toServer = Server
-
 instance ToServer (Server m) where
-  type ServerMonad (Server m) = m
   toServer = id
 
 -- outputs
 instance (MonadIO m, IsResp a, IsMethod method) => ToServer (Send method m a) where
-  type ServerMonad (Send method m a) = m
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 -- inputs
 
 instance (ToSchema a, FromReqBody media a, ToRoute b) => ToServer (Body media a -> b) where
-  type ServerMonad (Body media a -> b) = RouteMonad b
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Query sym a -> b) where
-  type ServerMonad (Query sym a -> b) = RouteMonad b
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Optional sym a -> b) where
-  type ServerMonad (Optional sym a -> b) = RouteMonad b
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Capture sym a -> b) where
-  type ServerMonad (Capture sym a -> b) = RouteMonad b
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Header sym a -> b) where
-  type ServerMonad (Header sym a -> b) = RouteMonad b
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 instance (ToRoute b) => ToServer (PathInfo -> b) where
-  type ServerMonad (PathInfo -> b) = RouteMonad b
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 -------------------------------------------------------------------------------------

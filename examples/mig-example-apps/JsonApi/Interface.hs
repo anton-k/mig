@@ -1,6 +1,7 @@
 module Interface (
   Env (..),
   LogFun,
+  Proc (..),
   Logger (..),
   logInfo,
   logDebug,
@@ -16,20 +17,26 @@ import Types
 data Env = Env
   { weather :: Weather
   , auth :: Auth
-  , logger :: Logger
+  , proc :: Proc
+  }
+
+-- | server lifesycle interface
+data Proc = Proc
+  { startup :: IO ()
   , cleanup :: IO ()
+  , logger :: Logger
   }
 
 type LogFun = Value -> IO ()
 
 logInfo :: (ToJSON a) => Env -> a -> IO ()
-logInfo env = env.logger.info . toJSON
+logInfo env = env.proc.logger.info . toJSON
 
 logDebug :: (ToJSON a) => Env -> a -> IO ()
-logDebug env = env.logger.debug . toJSON
+logDebug env = env.proc.logger.debug . toJSON
 
 logError :: (ToJSON a) => Env -> a -> IO ()
-logError env = env.logger.error . toJSON
+logError env = env.proc.logger.error . toJSON
 
 -- logger interface
 data Logger = Logger

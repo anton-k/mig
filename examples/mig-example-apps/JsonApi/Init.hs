@@ -10,6 +10,7 @@ import Data.IORef
 import Data.List qualified as List
 import Data.Map.Strict qualified as Map
 import Data.Set qualified as Set
+import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Time
 import Data.Yaml qualified as Yaml
@@ -24,19 +25,31 @@ atomicModify :: IORef a -> (a -> a) -> IO ()
 atomicModify ref f = atomicModifyIORef' ref (\st -> (f st, ()))
 
 -- | allocate site interfaces
-initEnv :: IO Env
-initEnv = do
+initEnv :: Int -> IO Env
+initEnv port = do
   st <- initSt =<< initStateConfig
-  (writeLog, closeLogger) <- newFastLogger (LogStdout defaultBufSize)
-  let
-    logger = initLogger writeLog
+  proc <- initProc port
   pure $
     Env
       { weather = initWeather st
       , auth = initAuth st
-      , logger = logger
+      , proc = proc
+      }
+
+initProc :: Int -> IO Proc
+initProc port = do
+  (writeLog, closeLogger) <- newFastLogger (LogStdout defaultBufSize)
+  let
+    logger = initLogger writeLog
+
+    logMessage :: Text -> IO ()
+    logMessage msg = logger.info $ Json.toJSON msg
+  pure $
+    Proc
+      { logger = logger
+      , startup = logMessage $ ("App starts on port: " <> Text.pack (show port))
       , cleanup = do
-          logger.info $ Json.toJSON ("Site shutdown" :: Text)
+          logMessage "App shutdown"
           closeLogger
       }
 

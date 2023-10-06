@@ -8,6 +8,7 @@ module Internal.State (
 import Data.IORef
 import Data.Map.Strict (Map)
 import Data.Set (Set)
+import Data.Text (Text)
 import Data.Time
 import Types
 

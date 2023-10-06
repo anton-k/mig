@@ -45,7 +45,7 @@ getWeather ::
   Capture "day-interval" DayInterval ->
   Get (RespOr Text (Timed WeatherData))
 getWeather env (Capture location) (Capture fromDay) (Capture interval) = Send $ do
-  env.logger.info "get the weather forecast"
+  logInfo @Text env "get the weather forecast"
   mResult <- env.weather.get location fromDay interval
   pure $ case mResult of
     Just result -> ok result
@@ -56,7 +56,7 @@ updateWeather ::
   Body UpdateData ->
   Post (RespOr Text ())
 updateWeather env (Body updateData) = Send $ do
-  env.logger.info "update the weather data"
+  logInfo @Text env "update the weather data"
   ok <$> env.weather.update updateData
 
 -------------------------------------------------------------------------------------
