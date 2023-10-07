@@ -1,7 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE UndecidableInstances #-}
 
--- | Client library
+-- | Functions to create http-clients from the same code as server or API schema
 module Mig.Client (
   ToClient (..),
   Client (..),
@@ -39,7 +39,9 @@ import Web.HttpApiData
 
 import Mig.Core
 
--- | Synonym for pair
+{-| Infox synonym for pair. It can be useful to stack together
+many client functions in the output of @toClient@ function.
+-}
 data (:|) a b = a :| b
 
 instance (ToClient a, ToClient b) => ToClient (a :| b) where
@@ -81,6 +83,69 @@ instance (MapRequest a, MapRequest b, MapRequest c, MapRequest d) => MapRequest 
   mapRequest f (a, b, c, d) = (mapRequest f a, mapRequest f b, mapRequest f c, mapRequest f d)
   mapCapture f (a, b, c, d) = (mapCapture f a, mapCapture f b, mapCapture f c, mapCapture f d)
 
+{-| Creates http-client from server definition.
+
+The result adapts to decalred types. It creates so many client functions as
+the arity of the tuple in the result. The server can have more handlers than in the result
+Routes from result definition and server definition are matched in the same order as they are declared.
+
+The type of the client is derived from the type signature of the result. The information
+on paths for handlers is derived from server definition.
+
+To use the same code for both client and server it is convenient to declare
+signatures for handlers as type synonyms parameterized by server monad.
+And in the server implementation monad is going to be something IO-based but
+in client handlers it will be `Client`-monad.
+
+For example for a server:
+
+> type Hello m = Capture "name" Text -> Get m (Resp Text)
+> type Add m = Query "a" Int -> Query "b" Int -> Get m (Resp Int)
+>
+> server :: Server IO
+> server = "api" /.
+>   mconcat
+>    [ "hello" /. helloHandler
+>    , "add" /. addHandler
+>    ]
+>
+> helloHandler :: Hello IO
+> helloHandler (Capture name) = Send $ pure $ ok $ "Hello " <> name
+>
+> addHandler :: Add IO
+> addHandler (Query a) (Query b) = Send $ pure $ ok (a + b)
+
+We can define the client and reuse type signatures that we have defined in the server code:
+
+> helloClient :: Hello Client
+> addClient :: Add Client
+>
+> helloClient :| addClient = toClient server
+
+If there is no definition for server. For example if we write implementation for
+some external server or API provided by third party we can use recursive definition in the server.
+For example if there is no haskell implementation for the server in the previous example. But we
+know the API of the application we can define client with recursive definition:
+
+> type Hello m = Capture "name" Text -> Get m (Resp Text)
+> type Add m = Query "a" Int -> Query "b" Int -> Get m (Resp Int)
+>
+> helloClient :: Hello Client
+> addClient :: Add Client
+>
+> helloClient :| addClient = toClient server
+>
+> server :: Server Client
+> server = "api" /.
+>   mconcat
+>    [ "hello" /. helloClient
+>    , "add" /. addClient
+>    ]
+
+The code does not get stuck into recursion loop because implementation of the route handlers
+is not needed to create client functions. The function @toClient@ takes into account
+only type-signatures of the handlers and paths.
+-}
 class (MapRequest a) => ToClient a where
   -- | converts to client function
   toClient :: Server m -> a
@@ -88,11 +153,15 @@ class (MapRequest a) => ToClient a where
   -- | how many routes client has
   clientArity :: Int
 
+-- | Config to run the clients
 data ClientConfig = ClientConfig
   { port :: Int
+  -- ^ port to connect to
   , manager :: Http.Manager
+  -- ^ HTTP-manager
   }
 
+-- | The client monad. All errors are unified to Lazy.ByteString.
 newtype Client a = Client (ClientConfig -> CaptureMap -> Http.Request -> IO (RespOr AnyMedia BL.ByteString a))
   deriving (Functor)
 
@@ -116,6 +185,7 @@ instance Monad Client where
 instance MonadIO Client where
   liftIO act = Client $ \_ _ _ -> pureResp <$> act
 
+-- | Runs client. It calls client handler and fetches the result.
 runClient :: ClientConfig -> Client a -> IO (RespOr AnyMedia BL.ByteString a)
 runClient config (Client act) = act config mempty Http.defaultRequest
 
@@ -272,14 +342,32 @@ setRoute captureValues path req = req{Http.path = pathToString captureValues pat
 ----------------------------------------------------------
 -- from response
 
+-- | Helper type-synonym for convenience
 type ClientOr a = Client' (Either BL.ByteString a)
 
+{-| ClientConfig in @ReaderT IO@ monad. It encapsulates typical execution
+of client functions
+-}
 newtype Client' a = Client' (ReaderT ClientConfig IO a)
   deriving (Functor, Applicative, Monad, MonadReader ClientConfig, MonadIO)
 
+-- | Runs the client call
 runClient' :: ClientConfig -> Client' a -> IO a
 runClient' config (Client' act) = runReaderT act config
 
+{-| Class to strip away all newtype wrappers that serve for API-definition.
+For example it converts the types signature for client function:
+
+> Capture "foo" Text -> Header "bar" Int -> Get Client (Resp a)
+
+to the version without HTTP-newtype wrappers:
+
+> Text -> Int -> Client' (Resp a)
+
+The instances are defined for all HTTP-newtype wrappers.
+Also we can use function @getRespOrValue@ if we do not need
+the http information of response.
+-}
 class FromClient a where
   type ClientResult a :: Type
   fromClient :: a -> ClientResult a
@@ -351,6 +439,9 @@ joinRespOr (RespOr eResp) = RespOr $ case eResp of
     Nothing -> Right $ Resp resp.status resp.headers Nothing
   Left resp -> Left $ Resp resp.status resp.headers resp.body
 
+{-| If we need only value from the server and not HTTP-info (status, or headers)
+we can omit that data with this function
+-}
 getRespOrValue :: RespOr media BL.ByteString a -> Either BL.ByteString a
 getRespOrValue (RespOr eResp) = case eResp of
   Right resp -> maybe noContentValue Right resp.body

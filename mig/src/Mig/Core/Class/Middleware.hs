@@ -50,7 +50,6 @@ module Mig.Core.Class.Middleware (
 ) where
 
 import Control.Monad.IO.Class
-import Data.Kind
 import Data.OpenApi (ToParamSchema (..), ToSchema (..))
 import Data.Proxy
 import Data.String
@@ -60,7 +59,6 @@ import Web.HttpApiData
 import Mig.Core.Class.MediaType
 import Mig.Core.Class.Monad
 import Mig.Core.Class.Response
-import Mig.Core.Class.Route
 import Mig.Core.Server
 import Mig.Core.ServerFun
 import Mig.Core.Types

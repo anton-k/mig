@@ -8,7 +8,6 @@ copyright:           "2023 Author name here"
 
 extra-source-files:
 - README.md
-- CHANGELOG.md
 - Html/resources/*
 
 # Metadata used when publishing your package
