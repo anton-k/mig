@@ -61,12 +61,12 @@ fromRequest maxSize req = do
       , query = Map.fromList (Wai.queryString req)
       , headers = Map.fromList $ Wai.requestHeaders req
       , method = Wai.requestMethod req
-      , readBody = readBodyCache getBody bodyCache
+      , readBody = readBodyCache getRequestBody bodyCache
       , capture = mempty
       , isSecure = Wai.isSecure req
       }
   where
-    getBody =
+    getRequestBody =
       fmap (fmap BL.fromChunks) $ readRequestBody (Wai.getRequestBodyChunk req) maxSize
 
 newtype BodyCache a = BodyCache (IORef (Maybe a))

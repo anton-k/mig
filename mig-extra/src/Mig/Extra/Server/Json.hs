@@ -23,6 +23,7 @@ module Mig.Extra.Server.Json (
   module X,
 ) where
 
+import Mig.Client (FromClient (..), ToClient (..))
 import Mig.Core (
   Delete,
   Get,
@@ -67,3 +68,15 @@ instance (FromJSON a, ToSchema a, ToMiddleware b) => ToMiddleware (Body a -> b) 
   toMiddlewareFun f =
     (toMiddlewareFun :: ((Core.Body Json a -> b) -> MiddlewareFun (Core.MonadOf b)))
       (\(Core.Body a) -> f (Body a))
+
+-- client instances
+
+instance (ToJSON a, ToClient b) => ToClient (Body a -> b) where
+  toClient api = (\f -> \(Body b) -> f (Core.Body b)) $ toClient @(Core.Body Json a -> b) api
+  clientArity = clientArity @(Core.Body Json a -> b)
+
+instance (FromClient b) => FromClient (Body a -> b) where
+  type ClientResult (Body a -> b) = ClientResult (Core.Body Json a -> b)
+  fromClient f arg = fromClient @(Core.Body Json a -> b) (f . Body . fromBody) arg
+    where
+      fromBody (Core.Body a) = a

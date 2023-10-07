@@ -10,18 +10,23 @@ module Mig.Client (
   (:|) (..),
   FromClient (..),
   getRespOrValue,
+  Client' (..),
+  runClient',
+  MonadIO (..),
+  ClientOr,
 ) where
 
 import Control.Monad
 import Control.Monad.IO.Class
+import Control.Monad.Reader
 import Data.Bifunctor
 import Data.ByteString (ByteString)
 import Data.ByteString qualified as B
+import Data.ByteString.Lazy qualified as BL
 import Data.Kind
 import Data.Map.Strict qualified as Map
 import Data.Proxy
 import Data.String
-import Data.Text
 import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import GHC.TypeLits
@@ -88,14 +93,14 @@ data ClientConfig = ClientConfig
   , manager :: Http.Manager
   }
 
-newtype Client a = Client (ClientConfig -> CaptureMap -> Http.Request -> IO (RespOr AnyMedia Text a))
+newtype Client a = Client (ClientConfig -> CaptureMap -> Http.Request -> IO (RespOr AnyMedia BL.ByteString a))
   deriving (Functor)
 
 instance Applicative Client where
   pure a = Client $ const $ const $ const $ pure $ pureResp a
   (<*>) = ap
 
-pureResp :: a -> RespOr AnyMedia Text a
+pureResp :: a -> RespOr AnyMedia BL.ByteString a
 pureResp a = RespOr $ Right $ Resp ok200 [] (Just a)
 
 instance Monad Client where
@@ -111,7 +116,7 @@ instance Monad Client where
 instance MonadIO Client where
   liftIO act = Client $ \_ _ _ -> pureResp <$> act
 
-runClient :: ClientConfig -> Client a -> IO (RespOr AnyMedia Text a)
+runClient :: ClientConfig -> Client a -> IO (RespOr AnyMedia BL.ByteString a)
 runClient config (Client act) = act config mempty Http.defaultRequest
 
 instance (IsMethod method, FromReqBody (RespMedia a) (RespBody a), IsResp a) => ToClient (Send method Client a) where
@@ -119,7 +124,7 @@ instance (IsMethod method, FromReqBody (RespMedia a) (RespBody a), IsResp a) => 
     mapRequest (setRequestMethod (toMethod @method)) $
       Send $
         fmap ok $
-          httpSend @(RespMedia a) @(RespBody a) (getHeadPath api)
+          httpSend @(RespMedia a) @(RespBody a) (getHeadPath $ Server $ fillCaptures $ unServer api)
 
   clientArity = 1
 
@@ -151,6 +156,14 @@ getHeadPath (Server api) = case flatApi api of
 
 setRequestMethod :: Method -> Http.Request -> Http.Request
 setRequestMethod m req = req{Http.method = m}
+
+instance (KnownSymbol sym, ToHttpApiData a, ToClient b) => ToClient (Header sym a -> b) where
+  toClient api = \header -> mapRequest (addHeader header) $ toClient @b api
+  clientArity = clientArity @b
+
+instance (KnownSymbol sym, ToHttpApiData a, ToClient b) => ToClient (OptionalHeader sym a -> b) where
+  toClient api = \header -> mapRequest (addOptionalHeader header) $ toClient @b api
+  clientArity = clientArity @b
 
 instance (KnownSymbol sym, ToHttpApiData a, ToClient b) => ToClient (Query sym a -> b) where
   toClient api = \query -> mapRequest (addQuery query) $ toClient @b api
@@ -199,9 +212,17 @@ addQuery (Query a) req = req{Http.queryString = str}
     param = fromString (symbolVal (Proxy @sym)) <> "=" <> Text.encodeUtf8 (toUrlPiece a)
 
 addOptional :: forall sym a. (KnownSymbol sym, ToHttpApiData a) => Optional sym a -> Http.Request -> Http.Request
-addOptional (Optional mVal) req = case mVal of
-  Nothing -> req
-  Just val -> addQuery @sym (Query val) req
+addOptional (Optional mVal) = case mVal of
+  Nothing -> id
+  Just val -> addQuery @sym (Query val)
+
+addHeader :: forall sym a. (KnownSymbol sym, ToHttpApiData a) => Header sym a -> Http.Request -> Http.Request
+addHeader (Header a) = addRequestHeader (fromString $ symbolVal (Proxy @sym), toHeader a)
+
+addOptionalHeader :: forall sym a. (KnownSymbol sym, ToHttpApiData a) => OptionalHeader sym a -> Http.Request -> Http.Request
+addOptionalHeader (OptionalHeader ma) = case ma of
+  Nothing -> id
+  Just a -> addHeader @sym (Header a)
 
 addCapture :: forall sym a. (KnownSymbol sym, ToHttpApiData a) => Capture sym a -> CaptureMap -> CaptureMap
 addCapture (Capture a) =
@@ -231,9 +252,13 @@ httpSend :: forall media a. (FromReqBody media a) => Path -> Client a
 httpSend path =
   mapRequest (addRequestHeader ("Accept", renderHeader $ toMediaType @media)) $
     Client $ \config captureValues req ->
-      toJson <$> Http.httpLbs (setRoute captureValues path $ setPort config.port req) config.manager
+      toSend <$> Http.httpLbs (setRoute captureValues path $ setPort config.port req) config.manager
   where
-    toJson resp = RespOr . bimap toResp toResp . fromReqBody @media $ Http.responseBody resp
+    toSend :: Http.Response BL.ByteString -> RespOr AnyMedia BL.ByteString a
+    toSend resp =
+      RespOr $ case fromReqBody @media $ Http.responseBody resp of
+        Right body -> Right $ toResp body
+        Left _ -> Left $ toResp $ Http.responseBody resp
       where
         toResp :: val -> Resp AnyMedia val
         toResp = Resp (Http.responseStatus resp) (Http.responseHeaders resp) . Just
@@ -247,70 +272,86 @@ setRoute captureValues path req = req{Http.path = pathToString captureValues pat
 ----------------------------------------------------------
 -- from response
 
+type ClientOr a = Client' (Either BL.ByteString a)
+
+newtype Client' a = Client' (ReaderT ClientConfig IO a)
+  deriving (Functor, Applicative, Monad, MonadReader ClientConfig, MonadIO)
+
+runClient' :: ClientConfig -> Client' a -> IO a
+runClient' config (Client' act) = runReaderT act config
+
 class FromClient a where
   type ClientResult a :: Type
-  fromClient :: a -> ClientConfig -> ClientResult a
+  fromClient :: a -> ClientResult a
 
-instance FromClient (Send method Client (Resp media a)) where
-  type ClientResult (Send method Client (Resp media a)) = IO (RespOr media Text a)
-  fromClient = flip fromSendClient
+instance (ToRespBody (RespMedia a) (RespError a), IsResp a) => FromClient (Send method Client a) where
+  type ClientResult (Send method Client a) = Client' (RespOr (RespMedia a) BL.ByteString (RespBody a))
+  fromClient f = Client' $ ReaderT $ flip fromSendClient f
 
 instance (FromClient b) => FromClient (Body media a -> b) where
   type ClientResult (Body media a -> b) = a -> ClientResult b
-  fromClient f config arg = fromClient (f (Body arg)) config
+  fromClient f arg = fromClient (f (Body arg))
 
 instance (FromClient b) => FromClient (Capture sym a -> b) where
   type ClientResult (Capture sym a -> b) = a -> ClientResult b
-  fromClient f config arg = fromClient (f (Capture arg)) config
+  fromClient f arg = fromClient (f (Capture arg))
 
 instance (FromClient b) => FromClient (Query sym a -> b) where
   type ClientResult (Query sym a -> b) = a -> ClientResult b
-  fromClient f config arg = fromClient (f (Query arg)) config
+  fromClient f arg = fromClient (f (Query arg))
 
 instance (FromClient b) => FromClient (QueryFlag a -> b) where
   type ClientResult (QueryFlag a -> b) = Bool -> ClientResult b
-  fromClient f config arg = fromClient (f (QueryFlag arg)) config
+  fromClient f arg = fromClient (f (QueryFlag arg))
 
 instance (FromClient b) => FromClient (Optional sym a -> b) where
   type ClientResult (Optional sym a -> b) = Maybe a -> ClientResult b
-  fromClient f config arg = fromClient (f (Optional arg)) config
+  fromClient f arg = fromClient (f (Optional arg))
 
 instance (FromClient b) => FromClient (Header sym a -> b) where
   type ClientResult (Header sym a -> b) = a -> ClientResult b
-  fromClient f config arg = fromClient (f (Header arg)) config
+  fromClient f arg = fromClient (f (Header arg))
 
 instance (FromClient b) => FromClient (OptionalHeader sym a -> b) where
   type ClientResult (OptionalHeader sym a -> b) = Maybe a -> ClientResult b
-  fromClient f config arg = fromClient (f (OptionalHeader arg)) config
+  fromClient f arg = fromClient (f (OptionalHeader arg))
 
 instance (FromClient b) => FromClient (PathInfo -> b) where
   type ClientResult (PathInfo -> b) = ClientResult b
-  fromClient f config = fromClient f config
+  fromClient f = fromClient @b (f $ PathInfo [])
 
 instance (FromClient b) => FromClient (IsSecure -> b) where
   type ClientResult (IsSecure -> b) = ClientResult b
-  fromClient f config = fromClient f config
+  fromClient f = fromClient @b (f (IsSecure True))
 
 instance (FromClient b) => FromClient (RawRequest -> b) where
   type ClientResult (RawRequest -> b) = ClientResult b
-  fromClient f config = fromClient f config
+  fromClient f = fromClient @b (f $ error "no request")
 
 instance (FromClient b) => FromClient (RawResponse -> b) where
   type ClientResult (RawResponse -> b) = ClientResult b
-  fromClient f config = fromClient f config
+  fromClient f = fromClient @b (f $ error "no response")
 
-fromSendClient :: ClientConfig -> Send method Client (Resp media a) -> IO (RespOr media Text a)
+fromSendClient ::
+  forall a method.
+  (ToRespBody (RespMedia a) (RespError a), IsResp a) =>
+  ClientConfig ->
+  Send method Client a ->
+  IO (RespOr (RespMedia a) BL.ByteString (RespBody a))
 fromSendClient config (Send client) =
-  joinRespOr <$> runClient config client
+  joinRespOr @a <$> runClient config client
 
-joinRespOr :: RespOr mediaA Text (Resp mediaB a) -> RespOr mediaC Text a
+joinRespOr :: forall a. (ToRespBody (RespMedia a) (RespError a), IsResp a) => RespOr AnyMedia BL.ByteString a -> RespOr (RespMedia a) BL.ByteString (RespBody a)
 joinRespOr (RespOr eResp) = RespOr $ case eResp of
   Right resp -> case resp.body of
-    Just respArg -> Right $ Resp resp.status resp.headers respArg.body
+    Just result ->
+      if getStatus result == ok200
+        then Right $ Resp (getStatus result) (getHeaders result) (getRespBody result)
+        else Left $ Resp (getStatus result) (getHeaders result) (toRespBody @(RespMedia a) <$> getRespError result)
     Nothing -> Right $ Resp resp.status resp.headers Nothing
   Left resp -> Left $ Resp resp.status resp.headers resp.body
 
-getRespOrValue :: RespOr media Text a -> Either Text a
+getRespOrValue :: RespOr media BL.ByteString a -> Either BL.ByteString a
 getRespOrValue (RespOr eResp) = case eResp of
   Right resp -> maybe noContentValue Right resp.body
   Left resp -> maybe noContentValue Left resp.body

@@ -2,6 +2,7 @@ module Main (
   main,
 ) where
 
+import Data.ByteString.Lazy qualified as BL
 import Mig
 import Mig.Client
 import Network.HTTP.Client qualified as Http
@@ -24,8 +25,8 @@ main = do
 type Hello m = Get m (Resp Json Text)
 
 -- | Make it convenient to use
-runHello :: ClientConfig -> IO (Either Text Text)
-runHello config = getRespOrValue <$> fromClient hello config
+runHello :: ClientConfig -> IO (Either BL.ByteString Text)
+runHello config = runClient' config $ getRespOrValue <$> fromClient hello
 
 -- | Init client from API
 hello :: Hello Client

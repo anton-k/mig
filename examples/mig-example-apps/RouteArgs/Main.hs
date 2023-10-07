@@ -22,11 +22,10 @@ routeArgs :: Server IO
 routeArgs =
   withSwagger def $
     withTrace $
-      "hello"
-        /. "api"
+      "api"
         /. mconcat
           -- no args, constnat output
-          [ "world" /. helloWorld
+          [ "hello/world" /. helloWorld
           , -- required query param and custom header
             "succ" /. handleSucc
           , -- optional query param
@@ -36,7 +35,7 @@ routeArgs =
           , -- query flag
             "add-if" /. handleAddIf
           , -- capture
-            "mul" /. "*" /. "*" /. handleMul
+            "mul" /. handleMul
           , -- json body as input
             "add-json" /. handleAddJson
           , -- return error
@@ -105,10 +104,10 @@ data AddInput = AddInput
   }
   deriving (Generic, ToJSON, FromJSON, ToSchema)
 
--- | Using JSON as input and setting status for response
+-- | Using JSON as input
 handleAddJson :: Body AddInput -> Post (Resp Int)
 handleAddJson (Body (AddInput a b)) = Send $ do
-  pure $ setStatus ok200 $ ok $ a + b
+  pure $ ok $ a + b
 
 handleSquareRoot :: Body Float -> Post (RespOr Text Float)
 handleSquareRoot (Body arg) =

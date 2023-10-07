@@ -274,6 +274,51 @@ executable json-api-mig-example-app
 
   default-language:   GHC2021
 
+executable route-args-client-mig-example-app
+  main-is:            Main.hs
+  other-modules:      Paths_mig_example_apps
+  hs-source-dirs:     RouteArgsClient
+  default-extensions:
+    DataKinds
+    DeriveAnyClass
+    DerivingStrategies
+    DuplicateRecordFields
+    ImportQualifiedPost
+    LambdaCase
+    OverloadedRecordDot
+    OverloadedStrings
+    RecordWildCards
+    StrictData
+    TypeFamilies
+
+  ghc-options:
+    -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wmissing-export-lists
+    -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+    -threaded -rtsopts -with-rtsopts=-N
+
+  build-depends:
+      aeson
+    , aeson-pretty
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , http-client
+    , http-types
+    , mig
+    , mig-client
+    , mig-extra
+    , mig-server
+    , mig-swagger-ui
+    , openapi3
+    , pretty-show
+    , random
+    , safe
+    , text
+    , time
+
+  default-language:   GHC2021
+
 executable route-args-mig-example-app
   main-is:            Main.hs
   other-modules:      Paths_mig_example_apps

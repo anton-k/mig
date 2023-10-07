@@ -78,6 +78,7 @@ dependencies:
 - mig
 - http-client
 - http-media
+- mtl
 
 default-extensions:
   - OverloadedStrings
