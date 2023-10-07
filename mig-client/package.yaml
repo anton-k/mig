@@ -70,18 +70,14 @@ description: |
 
 dependencies:
 - base >= 4.7 && < 5
-- aeson
 - text
 - http-types
-- blaze-html
 - bytestring
-- blaze-markup
 - containers
 - http-api-data
-- safe
 - mig
 - http-client
-- -Wunused-packages
+- http-media
 
 default-extensions:
   - OverloadedStrings
@@ -105,6 +101,7 @@ ghc-options:
 - -Wmissing-home-modules
 - -Wpartial-fields
 - -Wredundant-constraints
+- -Wunused-packages
 
 library:
   source-dirs: src

@@ -2,16 +2,15 @@
 
 Features, improvements and open problems for releases:
 
-## v2.1
+## random
 
-### Major
-
-* update / add docs
+* TH for deriving boilerplate
+   * deriveParam ''Type
+   * deriveBody ''Type
 
 ### Normal
 
 -- after commit to main repo
-
 * update external handler and reader apps examples
 
 ## v2.2

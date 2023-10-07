@@ -92,19 +92,17 @@ library
     -Wall -Wcompat -Widentities -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wmissing-export-lists
     -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+    -Wunused-packages
 
   build-depends:
-      aeson
-    , base >=4.7 && <5
-    , blaze-html
-    , blaze-markup
+      base >=4.7 && <5
     , bytestring
     , containers
     , http-api-data
     , http-client
+    , http-media
     , http-types
     , mig
-    , safe
     , text
 
   default-language:   GHC2021

@@ -45,7 +45,6 @@ library
     , bytestring
     , containers
     , exceptions
-    , http-types
     , mig
     , text
     , wai

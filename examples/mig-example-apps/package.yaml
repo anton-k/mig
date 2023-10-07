@@ -55,7 +55,7 @@ dependencies:
   - bytestring
   - mig
   - mig-extra
-    # - mig-client
+  - mig-client
   - mig-server
   - mig-swagger-ui
   - text
@@ -77,7 +77,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
 
-  hello-client-mig-example-app:
+  hello-world-client-mig-example-app:
     main:                Main.hs
     source-dirs:         HelloClient
     ghc-options:

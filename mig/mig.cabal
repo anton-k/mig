@@ -8,6 +8,7 @@ name:               mig
 version:            0.2.0.0
 synopsis:           Build lightweight and composable servers
 description:
+  Core for the mig server library.
   With library mig we can build lightweight and composable servers.
   There are only couple of combinators to assemble servers from parts.
   It supports generic handler functions as servant does. But strives to use more

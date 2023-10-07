@@ -29,6 +29,7 @@ module Mig (
 
   -- * DSL
   Json,
+  AnyMedia,
   FormUrlEncoded,
   OctetStream,
   ToServer (..),
