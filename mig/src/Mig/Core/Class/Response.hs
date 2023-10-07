@@ -20,13 +20,13 @@ import Network.HTTP.Types.Header (HeaderName, ResponseHeaders)
 import Network.HTTP.Types.Status (Status, internalServerError500, notImplemented501, ok200, status302, status400)
 import Web.HttpApiData
 
-import Mig.Core.Class.MediaType (MediaType, ToMediaType (..), ToRespBody (..))
+import Mig.Core.Class.MediaType (AnyMedia, MediaType, ToMediaType (..), ToRespBody (..))
 import Mig.Core.Types.Http (Response, ResponseBody (..), noContentResponse)
 import Mig.Core.Types.Http qualified as Response (Response (..))
 import Mig.Core.Types.Http qualified as Types
 
 -- | Response with info on the media-type encoded as type.
-data Resp media a = Resp
+data Resp (media :: Type) a = Resp
   { status :: Status
   -- ^ response status
   , headers :: ResponseHeaders
@@ -34,10 +34,11 @@ data Resp media a = Resp
   , body :: Maybe a
   -- ^ response body. Nothing means "no content" in the body
   }
-  deriving (Show, Functor)
+  deriving (Show, Eq, Functor)
 
 -- | Response that can contain an error. The error is represented with left case of an @Either@-type.
 newtype RespOr ty err a = RespOr {unRespOr :: Either (Resp ty err) (Resp ty a)}
+  deriving (Show, Eq, Functor)
 
 -------------------------------------------------------------------------------------
 -- response class
@@ -58,6 +59,9 @@ class IsResp a where
 
   -- | the type of an error
   type RespError a :: Type
+
+  -- | the media tpye of resp
+  type RespMedia a :: Type
 
   -- | Returns valid repsonse with 200 status
   ok :: RespBody a -> a
@@ -91,6 +95,7 @@ setHeader name val = addHeaders [(name, toHeader val)]
 instance (ToRespBody ty a) => IsResp (Resp ty a) where
   type RespBody (Resp ty a) = a
   type RespError (Resp ty a) = a
+  type RespMedia (Resp ty a) = ty
 
   ok = Resp ok200 [] . Just
   bad status = Resp status [] . Just
@@ -108,6 +113,7 @@ instance (ToRespBody ty a) => IsResp (Resp ty a) where
 instance IsResp Response where
   type RespBody Response = BL.ByteString
   type RespError Response = BL.ByteString
+  type RespMedia Response = AnyMedia
 
   ok = Response.Response ok200 [] . RawResp "*/*"
   bad st = Response.Response st [] . RawResp "*/*"
@@ -129,6 +135,7 @@ instance IsResp Response where
 instance (ToRespBody ty err, ToRespBody ty a) => IsResp (RespOr ty err a) where
   type RespBody (RespOr ty err a) = a
   type RespError (RespOr ty err a) = err
+  type RespMedia (RespOr ty err a) = ty
 
   ok = RespOr . Right . Resp ok200 [] . Just
   bad status = RespOr . Left . bad status

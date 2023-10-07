@@ -9,6 +9,7 @@ module Mig.Extra.Server.Common (
 
   -- * DSL
   Json,
+  AnyMedia,
   OctetStream,
   FormUrlEncoded,
   ToServer (..),

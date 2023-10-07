@@ -2,33 +2,40 @@ module Main (
   main,
 ) where
 
-main :: IO ()
-main = putStrLn "todo"
-
-{-
 import Mig
 import Mig.Client
-import Network.HTTP.Client
+import Network.HTTP.Client qualified as Http
 
-type Hello m = Capture "who" Text -> Capture "suffix" Text -> Get Json m Text
-type Bye m = Optional "who" Text -> Post Json m Text
-
+{-| Makes a call to hello world server with a client.
+Run the hello-world example server in background
+prior to execution of this file.
+-}
 main :: IO ()
 main = do
-  config <- ClientConfig <$> newManager defaultManagerSettings
-  resp <- runClient config $ unSend (hello (Capture "World") (Capture "!"))
-  print resp
+  config <- ClientConfig port <$> Http.newManager Http.defaultManagerSettings
+  print =<< runHello config
+  where
+    port = 8085
 
+-------------------------------------------------------------------------------------
+-- client definition
+
+-- | Route API definition
+type Hello m = Get m (Resp Json Text)
+
+-- | Make it convenient to use
+runHello :: ClientConfig -> IO (Either Text Text)
+runHello config = getRespOrValue <$> fromClient hello config
+
+-- | Init client from API
 hello :: Hello Client
-bye :: Bye Client
-(hello, bye) = toClient server
+hello = toClient server
 
+{-| Note the recursive definition with hello route.
+We use it as placeholder for undefined value.
+It is ok to use it that way because client definition is derived
+from the handler type
+-}
 server :: Server Client
 server =
-  "api"
-    /. "v1"
-    /. mconcat
-      [ "hello" /. "*" /. "*" /. hello
-      , "bye" /. bye
-      ]
--}
+  "api/v1/hello" /. hello

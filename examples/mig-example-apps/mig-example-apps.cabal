@@ -59,6 +59,7 @@ executable counter-mig-example-app
     , containers
     , http-types
     , mig
+    , mig-client
     , mig-extra
     , mig-server
     , mig-swagger-ui
@@ -72,7 +73,7 @@ executable counter-mig-example-app
 
   default-language:   GHC2021
 
-executable hello-client-mig-example-app
+executable hello-world-client-mig-example-app
   main-is:            Main.hs
   other-modules:      Paths_mig_example_apps
   hs-source-dirs:     HelloClient
@@ -104,6 +105,7 @@ executable hello-client-mig-example-app
     , http-client
     , http-types
     , mig
+    , mig-client
     , mig-extra
     , mig-server
     , mig-swagger-ui
@@ -147,6 +149,7 @@ executable hello-world-mig-example-app
     , containers
     , http-types
     , mig
+    , mig-client
     , mig-extra
     , mig-server
     , mig-swagger-ui
@@ -203,6 +206,7 @@ executable html-mig-example-app
     , http-api-data
     , http-types
     , mig
+    , mig-client
     , mig-extra
     , mig-server
     , mig-swagger-ui
@@ -256,6 +260,7 @@ executable json-api-mig-example-app
     , fast-logger
     , http-types
     , mig
+    , mig-client
     , mig-extra
     , mig-server
     , mig-swagger-ui
@@ -300,6 +305,7 @@ executable route-args-mig-example-app
     , containers
     , http-types
     , mig
+    , mig-client
     , mig-extra
     , mig-server
     , mig-swagger-ui
