@@ -67,13 +67,12 @@ library
     -Wall -Wcompat -Widentities -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wmissing-export-lists
     -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+    -Wunused-packages
 
   build-depends:
       aeson
-    , attoparsec
     , base >=4.7 && <5
     , blaze-html
-    , blaze-markup
     , bytestring
     , case-insensitive
     , containers
@@ -89,7 +88,5 @@ library
     , openapi3
     , safe
     , text
-    , time
-    , yaml
 
   default-language:   GHC2021

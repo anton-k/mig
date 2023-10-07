@@ -81,6 +81,7 @@ dependencies:
 - safe
 - mig
 - http-client
+- -Wunused-packages
 
 default-extensions:
   - OverloadedStrings

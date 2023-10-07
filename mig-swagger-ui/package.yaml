@@ -35,7 +35,6 @@ dependencies:
 - blaze-html
 - blaze-markup
 - openapi3
-- mtl
 - http-api-data
 - data-default
 - aeson-pretty
@@ -50,6 +49,7 @@ ghc-options:
 - -Wmissing-home-modules
 - -Wpartial-fields
 - -Wredundant-constraints
+- -Wunused-packages
 
 extra-source-files:
   - README.md

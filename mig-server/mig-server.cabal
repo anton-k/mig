@@ -99,23 +99,19 @@ library
     -Wall -Wcompat -Widentities -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wmissing-export-lists
     -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+    -Wunused-packages
 
   build-depends:
       aeson
     , base >=4.7 && <5
     , blaze-html
-    , blaze-markup
-    , bytestring
-    , containers
     , data-default
-    , exceptions
     , http-api-data
     , http-types
     , mig
     , mig-extra
     , mig-swagger-ui
     , mig-wai
-    , mtl
     , openapi3
     , text
     , warp

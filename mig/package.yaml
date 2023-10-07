@@ -36,7 +36,6 @@ dependencies:
 - http-types
 - blaze-html
 - bytestring
-- blaze-markup
 - containers
 - mtl
 - exceptions
@@ -49,9 +48,6 @@ dependencies:
 - extra
 - insert-ordered-containers
 - lens
-- attoparsec
-- time
-- yaml
 
 default-extensions:
   - OverloadedStrings
@@ -76,6 +72,7 @@ ghc-options:
 - -Wmissing-home-modules
 - -Wpartial-fields
 - -Wredundant-constraints
+- -Wunused-packages
 
 library:
   source-dirs: src
