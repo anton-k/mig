@@ -46,6 +46,7 @@ dependencies:
 - bytestring
 - extra
 - exceptions
+- mig-client
 
 ghc-options:
 - -Wall

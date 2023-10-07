@@ -95,6 +95,16 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
 
+  route-args-client-mig-example-app:
+    main:                Main.hs
+    source-dirs:         RouteArgsClient
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+      - http-client
+
   json-api-mig-example-app:
     main:                Main.hs
     source-dirs:         JsonApi
@@ -130,5 +140,3 @@ executables:
     - uuid
     - http-api-data
     - fast-logger
-
-

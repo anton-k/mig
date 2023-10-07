@@ -64,6 +64,7 @@ library
     , http-media
     , http-types
     , mig
+    , mig-client
     , openapi3
     , text
     , time

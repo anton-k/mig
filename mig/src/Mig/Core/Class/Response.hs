@@ -75,8 +75,20 @@ class IsResp a where
   -- | Add some header to the response
   addHeaders :: ResponseHeaders -> a -> a
 
+  -- | Get response headers
+  getHeaders :: a -> ResponseHeaders
+
   -- | Sets repsonse status
   setStatus :: Status -> a -> a
+
+  -- | Get response body
+  getRespBody :: a -> Maybe (RespBody a)
+
+  -- | Get response error
+  getRespError :: a -> Maybe (RespError a)
+
+  -- | Get response status
+  getStatus :: a -> Status
 
   -- | Set the media type of the response
   setMedia :: MediaType -> a -> a
@@ -100,9 +112,15 @@ instance (ToRespBody ty a) => IsResp (Resp ty a) where
   ok = Resp ok200 [] . Just
   bad status = Resp status [] . Just
   addHeaders hs x = x{headers = x.headers <> hs}
+  getHeaders x = x.headers
   noContent st = Resp st [] Nothing
   setStatus st x = x{status = st}
+  getStatus x = x.status
   getMedia = toMediaType @ty
+  getRespBody x = x.body
+  getRespError x
+    | x.status == ok200 = Nothing
+    | otherwise = x.body
 
   toResponse a = Response.Response a.status headers body
     where
@@ -121,6 +139,14 @@ instance IsResp Response where
   noContent = noContentResponse
   setStatus st x = x{Response.status = st}
   getMedia = "*/*"
+  getStatus x = x.status
+  getHeaders x = x.headers
+  getRespBody x = case x.body of
+    RawResp _ res -> Just res
+    _ -> Nothing
+  getRespError x
+    | x.status == ok200 = Nothing
+    | otherwise = getRespBody x
 
   toResponse = id
 
@@ -143,6 +169,10 @@ instance (ToRespBody ty err, ToRespBody ty a) => IsResp (RespOr ty err a) where
   noContent st = RespOr $ Right (noContent st)
   setStatus st = RespOr . bimap (setStatus st) (setStatus st) . unRespOr
   getMedia = toMediaType @ty
+  getStatus (RespOr x) = either (.status) (.status) x
+  getHeaders (RespOr x) = either (.headers) (headers) x
+  getRespBody (RespOr x) = either (const Nothing) (.body) x
+  getRespError (RespOr x) = either (.body) (const Nothing) x
 
   toResponse = either toResponse toResponse . unRespOr
 

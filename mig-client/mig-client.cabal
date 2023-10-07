@@ -103,6 +103,7 @@ library
     , http-media
     , http-types
     , mig
+    , mtl
     , text
 
   default-language:   GHC2021

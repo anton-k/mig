@@ -32,3 +32,9 @@ run-html:
 # It sends a clinet call for that server
 run-hello-world-client:
 	stack run hello-world-client-mig-example-app
+
+
+# Run it with launched "make run-route-args" server
+# It sends a clinet call for that server
+run-route-args-client:
+	stack run route-args-client-mig-example-app
