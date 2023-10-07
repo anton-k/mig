@@ -1,7 +1,7 @@
 .PHONY: build test run docs
 
 build:
-	stack build mig-client
+	stack build 
 
 test:
 	stack test
