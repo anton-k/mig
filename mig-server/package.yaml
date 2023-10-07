@@ -85,13 +85,8 @@ dependencies:
 - mig
 - mig-extra
 - mig-wai
-- blaze-markup
 - http-types
 - text
-- containers
-- bytestring
-- exceptions
-- mtl
 - http-api-data
 - openapi3
 - blaze-html
@@ -109,6 +104,7 @@ ghc-options:
 - -Wmissing-home-modules
 - -Wpartial-fields
 - -Wredundant-constraints
+- -Wunused-packages
 
 library:
   source-dirs: src
