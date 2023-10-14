@@ -8,7 +8,7 @@ copyright:           "2023 Author name here"
 
 extra-source-files:
 - README.md
-- CHANGELOG.md
+- Html/resources/*
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -50,12 +50,22 @@ language: GHC2021
 
 dependencies:
   - base >= 4.7 && < 5
-  - base
+  - aeson-pretty
+  - bytestring
   - mig
+  - mig-extra
+  - mig-client
+  - mig-server
+  - mig-swagger-ui
   - text
   - aeson
   - random
   - time
+  - pretty-show
+  - openapi3
+  - safe
+  - containers
+  - http-types
 
 executables:
   hello-world-mig-example-app:
@@ -66,6 +76,16 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
 
+  hello-world-client-mig-example-app:
+    main:                Main.hs
+    source-dirs:         HelloClient
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+      - http-client
+
   route-args-mig-example-app:
     main:                Main.hs
     source-dirs:         RouteArgs
@@ -73,6 +93,16 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+
+  route-args-client-mig-example-app:
+    main:                Main.hs
+    source-dirs:         RouteArgsClient
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+      - http-client
 
   json-api-mig-example-app:
     main:                Main.hs
@@ -82,7 +112,9 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-      - containers
+    - containers
+    - fast-logger
+    - yaml
 
   counter-mig-example-app:
     main:                Main.hs
@@ -96,11 +128,14 @@ executables:
 
   html-mig-example-app:
     main:                Main.hs
-    source-dirs:         Html
+    source-dirs:         Html/src
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
     - blaze-html
-
+    - file-embed-lzma
+    - uuid
+    - http-api-data
+    - fast-logger

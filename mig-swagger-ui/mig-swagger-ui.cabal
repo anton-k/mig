@@ -1,0 +1,75 @@
+cabal-version:      1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:               mig-swagger-ui
+version:            0.1.0.0
+synopsis:           Swagger servers for mig library
+description:        Swagger servers for mig library
+category:           Web
+homepage:           https://github.com/anton-k/mig#readme
+bug-reports:        https://github.com/anton-k/mig/issues
+author:             Anton Kholomiov
+maintainer:         example@example.com
+copyright:          2023 Anton Kholomiov
+license:            BSD3
+build-type:         Simple
+extra-source-files:
+  index.html.tmpl
+  README.md
+  swagger-ui-dist-5.0.0/favicon-16x16.png
+  swagger-ui-dist-5.0.0/favicon-32x32.png
+  swagger-ui-dist-5.0.0/index.css
+  swagger-ui-dist-5.0.0/oauth2-redirect.html
+  swagger-ui-dist-5.0.0/swagger-initializer.js
+  swagger-ui-dist-5.0.0/swagger-ui-bundle.js
+  swagger-ui-dist-5.0.0/swagger-ui-bundle.js.map
+  swagger-ui-dist-5.0.0/swagger-ui-es-bundle-core.js
+  swagger-ui-dist-5.0.0/swagger-ui-es-bundle-core.js.map
+  swagger-ui-dist-5.0.0/swagger-ui-es-bundle.js
+  swagger-ui-dist-5.0.0/swagger-ui-es-bundle.js.map
+  swagger-ui-dist-5.0.0/swagger-ui-standalone-preset.js
+  swagger-ui-dist-5.0.0/swagger-ui-standalone-preset.js.map
+  swagger-ui-dist-5.0.0/swagger-ui.css
+  swagger-ui-dist-5.0.0/swagger-ui.css.map
+  swagger-ui-dist-5.0.0/swagger-ui.js
+  swagger-ui-dist-5.0.0/swagger-ui.js.map
+
+source-repository head
+  type:     git
+  location: https://github.com/anton-k/mig
+
+library
+  exposed-modules:    Mig.Swagger
+  other-modules:      Paths_mig_swagger_ui
+  hs-source-dirs:     src
+  default-extensions:
+    OverloadedRecordDot
+    OverloadedStrings
+    StrictData
+    TemplateHaskell
+
+  ghc-options:
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wmissing-export-lists
+    -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+    -Wunused-packages
+
+  build-depends:
+      aeson
+    , aeson-pretty
+    , base >=4.7 && <5
+    , blaze-html
+    , blaze-markup
+    , bytestring
+    , data-default
+    , file-embed-lzma
+    , http-api-data
+    , lens
+    , mig
+    , openapi3
+    , text
+
+  default-language:   GHC2021

@@ -3,4 +3,5 @@ stack.yaml.lock
 build/
 dist-newstyle/
 dist/
+**/.DS_Store
 *~

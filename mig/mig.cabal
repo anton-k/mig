@@ -1,0 +1,93 @@
+cabal-version:      1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:               mig
+version:            0.2.0.0
+synopsis:           Build lightweight and composable servers
+description:
+  Core for the mig server library.
+  With library mig we can build lightweight and composable servers.
+  There are only couple of combinators to assemble servers from parts.
+  It supports generic handler functions as servant does. But strives to use more
+  simple model for API. It does not go to describing Server API at type level which
+  leads to simpler error messages.
+  .
+  * quick start guide at <https://github.com/anton-k/mig#readme>
+  .
+  * examples directory for more fun servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
+
+category:           Web
+homepage:           https://github.com/anton-k/mig#readme
+bug-reports:        https://github.com/anton-k/mig/issues
+author:             Anton Kholomiov
+maintainer:         anton.kholomiov@gmail.com
+copyright:          2023 Anton Kholomiov
+license:            BSD3
+build-type:         Simple
+extra-source-files: README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/anton-k/mig
+
+library
+  exposed-modules:
+    Mig.Core
+    Mig.Core.Api
+    Mig.Core.Class
+    Mig.Core.Class.MediaType
+    Mig.Core.Class.Middleware
+    Mig.Core.Class.Monad
+    Mig.Core.Class.Response
+    Mig.Core.Class.Route
+    Mig.Core.Class.Server
+    Mig.Core.OpenApi
+    Mig.Core.Server
+    Mig.Core.ServerFun
+    Mig.Core.Types
+    Mig.Core.Types.Http
+    Mig.Core.Types.Info
+    Mig.Core.Types.Route
+
+  other-modules:      Paths_mig
+  hs-source-dirs:     src
+  default-extensions:
+    AllowAmbiguousTypes
+    DerivingStrategies
+    DuplicateRecordFields
+    LambdaCase
+    OverloadedRecordDot
+    OverloadedStrings
+    StrictData
+    TypeFamilies
+
+  ghc-options:
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wmissing-export-lists
+    -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+    -Wunused-packages
+
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , blaze-html
+    , bytestring
+    , case-insensitive
+    , containers
+    , exceptions
+    , extra
+    , filepath
+    , http-api-data
+    , http-media
+    , http-types
+    , insert-ordered-containers
+    , lens
+    , mtl
+    , openapi3
+    , safe
+    , text
+
+  default-language:   GHC2021

@@ -1,0 +1,73 @@
+cabal-version:      1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:               mig-extra
+version:            0.1.0.0
+synopsis:           Extra utils for Mig core library
+description:        Extra utils for mig server library
+category:           Web
+homepage:           https://github.com/anton-k/mig#readme
+bug-reports:        https://github.com/anton-k/mig/issues
+author:             Anton Kholomiov
+maintainer:         anton.kholomiov@gmail.com
+copyright:          2023 Anton Kholomiov
+license:            BSD3
+build-type:         Simple
+extra-source-files: README.md
+
+source-repository head
+  type:     git
+  location: https://github.com/anton-k/mig
+
+library
+  exposed-modules:
+    Mig.Extra.Middleware.Auth
+    Mig.Extra.Middleware.Exception
+    Mig.Extra.Middleware.Trace
+    Mig.Extra.Server.Common
+    Mig.Extra.Server.Html
+    Mig.Extra.Server.Html.IO
+    Mig.Extra.Server.IO
+    Mig.Extra.Server.Json
+    Mig.Extra.Server.Json.IO
+
+  other-modules:      Paths_mig_extra
+  hs-source-dirs:     src
+  default-extensions:
+    DataKinds
+    DerivingStrategies
+    DuplicateRecordFields
+    LambdaCase
+    OverloadedRecordDot
+    OverloadedStrings
+    TypeFamilies
+
+  ghc-options:
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wmissing-export-lists
+    -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+    -Wunused-packages
+
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , blaze-html
+    , bytestring
+    , case-insensitive
+    , containers
+    , exceptions
+    , extra
+    , http-api-data
+    , http-media
+    , http-types
+    , mig
+    , mig-client
+    , openapi3
+    , text
+    , time
+    , yaml
+
+  default-language:   GHC2021

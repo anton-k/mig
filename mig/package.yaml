@@ -1,0 +1,77 @@
+name:                mig
+version:             0.2.0.0
+github:              "anton-k/mig"
+license:             BSD3
+author:              "Anton Kholomiov"
+maintainer:          "anton.kholomiov@gmail.com"
+copyright:           "2023 Anton Kholomiov"
+
+extra-source-files:
+- README.md
+
+# Metadata used when publishing your package
+synopsis:            Build lightweight and composable servers
+category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description: |
+  Core for the mig server library.
+  With library mig we can build lightweight and composable servers.
+  There are only couple of combinators to assemble servers from parts.
+  It supports generic handler functions as servant does. But strives to use more
+  simple model for API. It does not go to describing Server API at type level which
+  leads to simpler error messages.
+  .
+  * quick start guide at <https://github.com/anton-k/mig#readme>
+  .
+  * examples directory for more fun servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- aeson
+- text
+- http-types
+- blaze-html
+- bytestring
+- containers
+- mtl
+- exceptions
+- http-api-data
+- http-media
+- case-insensitive
+- safe
+- openapi3
+- filepath
+- extra
+- insert-ordered-containers
+- lens
+
+default-extensions:
+  - OverloadedStrings
+  - TypeFamilies
+  - OverloadedRecordDot
+  - DuplicateRecordFields
+  - LambdaCase
+  - DerivingStrategies
+  - StrictData
+  - AllowAmbiguousTypes
+
+language: GHC2021
+
+ghc-options:
+# - -Werror
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+- -Wunused-packages
+
+library:
+  source-dirs: src

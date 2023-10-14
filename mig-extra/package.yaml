@@ -1,0 +1,64 @@
+name:                mig-extra
+version:             0.1.0.0
+github:              "anton-k/mig"
+license:             BSD3
+author:              "Anton Kholomiov"
+maintainer:          "anton.kholomiov@gmail.com"
+copyright:           "2023 Anton Kholomiov"
+
+extra-source-files:
+- README.md
+
+# Metadata used when publishing your package
+synopsis:            Extra utils for Mig core library
+category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Extra utils for mig server library
+
+language: GHC2021
+
+default-extensions:
+  - DerivingStrategies
+  - TypeFamilies
+  - DataKinds
+  - OverloadedRecordDot
+  - OverloadedStrings
+  - DuplicateRecordFields
+  - LambdaCase
+
+dependencies:
+- base >= 4.7 && < 5
+- mig
+- http-api-data
+- blaze-html
+- http-types
+- http-media
+- text
+- openapi3
+- aeson
+- yaml
+- time
+- containers
+- case-insensitive
+- bytestring
+- extra
+- exceptions
+- mig-client
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+- -Wunused-packages
+
+library:
+  source-dirs: src

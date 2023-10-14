@@ -1,75 +1,92 @@
 -- | server and handlers
-module Server
-  ( server
-  ) where
+module Server (
+  server,
+) where
 
-import Mig.Json.IO
-import Data.Time
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad
+import Data.Text qualified as Text
+import Data.Text.Lazy.Encoding qualified as Text
+import Data.Time
+import Mig.Extra.Middleware.Trace qualified as Trace
+import Mig.Json.IO
 
-import Types
 import Interface
+import Server.Swagger
+import Types
 
 server :: Env -> Server IO
 server env =
-  "api" /. "v1" /. "weather" /.
-    mconcat
-      [ "get" /.
-            mconcat
-              [ "weather" /. handleGetWeather env
-              , "auth-token" /. handleAuthToken env
-              ]
-      , "update" /. handleUpdateWeather env
-      ]
+  setSwagger $
+    withTrace $
+      "api/v1/weather"
+        /. mconcat
+          [ auth
+          , withAuth env $: app
+          ]
+  where
+    auth = "get/auth-token" /. requestAuthToken env
 
-handleAuthToken :: Env -> Body User -> Post (Either (Error Text) AuthToken)
-handleAuthToken env (Body user) = Post $ do
-  env.logger.info ("get new auth token for: " <> user.name)
+    app =
+      mconcat
+        [ "get/weather" /. getWeather env
+        , "update" /. updateWeather env
+        ]
+
+    withTrace = applyMiddleware (Trace.logHttpBy (logInfo env) Trace.V2)
+
+-------------------------------------------------------------------------------------
+-- application handlers
+
+getWeather ::
+  Env ->
+  Capture "location" Location ->
+  Capture "day" Day ->
+  Capture "day-interval" DayInterval ->
+  Get (RespOr Text (Timed WeatherData))
+getWeather env (Capture location) (Capture fromDay) (Capture interval) = Send $ do
+  logInfo @Text env "get the weather forecast"
+  mResult <- env.weather.get location fromDay interval
+  pure $ case mResult of
+    Just result -> ok result
+    Nothing -> bad status400 "No data"
+
+updateWeather ::
+  Env ->
+  Body UpdateData ->
+  Post (RespOr Text ())
+updateWeather env (Body updateData) = Send $ do
+  logInfo @Text env "update the weather data"
+  ok <$> env.weather.update updateData
+
+-------------------------------------------------------------------------------------
+-- authorization
+
+requestAuthToken :: Env -> Body User -> Post (RespOr Text AuthToken)
+requestAuthToken env (Body user) = Send $ do
+  logInfo env ("get new auth token for: " <> user.name)
   isValid <- env.auth.validUser user
   if isValid
     then do
       token <- env.auth.newToken user
       void $ forkIO $ setExpireTimer token
-      pure $ Right token
+      pure $ ok token
     else do
-      env.logger.error "User does not have access to service"
-      pure $ Left $ Error status500 "User is not valid"
+      logError env $ Text.unwords ["User", user.name, "does not have access to the service"]
+      pure $ bad unauthorized401 "User is not valid"
   where
+    setExpireTimer :: AuthToken -> IO ()
     setExpireTimer token = do
       threadDelay (1_000_000 * 60 * 10) -- 10 minutes
       env.auth.expireToken token
 
-handleGetWeather ::
-  Env ->
-  Query "auth" AuthToken -> Capture Location -> Capture Day -> Capture DayInterval ->
-  Get (Either (Error Text) (Timed WeatherData))
-handleGetWeather env (Query token) (Capture location) (Capture fromDay) (Capture interval) = Get $ do
-  env.logger.info "get the weather forecast"
-  fmap join $ whenAuth env token $ do
-    mResult <- env.weather.get location fromDay interval
-    case mResult of
-      Just result -> pure $ Right result
-      Nothing -> pure $ Left $ Error status400 "No data"
-
-handleUpdateWeather ::
-  Env ->
-  Query "auth" AuthToken -> Body UpdateData ->
-  Post ()
-handleUpdateWeather env (Query token) (Body updateData) = Post $ do
-  env.logger.info "update the weather data"
-  void $ whenAuth env token $
-    env.weather.update updateData
-
-whenAuth :: Env -> AuthToken -> IO a -> IO (Either (Error Text) a)
-whenAuth env token act = do
+withAuth :: Env -> Header "auth" AuthToken -> Middleware IO
+withAuth env (Header token) = processResponse $ \getResp -> do
   isOk <- env.auth.validToken token
   if isOk
-    then Right <$> act
+    then getResp
     else do
-      env.logger.error errMessage
-      pure $ Left $ Error status500 errMessage
+      logError env errMessage
+      pure $ Just (bad status500 $ Text.encodeUtf8 errMessage)
   where
     errMessage = "Token is invalid"
-
-

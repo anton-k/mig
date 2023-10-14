@@ -1,0 +1,76 @@
+name:                mig-swagger-ui
+version:             0.1.0.0
+github:              "anton-k/mig"
+license:             BSD3
+author:              "Anton Kholomiov"
+maintainer:          "example@example.com"
+copyright:           "2023 Anton Kholomiov"
+
+# Metadata used when publishing your package
+synopsis:            Swagger servers for mig library
+category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Swagger servers for mig library
+
+language:
+  GHC2021
+
+default-extensions:
+  - OverloadedStrings
+  - OverloadedRecordDot
+  - TemplateHaskell
+  - StrictData
+
+dependencies:
+- aeson
+- base >= 4.7 && < 5
+- bytestring
+- text
+- lens
+- mig
+- file-embed-lzma
+- blaze-html
+- blaze-markup
+- openapi3
+- http-api-data
+- data-default
+- aeson-pretty
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+- -Wunused-packages
+
+extra-source-files:
+  - README.md
+  - index.html.tmpl
+  - swagger-ui-dist-5.0.0/favicon-16x16.png
+  - swagger-ui-dist-5.0.0/favicon-32x32.png
+  - swagger-ui-dist-5.0.0/oauth2-redirect.html
+  - swagger-ui-dist-5.0.0/swagger-ui-bundle.js
+  - swagger-ui-dist-5.0.0/swagger-ui-bundle.js.map
+  - swagger-ui-dist-5.0.0/swagger-ui-es-bundle-core.js
+  - swagger-ui-dist-5.0.0/swagger-ui-es-bundle-core.js.map
+  - swagger-ui-dist-5.0.0/swagger-ui-es-bundle.js
+  - swagger-ui-dist-5.0.0/swagger-ui-es-bundle.js.map
+  - swagger-ui-dist-5.0.0/swagger-ui-standalone-preset.js
+  - swagger-ui-dist-5.0.0/swagger-ui-standalone-preset.js.map
+  - swagger-ui-dist-5.0.0/swagger-ui.css
+  - swagger-ui-dist-5.0.0/swagger-ui.css.map
+  - swagger-ui-dist-5.0.0/swagger-ui.js
+  - swagger-ui-dist-5.0.0/swagger-ui.js.map
+  - swagger-ui-dist-5.0.0/swagger-initializer.js
+  - swagger-ui-dist-5.0.0/index.css
+
+library:
+  source-dirs: src
