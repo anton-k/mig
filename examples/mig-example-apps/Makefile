@@ -7,9 +7,11 @@ test:
 	stack test
 
 run:
-	stack run html-mig-example-app
+	stack run counter-mig-example-app
 	
-run-hello-wrold:
+## servers
+
+run-hello-world:
 	stack run hello-world-mig-example-app	
 
 run-route-args:
@@ -23,3 +25,16 @@ run-json-api:
 
 run-html:
 	stack run html-mig-example-app
+
+## clients
+
+# Run it with launched "make run-hello-world" server
+# It sends a clinet call for that server
+run-hello-world-client:
+	stack run hello-world-client-mig-example-app
+
+
+# Run it with launched "make run-route-args" server
+# It sends a clinet call for that server
+run-route-args-client:
+	stack run route-args-client-mig-example-app

@@ -1,0 +1,82 @@
+<!-- HTML for static distribution bundle build -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Swagger UI</title>
+    <link rel="stylesheet" type="text/css" href="./swagger-ui.css" />
+    <link rel="stylesheet" type="text/css" href="index.css" />
+    <link rel="icon" type="image/png" href="./favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="./favicon-16x16.png" sizes="16x16" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Script to reload .../swagger-ui to .../swagger-ui/ -->
+    <script type="text/javascript">
+      if (window.location.href.match(/\/index.html\/$/)) {
+        // drop trailing slash in "index.html/"
+        window.location.href = window.location.href.replace(/.$/, "");
+      } else if (!window.location.href.match(/\/(?:index.html)?$/)) {
+        // mig-swagger-ui: redirect to location with a trailing slash
+        // we need this because assets are served from relative paths
+        window.location.href = window.location.href + '/';
+      }
+    </script>
+    <style>
+      html
+      {
+        box-sizing: border-box;
+        overflow: -moz-scrollbars-vertical;
+        overflow-y: scroll;
+      }
+
+      *,
+      *:before,
+      *:after
+      {
+        box-sizing: inherit;
+      }
+
+      body
+      {
+        margin:0;
+        background: #fafafa;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="swagger-ui"></div>
+
+    <script src="./swagger-ui-bundle.js" charset="UTF-8"> </script>
+    <script src="./swagger-ui-standalone-preset.js" charset="UTF-8"> </script>
+    <script>
+    window.onload = function() {
+      // mig-swagger-ui addition
+      var ssuDir = "MIG_SWAGGER_UI_DIR";
+      var ssuSchema = "MIG_SWAGGER_UI_SCHEMA";
+      // more concretely:
+      // replace /swagger-ui/ or /swagger-ui/index.html with /swagger.json
+      // we always have trailing slash!
+      var re = new RegExp("\/" + ssuDir + "/(?:index\\.html)?$","g");
+      var url = window.location.pathname.replace(re, "/" + ssuSchema);
+
+      // Begin Swagger UI call region
+      const ui = SwaggerUIBundle({
+        url: url,
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout"
+      });
+      // End Swagger UI call region
+
+      window.ui = ui;
+    };
+  </script>
+  </body>
+</html>

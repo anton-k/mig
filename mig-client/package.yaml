@@ -1,0 +1,60 @@
+name:                mig-client
+version:             0.1.0.0
+github:              "anton-k/mig"
+license:             BSD3
+author:              "Anton Kholomiov"
+maintainer:          "anton.kholomiov@gmail.com"
+copyright:           "2023 Anton Kholomiov"
+
+extra-source-files:
+- README.md
+
+# Metadata used when publishing your package
+synopsis:            Build http-clients from API definition for mig servers
+category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description: |
+  With this library we can build client functions for HTTP-applications
+  from the same code as server definition.
+
+dependencies:
+- base >= 4.7 && < 5
+- text
+- http-types
+- bytestring
+- containers
+- http-api-data
+- mig
+- http-client
+- http-media
+- mtl
+
+default-extensions:
+  - OverloadedStrings
+  - TypeFamilies
+  - OverloadedRecordDot
+  - DuplicateRecordFields
+  - LambdaCase
+  - DerivingStrategies
+  - StrictData
+  - AllowAmbiguousTypes
+
+language: GHC2021
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+- -Wunused-packages
+
+library:
+  source-dirs: src
