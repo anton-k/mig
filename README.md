@@ -14,4 +14,4 @@ So I wanted to create something in the middle. Something composable and simple
 at the same time.
 The name `mig` (pronounced as meeg) is a russian word for "instant moment".
 
-For quick start guide see [tutorial]()
+For quick start guide see [tutorial](https://github.com/anton-k/mig/tree/main/docs/src)
