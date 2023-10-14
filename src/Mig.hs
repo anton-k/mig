@@ -102,7 +102,7 @@ import Text.Blaze.Html (Html)
 import Text.Blaze.Html (ToMarkup)
 import Text.Read (readMaybe)
 import Control.Monad.Reader
-import Control.Monad.Except
+import Control.Monad.Except (ExceptT, runExceptT)
 import GHC.TypeLits
 import Data.Proxy
 import Data.Map.Strict qualified as Map
@@ -112,6 +112,7 @@ import Network.HTTP.Types.Header (ResponseHeaders)
 import Network.Wai.Handler.Warp qualified as Warp
 import Control.Exception (throw)
 import Data.Typeable
+import Control.Monad ((<=<))
 
 -- | Path constructor (right associative). Example:
 --
