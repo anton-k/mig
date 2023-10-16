@@ -97,10 +97,9 @@ server site =
   logRoutes $
     mconcat
       [ "blog"
-          /. mconcat
-            [ readServer
-            , writeServer
-            ]
+          /. [ readServer
+             , writeServer
+             ]
       , defaultPage
       , addFavicon $ "static" /. staticFiles resourceFiles
       ]
@@ -145,10 +144,9 @@ Let's define read-only pages for our site.
 readServer =
   mconcat
     [ "read"
-        /. mconcat
-          [ "post" /. handleBlogPost site
-          , "quote" /. handleQuote site
-          ]
+        /. [ "post" /. handleBlogPost site
+           , "quote" /. handleQuote site
+           ]
     , "list" /. handleListPosts site
     ]
 
@@ -173,10 +171,9 @@ Let's define a route to add new blog posts to the site:
     -- server to write new blog posts
     writeServer =
       "write"
-        /. mconcat
-          [ toServer $ handleWriteForm site
-          , toServer $ handleWriteSubmit site
-          ]
+        /. [ toServer $ handleWriteForm site
+           , toServer $ handleWriteSubmit site
+           ]
 
 handleWriteForm :: Site -> Get (Page WritePost)
 

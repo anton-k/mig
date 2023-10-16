@@ -116,10 +116,9 @@ Our server has two routes:
 server :: Server App
 server =
   "counter"
-    /. mconcat
-      [ "get" /. handleGet
-      , "put" /. handlePut
-      ]
+    /. [ "get" /. handleGet
+       , "put" /. handlePut
+       ]
 ```
 Let's define the `get` route:
 

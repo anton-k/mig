@@ -98,10 +98,9 @@ server :: Env -> Server IO
 server env =
   withSwagger def $
     "api/v1/weather"
-      /. mconcat
-        [ auth
-        , withAuth env $: app
-        ]
+      /. [ auth
+         , withAuth env $: app
+         ]
   where
     auth = "get/auth-token" /. requestAuthToken env
 
