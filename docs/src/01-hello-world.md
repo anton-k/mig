@@ -298,6 +298,18 @@ to the value `Server m`. So we have the flexibility on DSL level but
 on the level of implementation to build the tree of handlers we use the same type.
 which makes type very simple.
 
+### List instance for Servers
+Because of the `ToServer a => ToServer [a]` instance we can omit the `mconcat`
+most of the time. Meaning we can write the previous examples as:
+
+```haskell
+server = 
+  "api/v1/hello" /.
+      [ toServer helloGet
+      , toServer helloPost
+      ]
+```
+
 ### The path type
 
 Let's discuss the `Path` type.
