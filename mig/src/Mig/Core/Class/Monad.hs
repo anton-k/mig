@@ -13,3 +13,4 @@ type family MonadOf a :: (Type -> Type) where
   MonadOf (Request -> m (Maybe Response)) = m
   MonadOf (f m) = m
   MonadOf (a -> b) = MonadOf b
+  MonadOf [a] = MonadOf a
