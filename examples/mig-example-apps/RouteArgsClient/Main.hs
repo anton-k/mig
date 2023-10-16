@@ -82,24 +82,24 @@ helloWorld
 server :: Server Client
 server =
   "api"
-    /. mconcat
-      -- no args, constnat output
-      [ "hello/world" /. helloWorld
-      , -- required query param and custom header
-        "succ" /. handleSucc
-      , -- optional query param
-        "succ-opt" /. handleSuccOpt
-      , -- several query params
-        "add" /. handleAdd
-      , -- query flag
-        "add-if" /. handleAddIf
-      , -- capture
-        "mul" /. handleMul
-      , -- json body as input
-        "add-json" /. handleAddJson
-      , -- return error
-        "square-root" /. handleSquareRoot
-      ]
+    /.
+    -- no args, constnat output
+    [ "hello/world" /. helloWorld
+    , -- required query param and custom header
+      "succ" /. handleSucc
+    , -- optional query param
+      "succ-opt" /. handleSuccOpt
+    , -- several query params
+      "add" /. handleAdd
+    , -- query flag
+      "add-if" /. handleAddIf
+    , -- capture
+      "mul" /. handleMul
+    , -- json body as input
+      "add-json" /. handleAddJson
+    , -- return error
+      "square-root" /. handleSquareRoot
+    ]
 
 data AddInput = AddInput
   { a :: Int
