@@ -62,6 +62,10 @@ class ToServer a where
 instance ToServer (Server m) where
   toServer = id
 
+-- list
+instance (ToServer a) => ToServer [a] where
+  toServer = foldMap toServer
+
 -- outputs
 instance (MonadIO m, IsResp a, IsMethod method) => ToServer (Send method m a) where
   toServer a = Server $ Api.HandleRoute (toRoute a)
