@@ -24,10 +24,9 @@ server site =
   logRoutes $
     mconcat
       [ "blog"
-          /. mconcat
-            [ readServer
-            , writeServer
-            ]
+          /. [ readServer
+             , writeServer
+             ]
       , defaultPage
       , addFavicon $ "static" /. staticFiles resourceFiles
       ]
@@ -37,7 +36,7 @@ server site =
     -- server to read info.
     -- We can read blog posts and quotes.
     readServer =
-      mconcat
+      toServer
         [ "read"
             /. mconcat
               [ "post" /. handleBlogPost site
@@ -49,14 +48,13 @@ server site =
     -- server to write new blog posts
     writeServer =
       "write"
-        /. mconcat
-          [ toServer $ handleWriteForm site
-          , toServer $ handleWriteSubmit site
-          ]
+        /. [ toServer $ handleWriteForm site
+           , toServer $ handleWriteSubmit site
+           ]
 
     -- default main page
     defaultPage =
-      mconcat
+      toServer
         [ "/" /. handleGreeting site
         , "index.html" /. handleGreeting site
         ]

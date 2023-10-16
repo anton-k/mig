@@ -20,15 +20,14 @@ server env =
   setSwagger $
     withTrace $
       "api/v1/weather"
-        /. mconcat
-          [ auth
-          , withAuth env $: app
-          ]
+        /. [ auth
+           , withAuth env $: app
+           ]
   where
     auth = "get/auth-token" /. requestAuthToken env
 
     app =
-      mconcat
+      toServer
         [ "get/weather" /. getWeather env
         , "update" /. updateWeather env
         ]

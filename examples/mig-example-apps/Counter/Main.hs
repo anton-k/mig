@@ -57,10 +57,9 @@ initEnv = Env <$> newIORef 0
 server :: Server App
 server =
   "counter"
-    /. mconcat
-      [ "get" /. handleGet
-      , "put" /. handlePut
-      ]
+    /. [ "get" /. handleGet
+       , "put" /. handlePut
+       ]
 
 -- | Get handler. It logs the call and returns current state
 handleGet :: Get App (Resp Int)
