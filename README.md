@@ -15,4 +15,4 @@ at the same time.
 The name `mig` (pronounced as meeg) is a russian word for "instant moment".
 
 * For quick start guide see [tutorial](https://anton-k.github.io/mig/)
-* For references of the main functions see [docs](https://anton-k.github.io/mig/08-reference.html)
+* For summary of the main functions see [docs](https://anton-k.github.io/mig/08-reference.html)
