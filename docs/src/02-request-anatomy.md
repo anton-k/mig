@@ -272,8 +272,7 @@ main = runServer 8085 server
 -- | Let's define a server
 server :: Server IO
 server = 
-  "api"
-  /. mconcat
+  "api" /.
     -- no args, constnat output
     [ "hello/world" /. helloWorld
     , -- required query param and custom header
@@ -387,8 +386,7 @@ Let's add a swagger to our server. Just add this line:
 server :: IO
 server = 
   withSwagger def $ 
-    "api" /. 
-      mcomcat [ {- the rest of the code -} ]
+    "api" /. [ {- the rest of the code -} ]
 ```
 
 Let's add this line to our example and restart the server.
