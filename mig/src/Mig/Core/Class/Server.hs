@@ -8,7 +8,7 @@ module Mig.Core.Class.Server (
   fromReaderExcept,
 ) where
 
-import Control.Monad.Except
+import Control.Monad.Except (ExceptT, runExceptT)
 import Control.Monad.Reader
 import Data.Kind
 import Data.OpenApi (ToParamSchema, ToSchema)
@@ -111,18 +111,17 @@ instance HasServer IO where
   renderServer = id
 
 instance HasServer (ReaderT env IO) where
-  type ServerResult (ReaderT env IO) = env -> IO (Server IO)
+  type ServerResult (ReaderT env IO) = env -> Server IO
   renderServer server initEnv = fromReader initEnv server
 
 -- | Render reader server to IO-based server
-fromReader :: env -> Server (ReaderT env IO) -> IO (Server IO)
-fromReader env server =
-  flip runReaderT env $ ReaderT $ \e -> pure $ hoistServer (flip runReaderT e) server
+fromReader :: env -> Server (ReaderT env IO) -> Server IO
+fromReader env = hoistServer (flip runReaderT env)
 
 instance HasServer (ReaderT env (ExceptT Text IO)) where
   type
     ServerResult (ReaderT env (ExceptT Text IO)) =
-      env -> IO (Server IO)
+      env -> Server IO
 
   renderServer server initEnv = fromReaderExcept initEnv server
 
@@ -131,11 +130,8 @@ fromReaderExcept ::
   forall env.
   env ->
   Server (ReaderT env (ExceptT Text IO)) ->
-  IO (Server IO)
-fromReaderExcept env server =
-  flip runReaderT env $
-    ReaderT $
-      \e -> pure $ mapServerFun (handle e) server
+  Server IO
+fromReaderExcept env = mapServerFun (handle env)
   where
     handle :: env -> ServerFun (ReaderT env (ExceptT Text IO)) -> ServerFun IO
     handle e f = \req ->

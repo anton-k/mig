@@ -21,7 +21,7 @@ main :: IO ()
 main = do
   env <- initEnv
   putStrLn ("The counter server listens on port: " <> show port)
-  runServer port . withSwagger def =<< (renderServer server env)
+  runServer port . withSwagger def $ renderServer server env
   where
     port = 8085
 
