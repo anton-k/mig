@@ -1,3 +1,5 @@
+{-# LANGUAGE UndecidableInstances #-}
+
 -- | To server class
 module Mig.Core.Class.Server (
   (/.),
@@ -11,18 +13,13 @@ module Mig.Core.Class.Server (
 import Control.Monad.Except (ExceptT, runExceptT)
 import Control.Monad.Reader
 import Data.Kind
-import Data.OpenApi (ToParamSchema, ToSchema)
 import Data.Text (Text)
-import GHC.TypeLits
 import Mig.Core.Api qualified as Api
-import Mig.Core.Class.MediaType (FromReqBody (..))
 import Mig.Core.Class.Monad
-import Mig.Core.Class.Response (IsResp)
 import Mig.Core.Class.Route
 import Mig.Core.Server (Server (..), mapServerFun)
 import Mig.Core.ServerFun (ServerFun)
 import Mig.Core.Types
-import Web.HttpApiData
 
 infixr 4 /.
 
@@ -66,28 +63,8 @@ instance ToServer (Server m) where
 instance (ToServer a) => ToServer [a] where
   toServer = foldMap toServer
 
--- outputs
-instance (MonadIO m, IsResp a, IsMethod method) => ToServer (Send method m a) where
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
--- inputs
-
-instance (ToSchema a, FromReqBody media a, ToRoute b) => ToServer (Body media a -> b) where
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Query sym a -> b) where
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Optional sym a -> b) where
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Capture sym a -> b) where
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToServer (Header sym a -> b) where
-  toServer a = Server $ Api.HandleRoute (toRoute a)
-
-instance (ToRoute b) => ToServer (PathInfo -> b) where
+-- routes
+instance {-# OVERLAPPABLE #-} (ToRoute a) => ToServer a where
   toServer a = Server $ Api.HandleRoute (toRoute a)
 
 -------------------------------------------------------------------------------------
