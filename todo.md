@@ -2,47 +2,56 @@
 
 Features, improvements and open problems for releases:
 
-## random
-
-* TH for deriving boilerplate
-   * deriveParam ''Type
-   * deriveBody ''Type
-
-### Normal
+### Curent: v2
 
 -- after commit to main repo
 * update external handler and reader apps examples
+* add TH for deriving of all classes by type: `IsParam`, `IsBody`, `IsParaBody`, `IsReaderServer`
+   * deriveParam ''Type
+   * deriveBody ''Type
+* try out Response as generic type a (without Resp) for special case of Json servers (use overlappable)
+* support for LRU cache for routes (research on efficient route/api representation)
 
 ## v2.2
 
 add client support
 
-* add Accept and Content-Type headers for client
+* write docs page on clients
 
-* test client 
-
-* generate client for JsonExample
-
-* add client examples 
+* add client examples
+  * generate client for JsonExample
+  * make example for client and server from the same definition: use Counter as example
   * reuse JsonApi and hello-world
   * client from scratch (without defined server) to test client-only apps
 
+* filter Api by path: it can be useful to create client for subset of the big main server:
+  ```haskell
+  filterPath :: (Path -> Bool) -> Server m -> Server m
+  ```
+* get all paths of the server. Might be useful for docs generation:
+  ```haskell
+  getServerPaths :: Server m -> [Path]
+  ```
+  
 ## v3
 
-* add support for (Either Error (Response a))
 * add capture all case
 * add Queries case
 * add XML support
-* add docs (build separate site on github pages)
-* support for LRU cache for routes (research on efficient route/api representation)
+* cookbook for main scenarios (add to tutorial)
+
+## v3.2
+
+* make it faster and look out for optimization oportunities
 
 ## v4
 
-* generate Mig client and server from open-api yaml file. Useful for spec first approach
+* HTTP-Streaming
+* websockets
 
 ## v5
 
-* Streaming
+* generate Mig client and server from open-api yaml file. Useful for spec first approach
 
 ### ideas
 
