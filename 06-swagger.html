@@ -1,0 +1,303 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Using Swagger - Mig by example</title>
+                
+
+        <!-- Custom HTML head -->
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+                <link rel="icon" href="favicon.svg">
+                        <link rel="shortcut icon" href="favicon.png">
+                <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+                <link rel="stylesheet" href="css/print.css" media="print">
+        
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+                <link rel="stylesheet" href="fonts/fonts.css">
+        
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+            </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-middleware.html"><strong aria-hidden="true">5.</strong> Middlewares</a></li><li class="chapter-item expanded "><a href="06-swagger.html" class="active"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                                                <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                                            </div>
+
+                    <h1 class="menu-title">Mig by example</h1>
+
+                    <div class="right-buttons">
+                                                <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                                                                        
+                    </div>
+                </div>
+
+                                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="how-to-use-swagger"><a class="header" href="#how-to-use-swagger">How to use Swagger</a></h1>
+<p>The Swagger is a powerful tool to try out your servers.
+It provides easy to use Web UI to call routes in the server.
+We already saw know how to augment server with swagger.
+It is just a line of code:</p>
+<pre><code class="language-haskell">withSwagger def server
+</code></pre>
+<p>The function <code>withSwagger</code> is defined in the package <code>mig-swagger-ui</code>
+which is re-exported by <code>mig-server</code>.</p>
+<p>In this chapter we are going to learn how to tweak and fine-tune the swagger.</p>
+<h2 id="swagger-config"><a class="header" href="#swagger-config">Swagger config</a></h2>
+<p>We have used default swagger config with constant <code>def</code>.
+Let's look at what can be configured:</p>
+<pre><code class="language-haskell">data SwaggerConfig m = SwaggerConfig
+  { staticDir :: Path
+  -- ^ path to server swagger (default is &quot;/swagger-ui&quot;)
+  , swaggerFile :: Path
+  -- ^ swagger file name (default is &quot;swaggger.json&quot;)
+  , mapSchema :: OpenApi -&gt; m OpenApi
+  -- ^ apply transformation to OpenApi schema on serving OpenApi schema.
+  -- it is useful to add additional info or set current date in the examples
+  -- or apply any real-time transformation.
+  }
+
+instance (Applicative m) =&gt; Default (SwaggerConfig m) where
+  def =
+    SwaggerConfig
+      { staticDir = &quot;swagger-ui&quot;
+      , swaggerFile = &quot;swagger.json&quot;
+      , mapSchema = pure
+      }
+</code></pre>
+<p>We can set in <code>staticDir</code> at what path to serve the swagger,
+how to name the swagger file with <code>swaggerFile</code> and
+which run-time transformation we apply to the OpenApi schema.
+We can use this mapping to add useful description to the app
+or keep examples up to date if they use for example timestamps
+that should be in the future to be valid.</p>
+<h2 id="add-description-to-application"><a class="header" href="#add-description-to-application">Add description to application</a></h2>
+<p>Often we would like to provide short description of the application,
+which version it has. We can use the package <code>openapi3</code> to update OpenApi 
+directly. But also there is a helper type for most often used fields:</p>
+<pre><code class="language-haskell">-- | Default info that is often added to OpenApi schema
+data DefaultInfo = DefaultInfo
+  { title :: Text
+  , description :: Text
+  , version :: Text
+  }
+
+addDefaultInfo :: DefaultInfo -&gt; OpenApi -&gt; OpenApi
+</code></pre>
+<p>We can set title, description and version for the application.
+Here is an example:</p>
+<pre><code class="language-haskell">setSwagger :: Server IO -&gt; Server IO
+setSwagger = withSwagger config
+  where
+    config =
+      (def :: SwaggerConfig IO)
+        { mapSchema = pure . addDefaultInfo info
+        }
+
+    info =
+      def
+        { title = &quot;Weather forecast&quot;
+        , description =
+            &quot;JSON API example for mig library which shows how to forecast weather to authorized users&quot;
+        , version = &quot;0.1.0&quot;
+        }
+</code></pre>
+<h2 id="describe-the-routes"><a class="header" href="#describe-the-routes">Describe the routes</a></h2>
+<p>Often we would like to add some useful documentation on the routes.
+We can do it with the functions:</p>
+<pre><code class="language-haskell">-- | Sets description of the route
+setDescription :: Text -&gt; Server m -&gt; Server m
+
+-- | Sets summary of the route
+setSummary :: Text -&gt; Server m -&gt; Server m
+
+-- | Adds OpenApi tag to the route
+addTag :: Text -&gt; Server m -&gt; Server m
+</code></pre>
+<p>We can apply thos functions at definition of the route.
+Also we can describe the inputs for the route:</p>
+<pre><code class="language-haskell">{-| Appends descriptiton for the inputs. It passes pairs for @(input-name, input-description)@.
+special name request-body is dedicated to request body input
+nd raw-input is dedicated to raw input
+-}
+describeInputs :: [(Text, Text)] -&gt; Server m -&gt; Server m
+</code></pre>
+<p>It takes a map from input parameter name to description. There is special name <code>&quot;request-body&quot;</code>
+for the request body input.</p>
+<p>An example:</p>
+<pre><code class="language-haskell">server = &quot;calculator&quot; /.
+  mconcat
+    [ describeAdd $ &quot;add&quot; /. add
+    , describeMul $ &quot;mul&quot; /. mull
+    ]
+  where
+    describeAdd = setDescription &quot;Performs addition&quot; . describeArgs
+    describeMul = setDescription &quot;Performs multiplication&quot; . describeArgs
+
+    describeArgs = describeInputs [(&quot;a&quot;, &quot;first argument&quot;), (&quot;b&quot;, &quot;second argument&quot;)]
+
+add, mul :: Capture &quot;a&quot; Int -&gt; Capture &quot;b&quot; Int -&gt; Get (Resp Int)
+</code></pre>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>In this chapter we have learned how to tweak our swagger servers and make them more user-friendly.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                                                    <a rel="prev" href="05-middleware.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+                                                    <a rel="next" href="06-json-api-example.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                                    <a rel="prev" href="05-middleware.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+                                    <a rel="next" href="06-json-api-example.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                            </nav>
+
+        </div>
+
+        
+        
+        
+                <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        
+        
+                <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+        
+    </body>
+</html>

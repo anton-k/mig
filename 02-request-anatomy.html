@@ -1,0 +1,610 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Anatomy of the request - Mig by example</title>
+                
+
+        <!-- Custom HTML head -->
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+                <link rel="icon" href="favicon.svg">
+                        <link rel="shortcut icon" href="favicon.png">
+                <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+                <link rel="stylesheet" href="css/print.css" media="print">
+        
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+                <link rel="stylesheet" href="fonts/fonts.css">
+        
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+            </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html" class="active"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-middleware.html"><strong aria-hidden="true">5.</strong> Middlewares</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                                                <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                                            </div>
+
+                    <h1 class="menu-title">Mig by example</h1>
+
+                    <div class="right-buttons">
+                                                <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                                                                        
+                    </div>
+                </div>
+
+                                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="anatomy-of-the-request"><a class="header" href="#anatomy-of-the-request">Anatomy of the request</a></h1>
+<p>For the next example we are going to try all sorts of inputs 
+which are possible for the handler. </p>
+<h2 id="useful-presets-for-servers"><a class="header" href="#useful-presets-for-servers">Useful presets for servers</a></h2>
+<p>Before we dive into various parts of the handler I'd like to introduce couple of
+useful modules that make servers more specific. Often we don't need the most generic types.
+If we know that all our servers will serve JSON and use only IO monad
+we can use a special version of the <code>Mig</code> module:</p>
+<pre><code class="language-haskell">import Mig.Json.IO
+</code></pre>
+<p>It will provide several wrappers to simplify type signatures for handlers:</p>
+<pre><code class="language-haskell">type Get a = Send GET IO a
+type Post a = Send POST IO a
+</code></pre>
+<p>also it provides more specific response type:</p>
+<pre><code class="language-haskell">newtype Resp a = Resp (Core.Resp Json a)
+</code></pre>
+<p>For the next example we are going to build JSON-application again.
+So instea of more general <code>Mig</code> we will use <code>Mig.Json.IO</code>.</p>
+<p>Also there are similiar modules for:</p>
+<ul>
+<li><code>IO</code>-based servers</li>
+<li><code>Html</code> servers with generic monad</li>
+<li><code>Json</code> servers with generic monad</li>
+<li><code>Json+IO</code> servers</li>
+<li><code>Html+IO</code> servers</li>
+</ul>
+<p>Servers for HTML take one step further and remove <code>Resp</code> from the equation:</p>
+<pre><code>type Get a = Send GET IO (Resp Html a)
+type Post a = Send POST IO (Resp Html a)
+</code></pre>
+<p>There is one reason why we do not do that for JSON. But we will study it later.</p>
+<h2 id="http-request"><a class="header" href="#http-request">Http request</a></h2>
+<p>In previous example we could query by static path. Let's do something more funcy
+and provide the input for the handler.</p>
+<p>we have several types of inputs in HTTP:</p>
+<ul>
+<li>
+<p>query parameters. We can see them in the path <code>&quot;api/get/route?queryName=queryValue&quot;</code></p>
+</li>
+<li>
+<p>capture parameters. We can see them also in the path, but they are inlined 
+right into it: <code>api/get/route/someCaptureValueA/someCaptureValueB</code></p>
+</li>
+<li>
+<p>header parameters. They are in HTTP-request headers. For example header that 
+reports media-type of the request body: &quot;Content-Type: application/json&quot;</p>
+</li>
+<li>
+<p>request body. It is avalue packed into HTTP-request. It can be JSON or text or raw string
+or XML. All sorts of things can be used as request bodies.</p>
+</li>
+</ul>
+<p>To use any of HTTP inputs in the handler we use special newtype wrappers 
+as arguments to the handler functions. </p>
+<h3 id="query-parameter-example"><a class="header" href="#query-parameter-example">Query parameter example</a></h3>
+<p>For example let's alter <code>hello</code> handler to greet not the <code>&quot;World&quot;</code> but someone
+by the name:</p>
+<pre><code class="language-haskell">hello :: Query &quot;who&quot; Text -&gt; Get (Resp Text)
+hello (Query name) = Send $
+  pure $ ok $ &quot;Hello &quot; &lt;&gt; name 
+</code></pre>
+<p>Note that we have imported <code>Mig.IO.Json</code> and our types are more
+specific and have fewer arguments. All types are dedicated to <code>IO</code> and <code>Json</code>.
+So we can write <code>Get (Resp Text)</code> instead of <code>Get IO (Resp Json Text)</code>.</p>
+<p>Interesting part of the handler is that qrgument: <code>Query &quot;who&quot; Text</code>.
+On the API level it creates expectation for a required query parameter in the path.
+The <code>Query</code> is a simple newtype wrapper:</p>
+<pre><code class="language-haskell">newtype Query name value = Query value
+</code></pre>
+<p>The cool part of it is that code for the server does not change:</p>
+<pre><code class="language-haskell">server :: Server IO
+server = &quot;api/v1/hello&quot; /. hello
+</code></pre>
+<p>There is no change because function <code>(/.)</code> is overloaded by second argument.
+and it accepts all sorts of inputs. One of them states:</p>
+<blockquote>
+<p>if value <code>a</code> is convertible to server
+then <code>Query name value -&gt; a</code> is also convertible to server</p>
+</blockquote>
+<p>and by this magic as all haskell functions are curried we can use any number of
+queries in the handler. For example if we want to greet two persons we can write:</p>
+<pre><code class="language-haskell">hello :: Query &quot;personA&quot; Text -&gt; Query &quot;personB&quot; Text -&gt; Get (Resp Text)
+hello (Query nameA) (Query nameB) = Send $
+  pure $ ok $ &quot;Hello &quot; &lt;&gt; nameA &lt;&gt; &quot; and &quot; &lt;&gt; nameB   
+</code></pre>
+<p>Also we can input any type if it has instance of the classes <code>FromHttpApiData</code> and <code>ToParamSchema</code>.
+For example let's add two numbers:</p>
+<pre><code class="language-haskell">add :: Query &quot;a&quot; Int -&gt; Query &quot;b&quot; Int -&gt; Get (Resp Int)
+add (Query a) (Query b) = Send $
+  pure $ ok (a + b)
+</code></pre>
+<h3 id="the-rest-of-the-inputs"><a class="header" href="#the-rest-of-the-inputs">The rest of the inputs</a></h3>
+<p>All other input parameters work in the same way as a <code>Query</code>. we have a newtype wrapper
+for the value and type denotes all useful info for API description of the handler.</p>
+<p>Let's for example query numbers for addition as capture parameters:</p>
+<pre><code class="language-haskell">add :: Capture &quot;a&quot; Int -&gt; Capture &quot;b&quot; Int -&gt; Get (Resp Int)
+add (Query a) (Query b) = Send $
+  pure $ ok (a + b)
+</code></pre>
+<p>It will expect the path to be <code>&quot;api/v1/add/2/4&quot;</code>. 
+Other wrappers look very similiar:</p>
+<ul>
+<li><code>Header name value</code> - for required headers</li>
+<li><code>OptionalHeader name value</code> - for optional headers</li>
+<li><code>Capture name value</code> - for path captures</li>
+<li><code>Optional name value</code> - for optional queries</li>
+<li><code>QueryFlag</code> - for booleab query that can be missing in the path (and then it is <code>false</code>)</li>
+<li><code>Body media value</code> - for request body</li>
+</ul>
+<h3 id="using-custom-types-as-query-parameters"><a class="header" href="#using-custom-types-as-query-parameters">Using custom types as query parameters</a></h3>
+<p>The value of query parameter should have two instances of classes. We need:</p>
+<ul>
+<li>
+<p><code>FromHttpApiData</code> from the library <a href="https://hackage.haskell.org/package/http-api-data-0.6/docs/Web-HttpApiData.html"><code>http-api-data</code></a>
+to convert to value from piece of the URL.</p>
+</li>
+<li>
+<p><code>ToParamSchema</code> from the library <a href="https://hackage.haskell.org/package/openapi3"><code>openapi3</code></a> 
+to describe parameter type in the OpenApi schema.</p>
+</li>
+</ul>
+<p>Let's create a custom type and provide those instances:</p>
+<pre><code class="language-haskell">newtype AuthToken = AuthToken Text
+  deriving newtype (FromHttpApiData, Eq, Ord, ToParamSchema)
+</code></pre>
+<p>We can derive them for <code>newtype</code> wrappers. Aftr that we can use <code>AuthToken</code> as value 
+to get from query parameter. For more info on how to derive those instances see the docs for the libraries.
+It's easy to do. We can derive <code>Generic</code> for the data type and derive <code>ToParamSchema</code> with it.</p>
+<p>The same instances we need for all parameters-like inputs: queries, headers, captures.</p>
+<h3 id="nuances-for-capture"><a class="header" href="#nuances-for-capture">Nuances for Capture</a></h3>
+<p>The capture is interesting because it can be anywhere in the path.
+for the example we havn't altered the server and our example:</p>
+<pre><code class="language-haskell">add :: Query &quot;a&quot; Int -&gt; Query &quot;b&quot; Int -&gt; Get (Resp Int)
+add (Query a) (Query b) = Send $
+  pure $ ok (a + b)
+
+server = &quot;api/v1/add&quot; /. add
+</code></pre>
+<p>The server expects strings with template:</p>
+<pre><code>api/v1/add/{int}/{int}
+</code></pre>
+<p>So for missing captures it inserts them. It is the same as to write:</p>
+<pre><code class="language-haskell">server = &quot;api/v1/add/*/*&quot; /. add
+</code></pre>
+<p>We denote capture with <code>*</code>-wildcard. If we want the capture to be in another place 
+in the path just put a star there:</p>
+<pre><code class="language-haskell">server = &quot;api/v1/*/*/add-me&quot; /. add
+</code></pre>
+<p>The server expects strings with template as path:</p>
+<pre><code>api/v1/{int}/{int}/add-me
+</code></pre>
+<h3 id="json-request-body"><a class="header" href="#json-request-body">Json request body</a></h3>
+<p>I guess that JSON body as request is going to be the most popular case among all inputs.
+So let's take a closer look at it as it often requires the custom type.</p>
+<p>Let's add two numbers and provide input with request body:</p>
+<pre><code class="language-haskell">data AddInput = AddInput
+  { a :: Int
+  , b :: Int
+  }
+  deriving (Generic, FromJSON, ToSchema)
+
+-- | Using JSON as body request
+handleAddJson :: Body AddInput -&gt; Post (Resp Int)
+handleAddJson (Body (AddInput a b)) = Send $ 
+  pure $ ok $ a + b
+</code></pre>
+<p>In the core mig library the type <code>Body</code> has two type arguments. But as we use Json specification
+the first argument for <code>Mig.Json.IO</code> as for <code>Mig.Json</code> is always <code>Json</code>-tag.
+So those modules provide special case alternative for type <code>Body</code>. But in the <code>mig</code>
+library it uses the same idea as we saw in the query parameter. It is just a 
+newtype wrapper for the value.</p>
+<p>To be able to use it as input for the handler we have to provide instances for
+several types:</p>
+<ul>
+<li><code>FromJSON</code> from <code>aeson</code> library to parse value as JSON from byte string</li>
+<li><code>ToSchema</code> from <code>openapi3</code> library to describe it in the API-schema</li>
+</ul>
+<p>both of the types can be easily derived with <code>Generic</code> instance (from the module GHC.Generics).
+First we derive instance of the <code>Generic</code> and then we can derive both <code>FromJSON</code> and <code>ToSchema</code>:</p>
+<pre><code class="language-haskell">data AddInput = AddInput
+  { a :: Int
+  , b :: Int
+  }
+  deriving (Generic, FromJSON, ToSchema)
+</code></pre>
+<p>also there are many libraries on hackage to 
+create custom derivings for those classes: <code>deriving-aeson</code>, <code>aeson-deriving</code> and many others.</p>
+<p>So to use JSON request body we can define our own type, derive proper classes and
+we are done.</p>
+<h2 id="lets-build-a-server"><a class="header" href="#lets-build-a-server">Let's build a server</a></h2>
+<p>Let's recap on what we have learned and build server
+with various request inputs:</p>
+<pre><code class="language-haskell">module Main (main) where
+
+import Mig.Json.IO
+
+main :: IO ()
+main = runServer 8085 server
+
+-- | Let's define a server
+server :: Server IO
+server = 
+  &quot;api&quot; /.
+    -- no args, constnat output
+    [ &quot;hello/world&quot; /. helloWorld
+    , -- required query param and custom header
+      &quot;succ&quot; /. handleSucc
+    , -- optional query param
+      &quot;succ-opt&quot; /. handleSuccOpt
+    , -- several query params
+      &quot;add&quot; /. handleAdd
+    , -- query flag
+      &quot;add-if&quot; /. handleAddIf
+    , -- capture
+      &quot;mul&quot; /. handleMul
+    , -- json body as input
+      &quot;add-json&quot; /. handleAddJson
+    ]
+
+-- | Simple getter
+helloWorld :: Get (Resp Text)
+helloWorld = Send $ do
+  pure $ ok &quot;Hello world!&quot;
+
+newtype TraceId = TraceId Text
+  deriving newtype (FromHttpApiData, ToHttpApiData, ToText, ToParamSchema)
+
+{-| Using several inputs: header argument and required query
+and using conditional output status
+-}
+handleSucc :: Header &quot;Trace-Id&quot; TraceId -&gt; Query &quot;value&quot; Int -&gt; Get (Resp Int)
+handleSucc (Header _traceId) (Query n) = Send $ do
+  pure $ ok (succ n)
+
+-- | Using optional query parameters.
+handleSuccOpt :: Optional &quot;value&quot; Int -&gt; Get (Resp Int)
+handleSuccOpt (Optional n) = Send $ do
+  pure $ case n of
+    Just val -&gt; ok (succ val)
+    Nothing -&gt; ok 0 
+
+{-| Using several query parameters
+-}
+handleAdd :: Query &quot;a&quot; Int -&gt; Query &quot;b&quot; Int -&gt; Get (Resp Int)
+handleAdd (Query a) (Query b) = Send $ do
+  pure $ ok $ a + b
+
+-- | Using query flag if flag is false returns 0
+handleAddIf :: Query &quot;a&quot; Int -&gt; Query &quot;b&quot; Int -&gt; QueryFlag &quot;perform&quot; -&gt; Get (Resp Int)
+handleAddIf (Query a) (Query b) (QueryFlag addFlag) = Send $ do
+  pure $
+    ok $
+      if addFlag
+        then (a + b)
+        else 0
+
+{-| Using capture as arguments. This route expects two arguments
+captured in URL. For example:
+
+&gt; http://localhost:8085/hello/api/mul/3/100
+-}
+handleMul :: Capture &quot;a&quot; Int -&gt; Capture &quot;b&quot; Int -&gt; Get (Resp Int)
+handleMul (Capture a) (Capture b) = Send $ do
+  pure $ ok (a * b)
+
+data AddInput = AddInput
+  { a :: Int
+  , b :: Int
+  }
+  deriving (Generic, ToJSON, FromJSON, ToSchema)
+
+-- | Using JSON as input
+handleAddJson :: Body AddInput -&gt; Post (Resp Int)
+handleAddJson (Body (AddInput a b)) = Send $ do
+  pure $ ok $ a + b
+</code></pre>
+<p>Curls to test the routes:</p>
+<pre><code>curl http://localhost:8085/api/hello/world
+
+curl -X 'GET' \
+  'http://localhost:8085/api/succ?value=2' \
+  -H 'accept: application/json' \
+  -H 'Trace-Id: xyz-trace'
+
+curl -X 'GET' \
+  'http://localhost:8085/api/add-if?a=2&amp;b=4&amp;perform=true' \
+  -H 'accept: application/json'
+
+curl -X 'GET' \
+  'http://localhost:8085/api/mul/100/23' \
+  -H 'accept: application/json'
+</code></pre>
+<h2 id="adding-some-goodies-to-the-servers"><a class="header" href="#adding-some-goodies-to-the-servers">Adding some goodies to the servers</a></h2>
+<p>There are some useful addons that make development of the servers
+much more pleasant. Let's discuss couple of them.</p>
+<h3 id="add-swagger"><a class="header" href="#add-swagger">Add swagger</a></h3>
+<p>Making <code>curl</code> request can quickly become hard to manage as
+our servers become more complicated. There is OpenAPI standard 
+that defines how to describe HTTP-server API. Also it provides
+Swagger. It is a tool to make it easy to check how server behaves.
+It pprovides an HTTP-client for the server which allows us to 
+query server routes.</p>
+<p>Let's add a swagger to our server. Just add this line:</p>
+<pre><code class="language-haskell">server :: IO
+server = 
+  withSwagger def $ 
+    &quot;api&quot; /. [ {- the rest of the code -} ]
+</code></pre>
+<p>Let's add this line to our example and restart the server.
+By default it creates a route for the server that serves Swagger UI client
+at the path: <a href="http://localhost:8085/swagger-ui/">http://localhost:8085/swagger-ui/</a>.
+It is easy to query the routes with swagger ui.</p>
+<p>We can add swagger to any server with function:</p>
+<pre><code class="language-haskell">withSwagger :: SwaggerConfig m -&gt; Server m -&gt; Server m
+</code></pre>
+<p>We will study the <code>ServerConfig</code> in details in one of the next chapters
+but for now the default value whcih is set with <code>def</code> from library <code>data-default</code>
+is fine.</p>
+<h3 id="add-simple-logs-to-the-server"><a class="header" href="#add-simple-logs-to-the-server">Add simple logs to the server</a></h3>
+<p>We can look at the request and trsponse data with tracing functions
+which come from library <code>mig-extra</code> from the module <code>Mig.Extra.Middleware.Trace</code>:</p>
+<pre><code class="language-haskell">data Verbosity = V0 | V1  | V2 | V3
+
+-- log http requests and responses
+logHttp :: Verbosity -&gt; Middleware m
+
+-- | log requests
+logReq :: Verbosity -&gt; Middleware m
+
+-- | Log responses
+logResp :: Verbosity -&gt; Middleware m
+</code></pre>
+<p>The <code>Middleware m</code> is a function that can be applied to all routes of the server
+and modify their behavior. To apply middleware to server we can use functions:</p>
+<pre><code class="language-haskell">applyMiddleware :: Middleware m -&gt; Server m -&gt; Server m
+
+($:) :: Middleware m -&gt; Server m -&gt; Server m
+</code></pre>
+<p>We show simplified signatures here. The real ones are overloaded by the first argument.
+but we will dicuss middlewares in depth in the separate chapter. For now it's
+ok to assume that those functions are defined in that simplified way.</p>
+<p>So let's look at the data that goes through our server:</p>
+<pre><code class="language-haskell">import Mig.Extra.Middleware.Trace qualified as Trace
+
+...
+
+server = 
+  withSwagger def $ 
+    withTrace $ {-# the rest of the server code #-}
+  where
+    withTrace = applyMiddleware (Trace.logHttp Trace.V2)
+</code></pre>
+<p>Let's restart the server and see what it logs:</p>
+<pre><code class="language-yaml">log:
+  body: ''
+  headers:
+    accept: application/json
+  method: GET
+  path: api/add?a=12&amp;b=45
+  time: 2023-10-05T16:29:16.262934Z
+  type: http-request
+
+log:
+  body: 57
+  duration: 9.750000000000001e-4
+  headers:
+    content-type: application/json
+  method: GET
+  path: api/add?a=12&amp;b=45
+  status: 200
+  time: 2023-10-05T16:29:16.263903Z
+  type: http-response
+</code></pre>
+<p>This isan easy way to add addhock logs to the application.
+Note that those logs are not aware of concurrency and will 
+report intermingled messages on concurrent queries.</p>
+<p>We can add real loggs with more generic versions of the functions
+which accept callback and we can pass the logger function defined in terms
+of one of the standard haskell logging libraries, say <code>katip</code> or <code>fast-logger</code>:</p>
+<pre><code class="language-haskell">import Data.Aeson as Json
+
+logHttpBy :: (Json.Value -&gt; m ()) -&gt; Verbosity -&gt; Middleware m
+</code></pre>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>We have learned how various parts of the requests can be queries
+with newtype wrappers. There are only handful of them.
+we can query</p>
+<ul>
+<li><code>Query name value</code> - for required queries</li>
+<li><code>Body media value</code> - for request body</li>
+<li><code>Optional name value</code> - for optional queries</li>
+<li><code>Header name value</code> - for required headers</li>
+<li><code>OptionalHeader name value</code> - for optional headers</li>
+<li><code>Capture name value</code> - for path captures</li>
+<li><code>QueryFlag</code> - for booleab query that can be missing in the path (and then it is <code>false</code>)</li>
+</ul>
+<p>We have learned to use specialized versions for servers which operate
+only in terms of <code>IO</code> or <code>Json</code>. We can import the module <code>Mig.Json.IO</code>
+and our signatures would bcome more simple and specific.</p>
+<p>we have learned how by ony-liners we can add to the server some useful features:</p>
+<ul>
+<li>
+<p>swagger: <code>(withSwagger def server)</code> 
+For calls to the server in the UI</p>
+</li>
+<li>
+<p>trace logs: <code>(applyMiddleware (logHttp V2))</code> 
+To see the data that flows through the server</p>
+</li>
+</ul>
+<p>Both expressions transform servers and have signatures: </p>
+<pre><code class="language-haskell">Server m -&gt; Server m
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                                                    <a rel="prev" href="01-hello-world.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+                                                    <a rel="next" href="03-response-anatomy.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                                    <a rel="prev" href="01-hello-world.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+                                    <a rel="next" href="03-response-anatomy.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                            </nav>
+
+        </div>
+
+        
+        
+        
+                <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        
+        
+                <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+        
+    </body>
+</html>

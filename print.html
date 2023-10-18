@@ -1,0 +1,2475 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Mig by example</title>
+                <meta name="robots" content="noindex" />
+                
+
+        <!-- Custom HTML head -->
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+                <link rel="icon" href="favicon.svg">
+                        <link rel="shortcut icon" href="favicon.png">
+                <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+                <link rel="stylesheet" href="css/print.css" media="print">
+        
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+                <link rel="stylesheet" href="fonts/fonts.css">
+        
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+            </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-middleware.html"><strong aria-hidden="true">5.</strong> Middlewares</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                                                <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                                            </div>
+
+                    <h1 class="menu-title">Mig by example</h1>
+
+                    <div class="right-buttons">
+                                                <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                                                                        
+                    </div>
+                </div>
+
+                                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="mig-by-example"><a class="header" href="#mig-by-example">Mig by example</a></h1>
+<p>Mig is a lightweight and easy to use library to build servers in Haskell.
+It is sort of servant for Simple/Boring Haskell.
+This book is an example driven guide to the library.</p>
+<p>The main features are:</p>
+<ul>
+<li>
+<p>lightweight library</p>
+</li>
+<li>
+<p>easy to use. It has simple design on purpose</p>
+</li>
+<li>
+<p>it defines no custom server monads. I promise you</p>
+</li>
+<li>
+<p>expressive DSL to compose servers</p>
+</li>
+<li>
+<p>type-safe route handlers and conversions</p>
+</li>
+<li>
+<p>handlers are encoded with generic haskell functions</p>
+</li>
+<li>
+<p>built on top of WAI and warp server libraries.</p>
+</li>
+<li>
+<p>provides Swagger to your server with one-line of code</p>
+</li>
+<li>
+<p>relies on standard classes to compose servers. The server is a monoid </p>
+</li>
+</ul>
+<p>Example of hello world server:</p>
+<pre><code class="language-haskell">import Mig.Json.IO
+
+-- | Starts server on port 8085.
+main :: IO ()
+main = runServer 8085 server
+
+-- | The server definition
+server :: Server IO
+server = &quot;api/v1/hello&quot; /. hello
+
+-- | The handler definition as a function
+hello :: Get (Resp Text)
+hello = Send $ pure $ ok &quot;Hello World&quot;
+</code></pre>
+<h2 id="how-to-install-library"><a class="header" href="#how-to-install-library">How to install library</a></h2>
+<p>We can install it from hackage. 
+we need to use the library <a href="https://hackage.haskell.org/package/mig-server">mig-server</a></p>
+<p>With cabal we can install it from Hackage:</p>
+<pre><code>cabal install mig-server --lib
+</code></pre>
+<p>With stack we can link to the repo in extra-deps</p>
+<pre><code>TODO: example here
+</code></pre>
+<h2 id="sturcuture-of-the-library"><a class="header" href="#sturcuture-of-the-library">Sturcuture of the library</a></h2>
+<p>There are several libraries:</p>
+<ul>
+<li><code>mig</code> - core library which defines DSL to build servers with API-schemas and functions to render it to low-level representation. </li>
+<li><code>mig-extra</code> - extra addons to the core library</li>
+<li><code>mig-server</code> - mig core with batteries and functions to run servers on top of warp.</li>
+<li><code>mig-client</code> - HTTP-clients from the server code</li>
+<li><code>mig-wai</code> - connvert mig servers to WAI-applications</li>
+<li><code>mig-swagger-ui</code> - serve swagger for you app.</li>
+</ul>
+<h2 id="source-code-for-examples"><a class="header" href="#source-code-for-examples">Source code for examples</a></h2>
+<p>We are going to learn how the mig works by examples.
+You can run the examples from the tutorial. Here is the <a href="https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme">code</a> that we are going to study.
+Look at the Makefile for commands on how to build and run the examples.</p>
+<p>Let's dive in to the first example.</p>
+<h2 id="comparing-to-other-libraries"><a class="header" href="#comparing-to-other-libraries">Comparing to other libraries</a></h2>
+<p>Why to use mig if there are other cool libraries?
+To me mig lies in the middle ground between servant and scotty.
+It's as simple as  scotty and does not go to fancy type road as servant.
+But it is akin to servant in usage of type-safe conversions and type-level safety.</p>
+<h3 id="servant"><a class="header" href="#servant">servant</a></h3>
+<p>The mig uses the same ideas of type-safe handlers which a re based on generic Haskell functions.
+The main difference is that in servant th whole server is described as type. 
+Which leads to type-safety and ability to derive API sche, from the type.</p>
+<p>But downside of it is fancy big types and whery advanced concepts that user needs to know
+in order to use the library. Also one drawback to me is when things go wrong and you get
+several pages long error messages. If your server is really big it can be very hard to spot
+the origin of the error as type mismatch is going to be with the whole type which describes 
+the full server.</p>
+<p>The mig borrows idea of type-safe functions to represent route handlers. 
+But types represent only individual handlers. It does not describe the full server.
+But we have typesafety on the level of the single route. And error messages are going
+to be localised and dedeicated to a single route. </p>
+<p>Using type-level description of the routes provide the same benefits as in serbvant case:</p>
+<ul>
+<li>safe type check of the conversions of low level request and response elements</li>
+<li>usage of generic haskell functions as handlers</li>
+<li>declarative design of the servers</li>
+</ul>
+<p>In the mig API is a value that is derived from the server at run-time. 
+It allows us to build clients and OpenApi swagger too.</p>
+<p>To me servant is more demanding and complicated solution. I'd like to use 
+something more simple.</p>
+<h3 id="scotty"><a class="header" href="#scotty">scotty</a></h3>
+<p>The scotty is also in domain of simple, easy to use solutions. 
+so why did I wrote mig and havn't used the scotty instead?
+Scotty features more imperative approach where you write handlert as 
+expression for Scotty library monad. But it does not looks so well as in servant's case to me.
+It is harder to assemble servers from parts. and I really like the idea of type-safe
+convertions of various parts of request and response. </p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="hello-world"><a class="header" href="#hello-world">Hello world</a></h1>
+<p>Let's build hello world application. 
+We are going to build simple JSON API server with single route which replies
+with constant text to request</p>
+<p>We have installed the library <code>mig-server</code>. Let's import the main module.
+It brings into the scope all main functions of the library:</p>
+<pre><code class="language-haskell">module Main where
+
+import Mig
+</code></pre>
+<p>Let's define a server with single route:</p>
+<pre><code class="language-haskell">server :: Server IO
+server = &quot;api/v1/hello&quot; /. hello
+
+hello :: Get IO (Resp Json Text)
+hello = undefined
+</code></pre>
+<p>So we serve single route with path <code>&quot;api/v1/hello&quot;</code>.
+Let's cover the types first.</p>
+<h3 id="the-server-type"><a class="header" href="#the-server-type">The server type</a></h3>
+<p>The server is a description of both OpenAPI schema for our server and low-level function
+to run it. In the library it is a newtype wrapper:</p>
+<pre><code class="language-haskell">newtype Server m = Server (Api (Route m))
+</code></pre>
+<p>The <code>Api</code> type is a value to describe the API schema and <code>Route</code> contains
+useful info on the type of the route (method, decription of the inputs and outputs).
+The server is parametrized by some monad type. For this example we use <code>IO</code>-monad.
+It means that all our hadnlers are going to return <code>IO</code>-values.</p>
+<h3 id="how-to-link-paths-to-handlers"><a class="header" href="#how-to-link-paths-to-handlers">How to link paths to handlers</a></h3>
+<p>To bind path &quot;api/v1/hello&quot; to handler <code>hello</code> we use function <code>(/.)</code>. Let's look at it's type signature:</p>
+<pre><code class="language-haskell">(/.) :: (ToServer a) =&gt; Path -&gt; a -&gt; Server (MonadOf a)
+</code></pre>
+<p>It expects the <code>Path</code> which has instance of class <code>IsString</code> that is why we can
+use plain strings for it. the second argument is something that is convertible to <code>Server</code>.
+Here we use trick to be able to use arbitrary haskell functions as handlers.
+We have special class called <code>ToServer</code> which can convert many different types to <code>Server</code>.</p>
+<p>The output type is abit tricky: <code>Server (MonadOf a)</code>.
+The <code>MonadOf</code> is a type function which can extract <code>m</code> from <code>(Server m)</code>.
+Or for example it can extract <code>m</code> from the function <code>request -&gt; m response</code>.
+So the <code>MonadOf</code> is a way to get underlying server monad from any value.</p>
+<p>Let's be more specific and study our example. 
+The type of the handler is <code>Get IO (Resp Text)</code>
+In our case we get:</p>
+<pre><code>(/.) :: Path -&gt; Get IO (Resp Text) -&gt; Server IO
+</code></pre>
+<p>The type-level function <code>MonadOf</code> knows how to extract <code>IO</code> from <code>Get IO (Resp Text)</code>.</p>
+<h3 id="the-type-of-response"><a class="header" href="#the-type-of-response">The type of response</a></h3>
+<p>Let's stydy the signature of the <code>hello</code> handler: </p>
+<pre><code>hello :: Get IO (Resp Json Text)
+          |  |    |     |    |
+          |  |    |     |    +-- response body converted to byte string
+          |  |    |     |
+          |  |    |     +---- codec to convert it 
+          |  |    |           (the media-type route uses for response body)
+          |  |    |
+          |  |    +---- type of response which holds HTTP-response info with result
+          |  |
+          |  +----- the server monad. Our handler returns values in this monad
+          |
+          +----- http method encoded as a type
+</code></pre>
+<p>The type <code>Get</code> is a synonym for more generic <code>Send</code> type:</p>
+<pre><code class="language-haskell">type Get m a = Send GET m a
+</code></pre>
+<p>The type <code>Send</code> is just a wrapper on top of monadic value:</p>
+<pre><code class="language-haskell">newtype Send method m a = Send (m a)
+</code></pre>
+<p>It encodes HTTP-method on type level. This is useful to aggregate value for API-schema of our server.
+We have type synonyms for all HTTP-nethods (<code>Get</code>, <code>Post</code>, <code>Put</code> etc).</p>
+<p>It's interesting to know that library mig does not use any custom monads for operation. 
+Instead it runs on top of monad provided by the user. Usually it would be <code>IO</code> or <code>Reader</code> over <code>IO</code>.</p>
+<h3 id="http-response-type"><a class="header" href="#http-response-type">HTTP-response type</a></h3>
+<p>Let's study the <code>Resp</code> type. It is a type for HTTP response.
+It contains the value and additional HTTP information:</p>
+<pre><code class="language-haskell">-- | Response with info on the media-type encoded as type.
+data Resp media a = Resp
+  { status :: Status
+  -- ^ response status
+  , headers :: ResponseHeaders
+  -- ^ response headers
+  , body :: Maybe a
+  -- ^ response body. Nothing means &quot;no content&quot; in the body
+  }
+  deriving (Show, Functor)
+</code></pre>
+<p>The type argument <code>media</code> is interesting. It gives a hint to the compiler on how
+to convert the body to low-level byte string representation.
+In our example we use type-level tag <code>Json</code> to show that we are going to convert
+the result to JSON value in the response. So in our case of <code>Resp Json Text</code>
+we are going to return <code>Text</code> which will be converted to JSON value.</p>
+<p>To return successful response there is  a handy function:</p>
+<pre><code class="language-haskell">ok :: a -&gt; Resp media a
+</code></pre>
+<p>It returns response with 200 ok-status and sets <code>Content-Type</code> header to proper media-type.</p>
+<h3 id="define-a-handler"><a class="header" href="#define-a-handler">Define a handler</a></h3>
+<p>Let's complete the example and define a handler which returns static text:</p>
+<pre><code class="language-haskell">hello :: Get IO (Resp Json)
+hello = Send $ pure $ ok &quot;Hello World!&quot;
+</code></pre>
+<p>We have several wrappers here:</p>
+<ul>
+<li><code>ok</code> - converts text value to http-response <code>Resp Json Text</code></li>
+<li><code>pure</code> - converts pure value  to IO-based value</li>
+<li><code>Send</code> - send converts monadic value to server. It adds information on HTTP-method of the return type.</li>
+</ul>
+<h3 id="run-a-server"><a class="header" href="#run-a-server">Run a server</a></h3>
+<p>Let's run the server with warp. For that we define the <code>main</code> function for our application:</p>
+<pre><code class="language-haskell">main :: IO ()
+main = do
+  putStrLn $ &quot;Server starts on port: &quot; &lt;&gt; show port
+  runServer port server
+  where
+    port = 8085
+</code></pre>
+<p>That's it! We can compile the code and run it to query our server.
+We use the function <code>runServer</code>:</p>
+<pre><code class="language-haskell">runServer :: Int -&gt; Server IO -&gt; IO ()
+</code></pre>
+<p>It renders our server to WAI-application and runs it with warp.</p>
+<h3 id="complete-code-for-the-example"><a class="header" href="#complete-code-for-the-example">Complete code for the example</a></h3>
+<pre><code class="language-haskell">module Main (main) where
+
+import Mig
+
+main :: IO ()
+main = do
+  putStrLn $ &quot;Server starts on port: &quot; &lt;&gt; show port
+  runServer port server
+  where
+    port = 8085
+
+server :: Server IO
+server = &quot;api/v1/hello&quot; /. hello
+
+hello :: Get IO (Resp Json)
+hello = Send $ pure $ ok &quot;Hello World!&quot;
+</code></pre>
+<p>If we run the code we can test it with <code>curl</code> in command line:</p>
+<pre><code>&gt; curl http://localhost:8085/api/v1/hello
+
+&quot;Hello World!&quot;
+</code></pre>
+<h3 id="add-more-routes"><a class="header" href="#add-more-routes">Add more routes</a></h3>
+<p>Let's define another handler to say <code>bye</code>:</p>
+<pre><code class="language-haskell">bye :: Get IO (Resp Json)
+bye = Send $ pure $ ok &quot;Goodbye&quot;
+</code></pre>
+<p>We can add it to the server with monoid method as <code>Server m</code> is a <code>Monoid</code>:</p>
+<pre><code class="language-haskell">server :: Server IO
+server = 
+  &quot;api/v1&quot; /.
+    mconcat
+      [ &quot;hello&quot; /. hello
+      , &quot;bye&quot; /. bye
+      ]
+</code></pre>
+<p>The meaning of the monoid methods for <code>Server</code>:</p>
+<ul>
+<li><code>mempty</code> - server that always fails on any request</li>
+<li><code>a &lt;&gt; b</code> - try to serve the request with server <code>a</code> if it succeeds return the result.
+If it fails try to serve with server <code>b</code>.</li>
+</ul>
+<p>So we have just two functions to build nested trees of servers:</p>
+<ul>
+<li><code>path /. server</code> - to serve the server on specific path</li>
+<li><code>mconcat [a, b, c, d]</code> - to combine several servers into one</li>
+</ul>
+<p>Note that we can have several handlers on the same path if they
+have different methods or media-types for output or input:</p>
+<pre><code class="language-haskell">server = 
+  &quot;api/v1&quot; /.
+    mconcat
+      [ &quot;hello&quot; /. helloGet
+      , &quot;hello&quot; /. helloPost
+      ]
+
+helloGet :: Get IO (Resp Json Text)
+helloPost :: Post IO (Resp Json Text)
+</code></pre>
+<p>Servers on the same path are also distinguished by:</p>
+<ul>
+<li>http-method</li>
+<li>media-type of the result (value of &quot;Accept&quot; header) </li>
+<li>media-type of the request (value of &quot;Content-Type&quot; header)</li>
+</ul>
+<h3 id="subtle-nuance-on-monoid-instance-for-server"><a class="header" href="#subtle-nuance-on-monoid-instance-for-server">Subtle nuance on Monoid instance for Server</a></h3>
+<p>Yuo may ask: why not to write the previous example like this:</p>
+<pre><code class="language-haskell">server = 
+  &quot;api/v1/hello&quot; /.
+    mconcat
+      [ helloGet
+      , helloPost
+      ]
+</code></pre>
+<p>There is  a subtle nuance here. The <code>Server m</code> is a <code>Monoid</code>.
+But the value <code>Send method m a</code> is not. So we use the function <code>(/.)</code>
+which converts the second argument to <code>Server</code>. If we want to convert
+we can use the method of the class <code>ToServer</code>:</p>
+<pre><code class="language-haskell">toServer :: ToServer a =&gt; a -&gt; Server (MonadOf a)
+</code></pre>
+<p>So the right way to avoid duplication in path is:</p>
+<pre><code class="language-haskell">server = 
+  &quot;api/v1/hello&quot; /.
+    mconcat
+      [ toServer helloGet
+      , toServer helloPost
+      ]
+</code></pre>
+<p>Regarding the previous example we could not use <code>mconcat</code> even if we wnated to.
+Because <code>handelGet</code> and <code>handlePost</code> have different types. They can not
+be even put in the same list. But here lies the beauty of the library.
+We can use arbitrary types as handlers but in the end they all get converted
+to the value <code>Server m</code>. So we have the flexibility on DSL level but
+on the level of implementation to build the tree of handlers we use the same type.
+which makes type very simple.</p>
+<h3 id="list-instance-for-servers"><a class="header" href="#list-instance-for-servers">List instance for Servers</a></h3>
+<p>Because of the <code>ToServer a =&gt; ToServer [a]</code> instance we can omit the <code>mconcat</code>
+most of the time. Meaning we can write the previous examples as:</p>
+<pre><code class="language-haskell">server = 
+  &quot;api/v1/hello&quot; /.
+      [ toServer helloGet
+      , toServer helloPost
+      ]
+</code></pre>
+<h3 id="the-path-type"><a class="header" href="#the-path-type">The path type</a></h3>
+<p>Let's discuss the <code>Path</code> type.
+It is a list of atomic path items:</p>
+<pre><code class="language-haskell">newtype Path = Path [PathItem]
+  deriving (Show, Eq, Semigroup, Monoid)
+</code></pre>
+<p>The path item can be of two types:</p>
+<pre><code class="language-haskell">data PathItem 
+  = StaticPath Text
+  | CapturePath Text
+</code></pre>
+<p>The static path item is a rigid entity with exact match to string.
+We used it in all our examples so far. 
+but capture is wild-card that is going to be used as input to the handler.</p>
+<p>To construct only rigid paths we can use strings:</p>
+<pre><code>&quot;ap1/v1/get/blog/post&quot;
+&quot;foo/bar&quot;
+</code></pre>
+<p>To get captures we use <code>*</code>-wildcard:</p>
+<pre><code>api/v2/*/get
+</code></pre>
+<p>In the star request captures any text. There might be as many stars 
+in the path as you wish. But they should be supported by the handler. 
+We will touch upon that later.</p>
+<p>It's good to know that path is a special type which can be constructed from strings
+(use <code>OverloadedStrings</code> extension). And we can two types of atomic path elements.
+Static items and capture parameters. We will deal with captures in the next example.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="anatomy-of-the-request"><a class="header" href="#anatomy-of-the-request">Anatomy of the request</a></h1>
+<p>For the next example we are going to try all sorts of inputs 
+which are possible for the handler. </p>
+<h2 id="useful-presets-for-servers"><a class="header" href="#useful-presets-for-servers">Useful presets for servers</a></h2>
+<p>Before we dive into various parts of the handler I'd like to introduce couple of
+useful modules that make servers more specific. Often we don't need the most generic types.
+If we know that all our servers will serve JSON and use only IO monad
+we can use a special version of the <code>Mig</code> module:</p>
+<pre><code class="language-haskell">import Mig.Json.IO
+</code></pre>
+<p>It will provide several wrappers to simplify type signatures for handlers:</p>
+<pre><code class="language-haskell">type Get a = Send GET IO a
+type Post a = Send POST IO a
+</code></pre>
+<p>also it provides more specific response type:</p>
+<pre><code class="language-haskell">newtype Resp a = Resp (Core.Resp Json a)
+</code></pre>
+<p>For the next example we are going to build JSON-application again.
+So instea of more general <code>Mig</code> we will use <code>Mig.Json.IO</code>.</p>
+<p>Also there are similiar modules for:</p>
+<ul>
+<li><code>IO</code>-based servers</li>
+<li><code>Html</code> servers with generic monad</li>
+<li><code>Json</code> servers with generic monad</li>
+<li><code>Json+IO</code> servers</li>
+<li><code>Html+IO</code> servers</li>
+</ul>
+<p>Servers for HTML take one step further and remove <code>Resp</code> from the equation:</p>
+<pre><code>type Get a = Send GET IO (Resp Html a)
+type Post a = Send POST IO (Resp Html a)
+</code></pre>
+<p>There is one reason why we do not do that for JSON. But we will study it later.</p>
+<h2 id="http-request"><a class="header" href="#http-request">Http request</a></h2>
+<p>In previous example we could query by static path. Let's do something more funcy
+and provide the input for the handler.</p>
+<p>we have several types of inputs in HTTP:</p>
+<ul>
+<li>
+<p>query parameters. We can see them in the path <code>&quot;api/get/route?queryName=queryValue&quot;</code></p>
+</li>
+<li>
+<p>capture parameters. We can see them also in the path, but they are inlined 
+right into it: <code>api/get/route/someCaptureValueA/someCaptureValueB</code></p>
+</li>
+<li>
+<p>header parameters. They are in HTTP-request headers. For example header that 
+reports media-type of the request body: &quot;Content-Type: application/json&quot;</p>
+</li>
+<li>
+<p>request body. It is avalue packed into HTTP-request. It can be JSON or text or raw string
+or XML. All sorts of things can be used as request bodies.</p>
+</li>
+</ul>
+<p>To use any of HTTP inputs in the handler we use special newtype wrappers 
+as arguments to the handler functions. </p>
+<h3 id="query-parameter-example"><a class="header" href="#query-parameter-example">Query parameter example</a></h3>
+<p>For example let's alter <code>hello</code> handler to greet not the <code>&quot;World&quot;</code> but someone
+by the name:</p>
+<pre><code class="language-haskell">hello :: Query &quot;who&quot; Text -&gt; Get (Resp Text)
+hello (Query name) = Send $
+  pure $ ok $ &quot;Hello &quot; &lt;&gt; name 
+</code></pre>
+<p>Note that we have imported <code>Mig.IO.Json</code> and our types are more
+specific and have fewer arguments. All types are dedicated to <code>IO</code> and <code>Json</code>.
+So we can write <code>Get (Resp Text)</code> instead of <code>Get IO (Resp Json Text)</code>.</p>
+<p>Interesting part of the handler is that qrgument: <code>Query &quot;who&quot; Text</code>.
+On the API level it creates expectation for a required query parameter in the path.
+The <code>Query</code> is a simple newtype wrapper:</p>
+<pre><code class="language-haskell">newtype Query name value = Query value
+</code></pre>
+<p>The cool part of it is that code for the server does not change:</p>
+<pre><code class="language-haskell">server :: Server IO
+server = &quot;api/v1/hello&quot; /. hello
+</code></pre>
+<p>There is no change because function <code>(/.)</code> is overloaded by second argument.
+and it accepts all sorts of inputs. One of them states:</p>
+<blockquote>
+<p>if value <code>a</code> is convertible to server
+then <code>Query name value -&gt; a</code> is also convertible to server</p>
+</blockquote>
+<p>and by this magic as all haskell functions are curried we can use any number of
+queries in the handler. For example if we want to greet two persons we can write:</p>
+<pre><code class="language-haskell">hello :: Query &quot;personA&quot; Text -&gt; Query &quot;personB&quot; Text -&gt; Get (Resp Text)
+hello (Query nameA) (Query nameB) = Send $
+  pure $ ok $ &quot;Hello &quot; &lt;&gt; nameA &lt;&gt; &quot; and &quot; &lt;&gt; nameB   
+</code></pre>
+<p>Also we can input any type if it has instance of the classes <code>FromHttpApiData</code> and <code>ToParamSchema</code>.
+For example let's add two numbers:</p>
+<pre><code class="language-haskell">add :: Query &quot;a&quot; Int -&gt; Query &quot;b&quot; Int -&gt; Get (Resp Int)
+add (Query a) (Query b) = Send $
+  pure $ ok (a + b)
+</code></pre>
+<h3 id="the-rest-of-the-inputs"><a class="header" href="#the-rest-of-the-inputs">The rest of the inputs</a></h3>
+<p>All other input parameters work in the same way as a <code>Query</code>. we have a newtype wrapper
+for the value and type denotes all useful info for API description of the handler.</p>
+<p>Let's for example query numbers for addition as capture parameters:</p>
+<pre><code class="language-haskell">add :: Capture &quot;a&quot; Int -&gt; Capture &quot;b&quot; Int -&gt; Get (Resp Int)
+add (Query a) (Query b) = Send $
+  pure $ ok (a + b)
+</code></pre>
+<p>It will expect the path to be <code>&quot;api/v1/add/2/4&quot;</code>. 
+Other wrappers look very similiar:</p>
+<ul>
+<li><code>Header name value</code> - for required headers</li>
+<li><code>OptionalHeader name value</code> - for optional headers</li>
+<li><code>Capture name value</code> - for path captures</li>
+<li><code>Optional name value</code> - for optional queries</li>
+<li><code>QueryFlag</code> - for booleab query that can be missing in the path (and then it is <code>false</code>)</li>
+<li><code>Body media value</code> - for request body</li>
+</ul>
+<h3 id="using-custom-types-as-query-parameters"><a class="header" href="#using-custom-types-as-query-parameters">Using custom types as query parameters</a></h3>
+<p>The value of query parameter should have two instances of classes. We need:</p>
+<ul>
+<li>
+<p><code>FromHttpApiData</code> from the library <a href="https://hackage.haskell.org/package/http-api-data-0.6/docs/Web-HttpApiData.html"><code>http-api-data</code></a>
+to convert to value from piece of the URL.</p>
+</li>
+<li>
+<p><code>ToParamSchema</code> from the library <a href="https://hackage.haskell.org/package/openapi3"><code>openapi3</code></a> 
+to describe parameter type in the OpenApi schema.</p>
+</li>
+</ul>
+<p>Let's create a custom type and provide those instances:</p>
+<pre><code class="language-haskell">newtype AuthToken = AuthToken Text
+  deriving newtype (FromHttpApiData, Eq, Ord, ToParamSchema)
+</code></pre>
+<p>We can derive them for <code>newtype</code> wrappers. Aftr that we can use <code>AuthToken</code> as value 
+to get from query parameter. For more info on how to derive those instances see the docs for the libraries.
+It's easy to do. We can derive <code>Generic</code> for the data type and derive <code>ToParamSchema</code> with it.</p>
+<p>The same instances we need for all parameters-like inputs: queries, headers, captures.</p>
+<h3 id="nuances-for-capture"><a class="header" href="#nuances-for-capture">Nuances for Capture</a></h3>
+<p>The capture is interesting because it can be anywhere in the path.
+for the example we havn't altered the server and our example:</p>
+<pre><code class="language-haskell">add :: Query &quot;a&quot; Int -&gt; Query &quot;b&quot; Int -&gt; Get (Resp Int)
+add (Query a) (Query b) = Send $
+  pure $ ok (a + b)
+
+server = &quot;api/v1/add&quot; /. add
+</code></pre>
+<p>The server expects strings with template:</p>
+<pre><code>api/v1/add/{int}/{int}
+</code></pre>
+<p>So for missing captures it inserts them. It is the same as to write:</p>
+<pre><code class="language-haskell">server = &quot;api/v1/add/*/*&quot; /. add
+</code></pre>
+<p>We denote capture with <code>*</code>-wildcard. If we want the capture to be in another place 
+in the path just put a star there:</p>
+<pre><code class="language-haskell">server = &quot;api/v1/*/*/add-me&quot; /. add
+</code></pre>
+<p>The server expects strings with template as path:</p>
+<pre><code>api/v1/{int}/{int}/add-me
+</code></pre>
+<h3 id="json-request-body"><a class="header" href="#json-request-body">Json request body</a></h3>
+<p>I guess that JSON body as request is going to be the most popular case among all inputs.
+So let's take a closer look at it as it often requires the custom type.</p>
+<p>Let's add two numbers and provide input with request body:</p>
+<pre><code class="language-haskell">data AddInput = AddInput
+  { a :: Int
+  , b :: Int
+  }
+  deriving (Generic, FromJSON, ToSchema)
+
+-- | Using JSON as body request
+handleAddJson :: Body AddInput -&gt; Post (Resp Int)
+handleAddJson (Body (AddInput a b)) = Send $ 
+  pure $ ok $ a + b
+</code></pre>
+<p>In the core mig library the type <code>Body</code> has two type arguments. But as we use Json specification
+the first argument for <code>Mig.Json.IO</code> as for <code>Mig.Json</code> is always <code>Json</code>-tag.
+So those modules provide special case alternative for type <code>Body</code>. But in the <code>mig</code>
+library it uses the same idea as we saw in the query parameter. It is just a 
+newtype wrapper for the value.</p>
+<p>To be able to use it as input for the handler we have to provide instances for
+several types:</p>
+<ul>
+<li><code>FromJSON</code> from <code>aeson</code> library to parse value as JSON from byte string</li>
+<li><code>ToSchema</code> from <code>openapi3</code> library to describe it in the API-schema</li>
+</ul>
+<p>both of the types can be easily derived with <code>Generic</code> instance (from the module GHC.Generics).
+First we derive instance of the <code>Generic</code> and then we can derive both <code>FromJSON</code> and <code>ToSchema</code>:</p>
+<pre><code class="language-haskell">data AddInput = AddInput
+  { a :: Int
+  , b :: Int
+  }
+  deriving (Generic, FromJSON, ToSchema)
+</code></pre>
+<p>also there are many libraries on hackage to 
+create custom derivings for those classes: <code>deriving-aeson</code>, <code>aeson-deriving</code> and many others.</p>
+<p>So to use JSON request body we can define our own type, derive proper classes and
+we are done.</p>
+<h2 id="lets-build-a-server"><a class="header" href="#lets-build-a-server">Let's build a server</a></h2>
+<p>Let's recap on what we have learned and build server
+with various request inputs:</p>
+<pre><code class="language-haskell">module Main (main) where
+
+import Mig.Json.IO
+
+main :: IO ()
+main = runServer 8085 server
+
+-- | Let's define a server
+server :: Server IO
+server = 
+  &quot;api&quot; /.
+    -- no args, constnat output
+    [ &quot;hello/world&quot; /. helloWorld
+    , -- required query param and custom header
+      &quot;succ&quot; /. handleSucc
+    , -- optional query param
+      &quot;succ-opt&quot; /. handleSuccOpt
+    , -- several query params
+      &quot;add&quot; /. handleAdd
+    , -- query flag
+      &quot;add-if&quot; /. handleAddIf
+    , -- capture
+      &quot;mul&quot; /. handleMul
+    , -- json body as input
+      &quot;add-json&quot; /. handleAddJson
+    ]
+
+-- | Simple getter
+helloWorld :: Get (Resp Text)
+helloWorld = Send $ do
+  pure $ ok &quot;Hello world!&quot;
+
+newtype TraceId = TraceId Text
+  deriving newtype (FromHttpApiData, ToHttpApiData, ToText, ToParamSchema)
+
+{-| Using several inputs: header argument and required query
+and using conditional output status
+-}
+handleSucc :: Header &quot;Trace-Id&quot; TraceId -&gt; Query &quot;value&quot; Int -&gt; Get (Resp Int)
+handleSucc (Header _traceId) (Query n) = Send $ do
+  pure $ ok (succ n)
+
+-- | Using optional query parameters.
+handleSuccOpt :: Optional &quot;value&quot; Int -&gt; Get (Resp Int)
+handleSuccOpt (Optional n) = Send $ do
+  pure $ case n of
+    Just val -&gt; ok (succ val)
+    Nothing -&gt; ok 0 
+
+{-| Using several query parameters
+-}
+handleAdd :: Query &quot;a&quot; Int -&gt; Query &quot;b&quot; Int -&gt; Get (Resp Int)
+handleAdd (Query a) (Query b) = Send $ do
+  pure $ ok $ a + b
+
+-- | Using query flag if flag is false returns 0
+handleAddIf :: Query &quot;a&quot; Int -&gt; Query &quot;b&quot; Int -&gt; QueryFlag &quot;perform&quot; -&gt; Get (Resp Int)
+handleAddIf (Query a) (Query b) (QueryFlag addFlag) = Send $ do
+  pure $
+    ok $
+      if addFlag
+        then (a + b)
+        else 0
+
+{-| Using capture as arguments. This route expects two arguments
+captured in URL. For example:
+
+&gt; http://localhost:8085/hello/api/mul/3/100
+-}
+handleMul :: Capture &quot;a&quot; Int -&gt; Capture &quot;b&quot; Int -&gt; Get (Resp Int)
+handleMul (Capture a) (Capture b) = Send $ do
+  pure $ ok (a * b)
+
+data AddInput = AddInput
+  { a :: Int
+  , b :: Int
+  }
+  deriving (Generic, ToJSON, FromJSON, ToSchema)
+
+-- | Using JSON as input
+handleAddJson :: Body AddInput -&gt; Post (Resp Int)
+handleAddJson (Body (AddInput a b)) = Send $ do
+  pure $ ok $ a + b
+</code></pre>
+<p>Curls to test the routes:</p>
+<pre><code>curl http://localhost:8085/api/hello/world
+
+curl -X 'GET' \
+  'http://localhost:8085/api/succ?value=2' \
+  -H 'accept: application/json' \
+  -H 'Trace-Id: xyz-trace'
+
+curl -X 'GET' \
+  'http://localhost:8085/api/add-if?a=2&amp;b=4&amp;perform=true' \
+  -H 'accept: application/json'
+
+curl -X 'GET' \
+  'http://localhost:8085/api/mul/100/23' \
+  -H 'accept: application/json'
+</code></pre>
+<h2 id="adding-some-goodies-to-the-servers"><a class="header" href="#adding-some-goodies-to-the-servers">Adding some goodies to the servers</a></h2>
+<p>There are some useful addons that make development of the servers
+much more pleasant. Let's discuss couple of them.</p>
+<h3 id="add-swagger"><a class="header" href="#add-swagger">Add swagger</a></h3>
+<p>Making <code>curl</code> request can quickly become hard to manage as
+our servers become more complicated. There is OpenAPI standard 
+that defines how to describe HTTP-server API. Also it provides
+Swagger. It is a tool to make it easy to check how server behaves.
+It pprovides an HTTP-client for the server which allows us to 
+query server routes.</p>
+<p>Let's add a swagger to our server. Just add this line:</p>
+<pre><code class="language-haskell">server :: IO
+server = 
+  withSwagger def $ 
+    &quot;api&quot; /. [ {- the rest of the code -} ]
+</code></pre>
+<p>Let's add this line to our example and restart the server.
+By default it creates a route for the server that serves Swagger UI client
+at the path: <a href="http://localhost:8085/swagger-ui/">http://localhost:8085/swagger-ui/</a>.
+It is easy to query the routes with swagger ui.</p>
+<p>We can add swagger to any server with function:</p>
+<pre><code class="language-haskell">withSwagger :: SwaggerConfig m -&gt; Server m -&gt; Server m
+</code></pre>
+<p>We will study the <code>ServerConfig</code> in details in one of the next chapters
+but for now the default value whcih is set with <code>def</code> from library <code>data-default</code>
+is fine.</p>
+<h3 id="add-simple-logs-to-the-server"><a class="header" href="#add-simple-logs-to-the-server">Add simple logs to the server</a></h3>
+<p>We can look at the request and trsponse data with tracing functions
+which come from library <code>mig-extra</code> from the module <code>Mig.Extra.Middleware.Trace</code>:</p>
+<pre><code class="language-haskell">data Verbosity = V0 | V1  | V2 | V3
+
+-- log http requests and responses
+logHttp :: Verbosity -&gt; Middleware m
+
+-- | log requests
+logReq :: Verbosity -&gt; Middleware m
+
+-- | Log responses
+logResp :: Verbosity -&gt; Middleware m
+</code></pre>
+<p>The <code>Middleware m</code> is a function that can be applied to all routes of the server
+and modify their behavior. To apply middleware to server we can use functions:</p>
+<pre><code class="language-haskell">applyMiddleware :: Middleware m -&gt; Server m -&gt; Server m
+
+($:) :: Middleware m -&gt; Server m -&gt; Server m
+</code></pre>
+<p>We show simplified signatures here. The real ones are overloaded by the first argument.
+but we will dicuss middlewares in depth in the separate chapter. For now it's
+ok to assume that those functions are defined in that simplified way.</p>
+<p>So let's look at the data that goes through our server:</p>
+<pre><code class="language-haskell">import Mig.Extra.Middleware.Trace qualified as Trace
+
+...
+
+server = 
+  withSwagger def $ 
+    withTrace $ {-# the rest of the server code #-}
+  where
+    withTrace = applyMiddleware (Trace.logHttp Trace.V2)
+</code></pre>
+<p>Let's restart the server and see what it logs:</p>
+<pre><code class="language-yaml">log:
+  body: ''
+  headers:
+    accept: application/json
+  method: GET
+  path: api/add?a=12&amp;b=45
+  time: 2023-10-05T16:29:16.262934Z
+  type: http-request
+
+log:
+  body: 57
+  duration: 9.750000000000001e-4
+  headers:
+    content-type: application/json
+  method: GET
+  path: api/add?a=12&amp;b=45
+  status: 200
+  time: 2023-10-05T16:29:16.263903Z
+  type: http-response
+</code></pre>
+<p>This isan easy way to add addhock logs to the application.
+Note that those logs are not aware of concurrency and will 
+report intermingled messages on concurrent queries.</p>
+<p>We can add real loggs with more generic versions of the functions
+which accept callback and we can pass the logger function defined in terms
+of one of the standard haskell logging libraries, say <code>katip</code> or <code>fast-logger</code>:</p>
+<pre><code class="language-haskell">import Data.Aeson as Json
+
+logHttpBy :: (Json.Value -&gt; m ()) -&gt; Verbosity -&gt; Middleware m
+</code></pre>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>We have learned how various parts of the requests can be queries
+with newtype wrappers. There are only handful of them.
+we can query</p>
+<ul>
+<li><code>Query name value</code> - for required queries</li>
+<li><code>Body media value</code> - for request body</li>
+<li><code>Optional name value</code> - for optional queries</li>
+<li><code>Header name value</code> - for required headers</li>
+<li><code>OptionalHeader name value</code> - for optional headers</li>
+<li><code>Capture name value</code> - for path captures</li>
+<li><code>QueryFlag</code> - for booleab query that can be missing in the path (and then it is <code>false</code>)</li>
+</ul>
+<p>We have learned to use specialized versions for servers which operate
+only in terms of <code>IO</code> or <code>Json</code>. We can import the module <code>Mig.Json.IO</code>
+and our signatures would bcome more simple and specific.</p>
+<p>we have learned how by ony-liners we can add to the server some useful features:</p>
+<ul>
+<li>
+<p>swagger: <code>(withSwagger def server)</code> 
+For calls to the server in the UI</p>
+</li>
+<li>
+<p>trace logs: <code>(applyMiddleware (logHttp V2))</code> 
+To see the data that flows through the server</p>
+</li>
+</ul>
+<p>Both expressions transform servers and have signatures: </p>
+<pre><code class="language-haskell">Server m -&gt; Server m
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="anatomy-of-the-response"><a class="header" href="#anatomy-of-the-response">Anatomy of the response</a></h1>
+<p>For the next example we are going to study which outputs can
+handler produce. Let's study the HTTP-response.</p>
+<h2 id="http-response"><a class="header" href="#http-response">Http response</a></h2>
+<p>We already have seen the <code>Resp</code> data type in the first chapter:</p>
+<pre><code class="language-haskell">-- | Response with info on the media-type encoded as type.
+data Resp media a = Resp
+  { status :: Status
+  -- ^ response status
+  , headers :: ResponseHeaders
+  -- ^ response headers
+  , body :: Maybe a
+  -- ^ response body. Nothing means &quot;no content&quot; in the body
+  }
+  deriving (Show, Functor)
+</code></pre>
+<p>It is the main type to return values and additional HTTP-information
+from response.</p>
+<p>An HTTP-response contains:</p>
+<ul>
+<li>integer status. It's 200 when everything is allright</li>
+<li>list of headers which provide useful info on response type</li>
+<li>the byte string body which contains result of handler operation. It can
+hold JSOn, HTML, plain text, raw byte string and other types of outputs.</li>
+</ul>
+<p>In the <code>Resp</code> type the <code>media</code> type argument specifies which
+type the body has. By this type handler knows how to convert value
+to low-level byte string representation.</p>
+<h3 id="when-things-go-bad"><a class="header" href="#when-things-go-bad">When things go bad</a></h3>
+<p>Sometimes things go bad and we would like to send errors and
+state in the status the type of the error. To report errors
+we have special type <code>RespOr</code>:</p>
+<pre><code class="language-haskell">-- | Response that can contain an error. The error is represented 
+-- with left case of an Either-type.
+
+newtype RespOr ty err a = RespOr {unRespOr :: Either (Resp ty err) (Resp ty a)}
+</code></pre>
+<p>So this value has two possible responses which share the same media type.
+We need two different responses to be able to report errors with different 
+type than the type of the result.</p>
+<h3 id="response-type-class-isresp"><a class="header" href="#response-type-class-isresp">Response type class <code>IsResp</code></a></h3>
+<p>To unify the output we have special type class called <code>IsResp</code> for
+all types which can be converted to low-level HTTP-response type <code>Response</code>.</p>
+<p>Let's study this type class.
+It has two associated types for the type of the body (<code>RespBody</code>) and type of the error (<code>RespError</code>):</p>
+<pre><code class="language-haskell">class IsResp a where
+  type RespBody a :: Type
+  type RespError a :: Type
+</code></pre>
+<p>We can return successful result with method <code>ok</code>:</p>
+<pre><code class="language-haskell">  -- | Returns valid repsonse with 200 status
+  ok :: RespBody a -&gt; a
+</code></pre>
+<p>When things go bad we can report error with method <code>bad</code>:</p>
+<pre><code class="language-haskell">  -- | Returns an error with given status
+  bad :: Status -&gt; RespError a -&gt; a
+</code></pre>
+<p>Sometimes at rare cases we do not wnat to return any content from response.
+we can just report error status and leave the body empty:</p>
+<pre><code class="language-haskell">  -- | response with no content
+  noContent :: Status -&gt; a
+</code></pre>
+<p>We can add custom headers to the response by method <code>addHeaders</code>:</p>
+<pre><code class="language-haskell">  -- | Add some header to the response
+  addHeaders :: ResponseHeaders -&gt; a -&gt; a
+</code></pre>
+<p>Note that header <code>Content-Type</code> is set automatically. Although sometimes
+we would like set it explicitly. For that we have the method:</p>
+<pre><code class="language-haskell">  -- | Set the media type of the response
+  setMedia :: MediaType -&gt; a -&gt; a
+</code></pre>
+<p>also the core of the class is the method to convert value to low-level response:</p>
+<pre><code class="language-haskell">  -- | Converts value to low-level response
+  toResponse :: a -&gt; Response
+</code></pre>
+<p>Both <code>Resp</code> and <code>RespOr</code> are instances of <code>IsResp</code> class and 
+we can <code>Send</code> as HTTP-response anything which has instance of <code>IsResp</code>.
+For now there are only three types. The third one is the low-level <code>Response</code>.</p>
+<h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
+<p>So we use <code>Resp</code> if we are sure that handler always produce a value
+and we use <code>RespOr</code> if handler can produce and error.</p>
+<h3 id="how-to-return-error"><a class="header" href="#how-to-return-error">How to return error</a></h3>
+<p>We already have seen many usages of <code>Resp</code> type. Let's define something
+that can produce an error. Let's define server that calculates
+square root of the value. For negative numbers it is not defined in the 
+realm of real numbers. So let's define the handler that use RespOr type:</p>
+<pre><code class="language-haskell">import Mig.Json.IO
+
+server :: Server IO
+server = 
+  &quot;square-root&quot; /. squareRoot
+
+squareRoot :: Body Float -&gt; Post (RespOr Text Float)
+squareRoot (Body arg) = Send $ pure $
+  if arg &gt;= 0 
+    then ok (sqrt arg)
+    else bad badRequest400 &quot;Argument for square root should be non-negative&quot;
+</code></pre>
+<p>So we return error message and bad request status 400 when 
+negative argument is passed to the handler.</p>
+<p>Also note this function looks like pure GET-type function but by the HTTP rules
+we can not have body request in the GET-method. So we use POST instead.</p>
+<p>Also we have special case function for bad requests called <code>badReq</code>. The
+values for status come from the library http-types. See the module dediicated
+to <a href="https://hackage.haskell.org/package/http-types-0.12.3/docs/Network-HTTP-Types-Status.html#t:Status">HTTP-statuses</a>.
+It is reexported by the <code>mig</code> library.</p>
+<h3 id="how-to-set-headers"><a class="header" href="#how-to-set-headers">How to set headers</a></h3>
+<p>For example in the Header we expect trace id with which we can 
+find the request and response in the logs. And we want to pass the
+trace id from request to the response. Let's do it with <code>addHeaders</code>:</p>
+<pre><code class="language-haskell">passTrace :: Header &quot;trace-id&quot; Text -&gt; Post (Resp ())
+passTrace (Header traceId) = Send $ 
+  pure $ addHeaders [(&quot;trace-id&quot;, toHeader traceId)] $ ok ()
+</code></pre>
+<p>The function <code>toHeader</code> is re-exported from the library <a href="https://hackage.haskell.org/package/http-api-data-0.5/docs/Web-HttpApiData.html"><code>http-api-data</code></a>.
+It converts various values to header byte string.</p>
+<p>also there is a function if we want to add only one header and not a list of them:</p>
+<pre><code class="language-haskell">setHeader :: (IsResp a, ToHttpApiData h) =&gt; HeaderName -&gt; h -&gt; a -&gt; a
+</code></pre>
+<p>It has <code>toHeader</code> built into it.</p>
+<p>Just like we set headrs we also can set HTTP-status of the response.
+we just apply it to Resp-like value. It works both for <code>Resp</code> and <code>RespOr</code>:</p>
+<pre><code class="language-haskell">setStatus :: IsResp a =&gt; Status -&gt; a -&gt; a
+</code></pre>
+<p>Although we rarely need this function as <code>ok</code> sets the right status 
+for successful response and all functions that need the status take it as argument.</p>
+<h3 id="how-it-works-with-server-definition"><a class="header" href="#how-it-works-with-server-definition">How it works with server definition</a></h3>
+<p>How we can use both of the types as responses: <code>Resp</code> and <code>RespOr</code>.
+Recall that <code>/.</code> function is overloaded by the second argument and
+we have a rule for <code>ToServer</code> class thar:</p>
+<blockquote>
+<p>if <code>a</code> has <code>IsResp</code> instance then <code>Send method m a</code> is convertible to server</p>
+</blockquote>
+<p>As for both <code>Resp</code> and <code>RespOr</code> the inctance for <code>IsResp</code> is defined we can use
+both types as a result of the HTTP-handler.</p>
+<h2 id="summary-1"><a class="header" href="#summary-1">Summary</a></h2>
+<p>We have learned that there are only tow types to return from server handler:</p>
+<ul>
+<li><code>Resp</code> for handlers that always produce a value</li>
+<li><code>RespOr</code> for handlers that can fail</li>
+</ul>
+<p>The need for the second type is to have different type of the error 
+and different for the result. If both error and result have the same 
+type then we can use <code>Resp</code>. This is common case for HTML servers when we
+return HTML-page as result. In case of error we would like to show the page too
+as in case of success. The difference would be in the HTTP-status of the response.</p>
+<p>And this goes well with <code>IsResp</code> class as for <code>Resp media a</code> error type <code>RespError</code>
+equals to <code>a</code> as the value for <code>RespBody</code> too.</p>
+<p>Also we have learned various methods of the <code>IsResp</code> class and how they 
+can be useful in server definitions.</p>
+<p>With this chapter we have covered both requests and responses and which types the can 
+have. See the source code <a href="https://github.com/anton-k/mig/blob/main/examples/mig-example-apps/RouteArgs/Main.hs"><code>RouteArgs</code></a>
+for examples on the topic that we have just studied.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="using-other-monads-with-server"><a class="header" href="#using-other-monads-with-server">Using other monads with Server</a></h1>
+<p>So far we have seen only <code>IO</code> monad to be used with <code>Server</code>.
+But we can use other monads with it. Although so far
+only three types of monads are supported for <code>Servers</code>:</p>
+<ul>
+<li><code>IO</code>-monad</li>
+<li><code>ReaderT env IO</code> and newtype wrappers on top of it</li>
+<li><code>ReaderT env (EitherT IO)</code> and new type wrappers on top of it</li>
+</ul>
+<p>So the library is limited in monad choice but all of the cases
+can cover everything you need from the server. 
+I personally prefer to just use <code>IO</code> and pass environment around
+to handlers. This process can be automated with <code>ReaderT</code> monad.
+Let's study how to use <code>ReaderT</code> with the server.</p>
+<p>As example we will build a server that contains mutable state.
+It has internal counter which we can query and increment.
+To store the internal state as shared envirnment for all handlers
+we are going to Reader-pattern or server with <code>ReaderT</code> over <code>IO</code> monad. </p>
+<h2 id="reader-pattern"><a class="header" href="#reader-pattern">Reader-pattern</a></h2>
+<p>Our server is Json-based but we want custom monad. So we can import the preset module
+for <code>Json</code>:</p>
+<pre><code class="language-haskell">import Mig.Json
+</code></pre>
+<p>also we import <code>ReaderT</code> from <code>mtl</code> library and <code>IORef</code> to store mutable shared state:</p>
+<pre><code class="language-haskell">import Control.Monad.Reader
+import Data.IORef
+</code></pre>
+<p>Let's define a type for our application:</p>
+<pre><code class="language-haskell">newtype App a = App (ReaderT Env IO a)
+  deriving newtype (Functor, Applicative, Monad, MonadReader Env, MonadIO, HasServer)
+
+{-| Common shared state
+We can put more shared state if we need. Like logger state or some interfaces.
+-}
+data Env = Env
+  { current :: IORef Int
+  }
+
+-- | Init shared state
+initEnv :: IO Env
+initEnv = Env &lt;$&gt; newIORef 0
+</code></pre>
+<h3 id="hasserver-class"><a class="header" href="#hasserver-class"><code>HasServer</code> class</a></h3>
+<p>We declare it as newtype-wrapper with <code>ReaderT</code> under the hood.
+We can derive all the classes that we need to use it as <code>Reader</code>.
+All classes but last are common repertiore of the haskeller. 
+The last class <code>HasServer</code> is special to <code>mig</code> library.
+It can be also auto-derived as the instance for <code>ReaderT+IO</code> is already defined.</p>
+<p>The <code>HasServer</code> class defines how to convert our special monad m server
+to <code>Server IO</code>. For a reader it defines a method:</p>
+<pre><code class="language-haskell">  renderServer :: Server (ReaderT env m) -&gt; env -&gt; IO (Server IO)
+</code></pre>
+<p>So if we pass the common shared environment <code>env</code> to server
+we can use it as <code>Server IO</code>. We need to convert to <code>Server IO</code>
+becuase for WAI and warp we can run only <code>Server IO</code> based servers.
+As in library <code>mig-wai</code>:</p>
+<pre><code class="language-haskell">toApplication :: Server IO -&gt; Wai.Application
+</code></pre>
+<h3 id="how-to-run-reader-based-server"><a class="header" href="#how-to-run-reader-based-server">How to run Reader based server</a></h3>
+<p>So to run the readerT server we need to convert it to <code>IO</code>-based server
+and we can run it with usual <code>runServer</code> function:</p>
+<pre><code class="language-haskell">
+main :: IO ()
+main = do
+  env &lt;- initEnv 
+  putStrLn (&quot;The counter server listens on port: &quot; &lt;&gt; show port)
+  runServer port . withSwagger def =&lt;&lt; renderServer server env
+  where
+    port = 8085
+
+server :: Server App
+</code></pre>
+<p>Here we also add the swagger to the server for easy testing
+and trying things out with swagger.</p>
+<p>Note that we use bind operator:</p>
+<pre><code>  runServer port =&lt;&lt; renderServer server env
+</code></pre>
+<h3 id="server-with-reader-monad"><a class="header" href="#server-with-reader-monad">Server with Reader monad</a></h3>
+<p>Our server has two routes:</p>
+<ul>
+<li>get - to querry current state</li>
+<li>put - to add some integer to the state</li>
+</ul>
+<pre><code class="language-haskell">server :: Server App
+server =
+  &quot;counter&quot;
+    /. [ &quot;get&quot; /. handleGet
+       , &quot;put&quot; /. handlePut
+       ]
+</code></pre>
+<p>Let's define the <code>get</code> route:</p>
+<pre><code class="language-haskell">-- | Get handler. It logs the call and returns current state
+handleGet :: Get App (Resp Int)
+handleGet = Send $ do
+  logInfo &quot;Call get&quot;
+  ref &lt;- asks (.current)
+  liftIO $ ok &lt;$&gt; readIORef ref
+
+-- | Helper to do simple logging
+logInfo :: String -&gt; App ()
+logInfo message = liftIO $ putStrLn $ &quot;[INFO] &quot; &lt;&gt; message
+</code></pre>
+<p>So we ask for the common mutable state and read it with <code>readIORef</code> function.
+Also we use <code>liftIO</code> to lift <code>IO</code> result to <code>App</code> monad.
+We just use <code>App</code> monad inside <code>Send</code>-wrapper to create a handler.</p>
+<p>LEt's define the <code>put</code> handler:</p>
+<pre><code class="language-haskell">-- | Put handler. It logs the call and updates 
+-- the state with integer which is read from URL
+handlePut :: Capture &quot;arg&quot; Int -&gt; Get App (Resp ())
+handlePut (Capture val) = Send $ do
+  logInfo $ &quot;Call put with: &quot; &lt;&gt; show val
+  ref &lt;- asks (.current)
+  liftIO $ ok &lt;$&gt; atomicModifyIORef' ref (\cur -&gt; (cur + val, ()))
+</code></pre>
+<p>We use <code>atomicModifyIORef'</code> to be safe in presence of concurrent requests.
+So we have completed the definition and we can run the app and try it out.
+You can find the complete code of the example in the <a href="https://github.com/anton-k/mig/blob/main/examples/mig-example-apps/Counter/Main.hs"><code>mig</code> repo</a>.</p>
+<h2 id="summary-2"><a class="header" href="#summary-2">Summary</a></h2>
+<p>In this chapter we have learned how to use Reader-monad with <code>mig</code> library.
+We can define our custom wrapper for <code>ReaderT+IO</code> and derive instance 
+of <code>HasServer</code> and we are ready to go.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="middlewares"><a class="header" href="#middlewares">Middlewares</a></h1>
+<p>A middleware is a transformation which is applied to all routes in the server.
+It is a pair of functions which transform API-description and server function:</p>
+<pre><code class="language-haskell">data Middleware m = Middleware
+  { info :: RouteInfo -&gt; RouteInfo
+  -- ^ update api schema
+  , run :: MiddlewareFun m
+  -- ^ update server function
+  }
+
+-- | Low-level middleware function.
+type MiddlewareFun m = ServerFun m -&gt; ServerFun m
+</code></pre>
+<p>To apply middleware to server we ca use function <code>applyMiddleware</code>:</p>
+<pre><code class="language-haskell">-- | Applies middleware to all routes of the server.
+applyMiddleware :: forall f. (ToMiddleware f) =&gt; 
+  f -&gt; Server (MonadOf f) -&gt; Server (MonadOf f)
+</code></pre>
+<p>There is also infix operatore for application <code>($:)</code>.</p>
+<p>The class <code>ToMiddleware</code> contains all types that can be converted to middleware.
+Here we use the same trick as with <code>ToServer</code> class to be able to read type-safe parts of the request
+and update the API-schema. The type-level function <code>MonadOf</code> knows how to find underlying monad <code>m</code>
+in various types.</p>
+<p>We have recursive set of rules for types that can be converted to <code>Middleware</code>:</p>
+<p>The identity rule:</p>
+<blockquote>
+<p><code>MiddlewareFun</code> has instance of <code>ToMiddleware</code> with obvious identity instance</p>
+</blockquote>
+<p>Recursive steps for inputs</p>
+<blockquote>
+<p>if <code>f</code> is <code>ToMiddleware</code> then <code>(Query name queryType -&gt; f)</code> is <code>ToMiddleware</code> too</p>
+</blockquote>
+<p>and so on for other types of request input (query params, headers, captures, request bodies).
+See the full list of instances in the module <code>Mig.Core.Class.Middleware</code>.</p>
+<h2 id="examples-1"><a class="header" href="#examples-1">Examples</a></h2>
+<p>So the middleware allows us to apply some behavior to all routes in the server.
+Let's discuss some examples</p>
+<h3 id="add-logging"><a class="header" href="#add-logging">Add logging</a></h3>
+<p>Let's add the logging to all methods which are called. We will log which route 
+was called and we will include the time stamp and the full path in the log:</p>
+<p>Let's imagine that we have a function</p>
+<pre><code class="language-haskell">logInfo :: Text -&gt; IO ()
+</code></pre>
+<p>We can query the path with <code>PathInfo</code> newtype:</p>
+<pre><code class="language-haskell">newtype PathInfo = PathInfo [Text]
+</code></pre>
+<p>And we have a rule for  <code>ToMiddleware</code> class:</p>
+<blockquote>
+<p>if <code>f</code> is <code>ToMiddleware</code> then <code>(PathInfo -&gt; ToMiddleware f)</code> is <code>ToMiddleware</code></p>
+</blockquote>
+<p>so we can create a middleware function:</p>
+<pre><code class="language-haskell">logRoutes :: Middleware IO
+logRoutes = toMiddleware $ \(PathInfo pathItems) -&gt; prependServerAction $ do
+  now &lt;- getCurrentTime 
+  logInfo $ mconcat
+    [ &quot;Call route: &quot;, Text.intercalata &quot;/&quot; pathItems 
+    , &quot; at &quot;, Text.pack (show now)
+    ]
+</code></pre>
+<p>We use function <code>prependServerAction</code> that creates a <code>Middleware</code>
+from actino which is performed prior to call to server function:</p>
+<pre><code class="language-haskell">prependServerAction :: MonadIO m =&gt; m () -&gt; Middleware m
+</code></pre>
+<p>also there are similar functions in the module: <code>appendServerAction</code> and <code>processResponse</code>.</p>
+<h3 id="allow-only-secure-routes"><a class="header" href="#allow-only-secure-routes">Allow only secure routes</a></h3>
+<p>Another great example of middleware at work is to block routes on some conditions.
+For example if we want certain routes to be used only under secure SSL connection.
+We have a standard function for that <code>whenSecure</code>. But let's dive into it's definition to
+see how middlewares can be used:</p>
+<pre><code class="language-haskell">-- | Execute request only if it is secure (made with SSL connection)
+whenSecure :: forall m. (MonadIO m) =&gt; Middleware m
+whenSecure = toMiddleware $ \(IsSecure isSecure) -&gt; 
+  processResponse (if isSecure then id else const (pure Nothing))
+</code></pre>
+<p>Here we use standard middleware <code>processResponse</code> which allows
+us to alter the result of the HTTP-response:</p>
+<pre><code class="language-haskell">processResponse :: MonadIO m =&gt; 
+  (m (Maybe Response) -&gt; m (Maybe Response)) -&gt; Middleware m
+</code></pre>
+<p>Also we use query input <code>IsSecure</code> which is true if connection is made over SSL:</p>
+<pre><code class="language-haskell">newtype IsSecure = IsSecure Bool
+</code></pre>
+<p>So we pass through the response with identity if connection is secure
+and we block the execution by returning <code>Nothing</code> if connection is secure.
+The cool part of it is that due to Haskell's laziness there is no performance overhead and underlying
+route is not going to be performed if connection is insecure.</p>
+<h3 id="authorization-with-middleware"><a class="header" href="#authorization-with-middleware">Authorization with middleware</a></h3>
+<p>Let's use this schema for authorization to site. 
+There is a route that provides authorized users with session tokens.
+User can pass credentials as request body over secure connection
+and get session token in response which is valid for some time. </p>
+<p>With that token user can access the rest of the application.
+User can pass token as special header. And we check in the application
+that token is valid.</p>
+<p>Imagine that we have a type for a session token:</p>
+<pre><code class="language-haskell">newtype AuthToken = AuthToken Text
+    deriving newtype 
+      (ToJSON, FromJSON, FromHttpApiData, Eq, Ord, Show, ToParamSchema, ToSchema)
+</code></pre>
+<p>And we can get it from some route:</p>
+<pre><code class="language-haskell">getToken :: Body UserCreds -&gt; Post (Resp AuthToken)
+</code></pre>
+<p>We would like to block invalid sessions for all routes of our site.
+We can create it in similiar way as <code>whenSecure</code>:</p>
+<pre><code class="language-haskell">isValid :: AuthToken -&gt; IO Bool
+isValid = ...
+
+headerAuth :: Header &quot;auth&quot; AuthToken -&gt; Middleware IO
+headerAuth (Header token) = processResponse $ \getResp -&gt; do
+  isOk &lt;- isValid token
+  if isOk
+    then getResp
+    else pure $ Just $ bad badRequest400 &quot;Auth token is invalid&quot;
+
+whenAuth :: Server IO -&gt; Server IO
+whenAuth = applyMiddleware headerAuth
+</code></pre>
+<p>In this example we use <code>IsResp</code> instance for low-level http <code>Response</code>
+to report authorization error. The header with name <code>&quot;auth&quot;</code> is required
+for all routes which are part of the server to which we apply the middleware.</p>
+<h2 id="summary-3"><a class="header" href="#summary-3">Summary</a></h2>
+<p>In this chapter we have learned on middlewares. They provide a tool to apply
+transformation to all routes in the server. Which can be useful for logging, authrization
+and adding common behavior to all routes.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="how-to-use-swagger"><a class="header" href="#how-to-use-swagger">How to use Swagger</a></h1>
+<p>The Swagger is a powerful tool to try out your servers.
+It provides easy to use Web UI to call routes in the server.
+We already saw know how to augment server with swagger.
+It is just a line of code:</p>
+<pre><code class="language-haskell">withSwagger def server
+</code></pre>
+<p>The function <code>withSwagger</code> is defined in the package <code>mig-swagger-ui</code>
+which is re-exported by <code>mig-server</code>.</p>
+<p>In this chapter we are going to learn how to tweak and fine-tune the swagger.</p>
+<h2 id="swagger-config"><a class="header" href="#swagger-config">Swagger config</a></h2>
+<p>We have used default swagger config with constant <code>def</code>.
+Let's look at what can be configured:</p>
+<pre><code class="language-haskell">data SwaggerConfig m = SwaggerConfig
+  { staticDir :: Path
+  -- ^ path to server swagger (default is &quot;/swagger-ui&quot;)
+  , swaggerFile :: Path
+  -- ^ swagger file name (default is &quot;swaggger.json&quot;)
+  , mapSchema :: OpenApi -&gt; m OpenApi
+  -- ^ apply transformation to OpenApi schema on serving OpenApi schema.
+  -- it is useful to add additional info or set current date in the examples
+  -- or apply any real-time transformation.
+  }
+
+instance (Applicative m) =&gt; Default (SwaggerConfig m) where
+  def =
+    SwaggerConfig
+      { staticDir = &quot;swagger-ui&quot;
+      , swaggerFile = &quot;swagger.json&quot;
+      , mapSchema = pure
+      }
+</code></pre>
+<p>We can set in <code>staticDir</code> at what path to serve the swagger,
+how to name the swagger file with <code>swaggerFile</code> and
+which run-time transformation we apply to the OpenApi schema.
+We can use this mapping to add useful description to the app
+or keep examples up to date if they use for example timestamps
+that should be in the future to be valid.</p>
+<h2 id="add-description-to-application"><a class="header" href="#add-description-to-application">Add description to application</a></h2>
+<p>Often we would like to provide short description of the application,
+which version it has. We can use the package <code>openapi3</code> to update OpenApi 
+directly. But also there is a helper type for most often used fields:</p>
+<pre><code class="language-haskell">-- | Default info that is often added to OpenApi schema
+data DefaultInfo = DefaultInfo
+  { title :: Text
+  , description :: Text
+  , version :: Text
+  }
+
+addDefaultInfo :: DefaultInfo -&gt; OpenApi -&gt; OpenApi
+</code></pre>
+<p>We can set title, description and version for the application.
+Here is an example:</p>
+<pre><code class="language-haskell">setSwagger :: Server IO -&gt; Server IO
+setSwagger = withSwagger config
+  where
+    config =
+      (def :: SwaggerConfig IO)
+        { mapSchema = pure . addDefaultInfo info
+        }
+
+    info =
+      def
+        { title = &quot;Weather forecast&quot;
+        , description =
+            &quot;JSON API example for mig library which shows how to forecast weather to authorized users&quot;
+        , version = &quot;0.1.0&quot;
+        }
+</code></pre>
+<h2 id="describe-the-routes"><a class="header" href="#describe-the-routes">Describe the routes</a></h2>
+<p>Often we would like to add some useful documentation on the routes.
+We can do it with the functions:</p>
+<pre><code class="language-haskell">-- | Sets description of the route
+setDescription :: Text -&gt; Server m -&gt; Server m
+
+-- | Sets summary of the route
+setSummary :: Text -&gt; Server m -&gt; Server m
+
+-- | Adds OpenApi tag to the route
+addTag :: Text -&gt; Server m -&gt; Server m
+</code></pre>
+<p>We can apply thos functions at definition of the route.
+Also we can describe the inputs for the route:</p>
+<pre><code class="language-haskell">{-| Appends descriptiton for the inputs. It passes pairs for @(input-name, input-description)@.
+special name request-body is dedicated to request body input
+nd raw-input is dedicated to raw input
+-}
+describeInputs :: [(Text, Text)] -&gt; Server m -&gt; Server m
+</code></pre>
+<p>It takes a map from input parameter name to description. There is special name <code>&quot;request-body&quot;</code>
+for the request body input.</p>
+<p>An example:</p>
+<pre><code class="language-haskell">server = &quot;calculator&quot; /.
+  mconcat
+    [ describeAdd $ &quot;add&quot; /. add
+    , describeMul $ &quot;mul&quot; /. mull
+    ]
+  where
+    describeAdd = setDescription &quot;Performs addition&quot; . describeArgs
+    describeMul = setDescription &quot;Performs multiplication&quot; . describeArgs
+
+    describeArgs = describeInputs [(&quot;a&quot;, &quot;first argument&quot;), (&quot;b&quot;, &quot;second argument&quot;)]
+
+add, mul :: Capture &quot;a&quot; Int -&gt; Capture &quot;b&quot; Int -&gt; Get (Resp Int)
+</code></pre>
+<h2 id="summary-4"><a class="header" href="#summary-4">Summary</a></h2>
+<p>In this chapter we have learned how to tweak our swagger servers and make them more user-friendly.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="json-example-weather-forecast"><a class="header" href="#json-example-weather-forecast">JSON example: weather forecast</a></h1>
+<p>We have learned all we need to know about <code>mig</code> to be able to build something cool with it.
+Let's build a weather forecast application. The app has registered users
+which can request authroization tokens. With that token users can request for weather
+in specific city and on specific time and also they can update the weather data.
+For simplicity we omit user registration and defining roles for the user.</p>
+<h2 id="domain-for-our-application"><a class="header" href="#domain-for-our-application">Domain for our application</a></h2>
+<p>Let's define main types for our application in the module <code>Types.hs</code>.
+We will import <code>Mig.Json.IO</code> to bring in scope some classes and types
+common for HTTP-servers:</p>
+<pre><code class="language-haskell">module Types where
+
+import Data.Time (Day)
+import Mig.Json.IO
+</code></pre>
+<h3 id="domain-of-users"><a class="header" href="#domain-of-users">Domain of users</a></h3>
+<p>There are users in the application that can register and get session tokens:</p>
+<pre><code class="language-haskell">data User = User
+  { name :: Text
+  , pass :: Text
+  }
+  deriving (Generic, ToJSON, FromJSON, ToSchema)
+
+newtype AuthToken = AuthToken Text
+  deriving newtype 
+    (ToJSON, FromJSON, FromHttpApiData, Eq, Ord, Show, ToParamSchema, ToSchema)
+</code></pre>
+<p>We need instances to pass the dat over HTTP wires.</p>
+<h3 id="domain-of-weather"><a class="header" href="#domain-of-weather">Domain of weather</a></h3>
+<p>We are going to query weather info by location and date:</p>
+<pre><code class="language-haskell">newtype DayInterval = DayInterval Int
+  deriving newtype (ToJSON, FromJSON, FromHttpApiData, ToParamSchema)
+
+data Timed a = Timed
+  { from :: Day
+  , content :: [a]
+  }
+  deriving (Generic, ToJSON, FromJSON)
+
+deriving instance (ToSchema a) =&gt; ToSchema (Timed a)
+
+newtype Location = Location Text
+  deriving newtype 
+    (ToJSON, FromJSON, FromHttpApiData, Eq, Ord, Show, ToParamSchema, ToSchema)
+</code></pre>
+<p>The weather has information on temperature, speed of the wind, sun/rain nratio and pressure:</p>
+<pre><code class="language-haskell">data WeatherData = WeatherData
+  { temperature :: Int
+  , windSpeed :: Int
+  , sunRainRatio :: Int
+  , pressure :: Int
+  }
+  deriving (Generic, ToJSON, FromJSON, ToSchema)
+</code></pre>
+<p>Also some users can update DB of weather:</p>
+<pre><code class="language-haskell">-- | Update weather data
+data UpdateData = UpdateData
+  { day :: Day
+  , location :: Location
+  , content :: WeatherData
+  }
+  deriving (Generic, ToJSON, FromJSON, ToSchema)
+</code></pre>
+<p>That is our domain for the weather application.</p>
+<h2 id="lets-define-a-server"><a class="header" href="#lets-define-a-server">Lets define a server</a></h2>
+<p>We are going to build JSON HTTP application. For that we will use module <code>Mig.Json.IO</code>
+which provides handy types specified to our domain.
+We expect our application to have shared context <code>Env</code> which we pass to all handlers.</p>
+<pre><code class="language-haskell">import Mig.Json.IO
+import Types
+
+server :: Env -&gt; Server IO
+server env =
+  withSwagger def $
+    &quot;api/v1/weather&quot;
+      /. [ auth
+         , withAuth env $: app
+         ]
+  where
+    auth = &quot;get/auth-token&quot; /. requestAuthToken env
+
+    app =
+      mconcat
+        [ &quot;get/weather&quot; /. getWeather env
+        , &quot;update&quot; /. updateWeather env
+        ]
+
+-- | Site internal shared context
+data Env = Env
+
+-- weather
+
+getWeather ::
+  Env -&gt;
+  Capture &quot;location&quot; Location -&gt;
+  Capture &quot;day&quot; Day -&gt;
+  Capture &quot;day-interval&quot; DayInterval -&gt;
+  Get (RespOr Text (Timed WeatherData))
+getWeather = undefined
+
+updateWeather ::
+  Env -&gt;
+  Body UpdateData -&gt;
+  Post (RespOr Text ())
+updateWeather = undefined
+
+-- users
+
+requestAuthToken :: Env -&gt; Body User -&gt; Post (RespOr Text AuthToken)
+requestAuthToken = undefined
+
+withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Middleware IO
+withAuth = undefined
+</code></pre>
+<p>we have one route to query for token:</p>
+<pre><code class="language-haskell">requestAuthToken :: Env -&gt; Body User -&gt; Post (RespOr Text AuthToken)
+</code></pre>
+<p>and two routes that query info on weather and update it:</p>
+<pre><code class="language-haskell">getWeather ::
+  Env -&gt;
+  Capture &quot;location&quot; Location -&gt;
+  Capture &quot;day&quot; Day -&gt;
+  Capture &quot;day-interval&quot; DayInterval -&gt;
+  Get (RespOr Text (Timed WeatherData))
+
+updateWeather ::
+  Env -&gt;
+  Body UpdateData -&gt;
+  Post (RespOr Text ())
+</code></pre>
+<p>also we have a middleware that filters out non aunthorized calls:</p>
+<pre><code class="language-haskell">withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Middleware IO
+</code></pre>
+<p>From its type-signature we can assume that authroization token
+is passed in the header of the request.</p>
+<h2 id="the-structure-of-the-server"><a class="header" href="#the-structure-of-the-server">The structure of the server</a></h2>
+<p>We define server as a collection of actions that can be performed. 
+The server is defined in terms of interfaces. We can initialize those interfaces
+and pass them to handlers. </p>
+<p>Our app has several domains:</p>
+<ul>
+<li>
+<p>users and sessions</p>
+</li>
+<li>
+<p>weather DB interface</p>
+</li>
+<li>
+<p>process lifecycle: logging, startup, cleanup, etc</p>
+</li>
+</ul>
+<p>So the server enironment has three parts:</p>
+<pre><code class="language-haskell">data Env = Env
+  { auth :: Auth
+  , weather :: Weather
+  , proc :: Proc
+  }
+</code></pre>
+<p>Let's define operations for those domains. We define them in the module <code>Interface.hs</code>.</p>
+<h3 id="user-domain"><a class="header" href="#user-domain">User domain</a></h3>
+<p>For the user we can do</p>
+<ul>
+<li>
+<p>check that user is valid and can use the app</p>
+</li>
+<li>
+<p>allocate new authorization token</p>
+</li>
+<li>
+<p>check that token is valid</p>
+</li>
+<li>
+<p>expire the token (make it invalid)</p>
+</li>
+</ul>
+<pre><code class="language-haskell">-- authorization interface
+data Auth = Auth
+  { newToken :: User -&gt; IO AuthToken
+  , validUser :: User -&gt; IO Bool
+  , validToken :: AuthToken -&gt; IO Bool
+  , expireToken :: AuthToken -&gt; IO ()
+  }
+</code></pre>
+<h3 id="weather-domain"><a class="header" href="#weather-domain">Weather domain</a></h3>
+<p>For the weather we can query info and update it:</p>
+<pre><code class="language-haskell">-- weather forecast interface
+data Weather = Weather
+  { get :: Location -&gt; Day -&gt; DayInterval -&gt; IO (Maybe (Timed WeatherData))
+  , update :: UpdateData -&gt; IO ()
+  }
+</code></pre>
+<h3 id="process-domain"><a class="header" href="#process-domain">Process domain</a></h3>
+<p>For the application process we keep all server lifecycle tools
+which are not related to business logic domain. It can be logging, metrics,
+startup and cleanup actions:</p>
+<pre><code class="language-haskell">-- | Process interface
+data Proc = Proc
+  { startup :: IO ()
+  , cleanup :: IO ()
+  , Logger :: Logger
+  }
+
+-- logger interface
+data Logger = Logger
+  { info :: LogFun
+  , debug :: LogFun
+  , error :: LogFun
+  }
+
+type LogFun = Value -&gt; IO ()
+</code></pre>
+<p>We log JSON-values. As a helper functions we create funcitions
+that can log anything which is convertible to JSON:</p>
+<pre><code class="language-haskell">logInfo :: (ToJSON a) =&gt; Env -&gt; a -&gt; IO ()
+logInfo env = env.proc.logger.info . toJSON
+
+logDebug :: (ToJSON a) =&gt; Env -&gt; a -&gt; IO ()
+logDebug env = env.proc.logger.debug . toJSON
+
+logError :: (ToJSON a) =&gt; Env -&gt; a -&gt; IO ()
+logError env = env.proc.logger.error . toJSON
+</code></pre>
+<h3 id="using-interfacs"><a class="header" href="#using-interfacs">Using interfacs</a></h3>
+<p>It's interesting to note how all actions on shared state can be expressed
+as interfaces. We will declare the concrete mutable representation later
+but for now it is ok to hide them with not implemented yet functions.
+This also allows us to create mock applications for testing and substitute
+implementations without changing the code for the server.</p>
+<h2 id="define-server-in-terms-of-interfaces"><a class="header" href="#define-server-in-terms-of-interfaces">Define server in terms of interfaces</a></h2>
+<p>As we have defined the main operations of the application we can complete 
+the definition of the server.
+Let's define the routes for weather domain first as they are more simple.</p>
+<h3 id="weather-domain-1"><a class="header" href="#weather-domain-1">Weather domain</a></h3>
+<p>We can query the weather forecast with function:</p>
+<pre><code class="language-haskell">getWeather ::
+  Env -&gt;
+  Capture &quot;location&quot; Location -&gt;
+  Capture &quot;day&quot; Day -&gt;
+  Capture &quot;day-interval&quot; DayInterval -&gt;
+  Get (RespOr Text (Timed WeatherData))
+getWeather env (Capture location) (Capture fromDay) (Capture interval) = Send $ do
+  logInfo @Text env &quot;get the weather forecast&quot;
+  mResult &lt;- env.weather.get location fromDay interval
+  pure $ case mResult of
+    Just result -&gt; ok result
+    Nothing -&gt; bad status400 &quot;No data&quot;
+</code></pre>
+<p>We log that call to get weather is in the progress.
+Then we try to fetch weather data and if it has the data
+we return it to the user otherwise we report error.</p>
+<p>Let's update the weather data:</p>
+<pre><code class="language-haskell">updateWeather ::
+  Env -&gt;
+  Body UpdateData -&gt;
+  Post (Resp ())
+updateWeather env (Body updateData) = Send $ do
+  logInfo @Text env &quot;update the weather data&quot;
+  ok &lt;$&gt; env.weather.update updateData
+</code></pre>
+<p>we log the report and update the weather data.</p>
+<h3 id="the-user-domain"><a class="header" href="#the-user-domain">The user domain</a></h3>
+<p>Let's give the user access token and check that token is valid.
+Let's allocate a new token in the hanlder <code>requestAuthToken</code>:</p>
+<pre><code class="language-haskell">requestAuthToken :: Env -&gt; Body User -&gt; Post (RespOr Text AuthToken)
+requestAuthToken env (Body user) = Send $ do
+  logInfo env (&quot;get new auth token for: &quot; &lt;&gt; user.name)
+  isValid &lt;- env.auth.validUser user
+  if isValid
+    then do
+      token &lt;- env.auth.newToken user
+      void $ forkIO $ setExpireTimer token
+      pure $ ok token
+    else do
+      logError env $ Text.unwords [&quot;User&quot;, user.name, &quot;does not have access to the service&quot;]
+      pure $ bad unauthorized401 &quot;User is not valid&quot;
+  where
+    setExpireTimer :: AuthToken -&gt; IO ()
+    setExpireTimer token = do
+      threadDelay (1_000_000 * 60 * 10) -- 10 minutes
+      env.auth.expireToken token
+</code></pre>
+<p>We check that user is valid and if the user is valid
+we give user a token and also set the expiration for it. 
+We will expire it 10 minutes after registration.
+The expiration is concurrent process that is forked from the thread 
+that hnadles the request. If user has no rights to use our service we report error.</p>
+<p>Let's check for authorization tokens. Ideally we would like to add
+this action to all handlers of our application. We would like to keep
+the business logic handlers for the weather domain the same.
+And we can do it with middleware. Let's define such a middleware
+that expects authorization tokens with required header:</p>
+<pre><code class="language-haskell">withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Middleware IO
+withAuth env (Header token) = processResponse $ \getResp -&gt; do
+  isOk &lt;- env.auth.validToken token
+  if isOk
+    then getResp
+    else do
+      logError env errMessage
+      pure $ Just (bad status500 $ Text.encodeUtf8 errMessage)
+  where
+    errMessage = &quot;Token is invalid&quot;
+</code></pre>
+<p>we have covered in depth how to implement it in the chapter on Middlewares
+so this code should look familiar to us.</p>
+<h3 id="run-application"><a class="header" href="#run-application">Run application</a></h3>
+<p>That completes the definition of the server. Let's run it. We define the main function
+in the module <code>Main.hs</code>:</p>
+<pre><code class="language-haskell">main :: IO ()
+main = do
+  env &lt;- initEnv port
+  env.proc.startup
+  runServer port (server env)
+    `finally` env.proc.cleanup
+  where
+    port = 8085
+
+initEnv :: Port -&gt; IO Env
+initEnv = undefined
+</code></pre>
+<p>The initialization of interfaces is yet to be defined.
+So this is all we need to start the server.</p>
+<h2 id="implementation-of-the-interfaces"><a class="header" href="#implementation-of-the-interfaces">Implementation of the interfaces</a></h2>
+<p>For the purpose of the example we will create a mock application.
+A bit more detailed implementation is in the source code of the <code>mig</code> library.
+See example <code>JsonApi</code>.</p>
+<h2 id="mock-application"><a class="header" href="#mock-application">Mock application</a></h2>
+<p>We can create a mock application with one user.</p>
+<pre><code class="language-haskell">import Data.ByteString.Char8 qualified as B
+import Data.Yaml qualified as Yaml
+import Data.Aeson qualified as Json
+
+initEnv :: Port -&gt; IO Env
+initEnv port = pure $ Env initAuth initWeather (initProc proc)
+
+-- | Application with single user john with token that never expires
+initAuth :: Auth
+initAuth = 
+  Auth
+  { newToken = const $ pure AuthToken &quot;john-token&quot;
+  , validUser = \(User name pass) = pure $ name == &quot;john&quot; &amp;&amp; pass == &quot;123&quot;
+  , validToken = (\AuthToken token) -&gt; pure (token == &quot;john-token&quot;)
+  , expireToken = const $ pure ()
+  }
+
+initWeather = Weather
+  { get = \location day dayInterval -&gt; pure Nothing
+  , update = \updateData -&gt; pure ()
+  }
+
+initProc :: Port -&gt; Proc
+initProc = 
+  pure Proc 
+    { logger = logger
+    , startup = logger.info $ &quot;App started on port: &quot; &lt;&gt; Text.pack (show port)
+    , cleanup = logger.info &quot;App shutdown&quot;
+    }
+  where
+    logger = initLogger
+
+initLogger :: Logger
+initLogger = Logger
+  { info = logBy &quot;info&quot; 
+  , debug = logBy &quot;debug&quot;
+  , error = logBy &quot;error&quot;
+  }
+  where
+    logBy :: Text -&gt; Json.Value msg -&gt; IO ()
+    logBy level msg = B.putStrLn . Yaml.encode . addLogPrefix $
+        Json.object [ &quot;level&quot; .= level, &quot;message&quot; .= msg ]
+
+addLogPrefix :: Json.Value -&gt; Json.Value
+addLogPrefix val = Json.object [&quot;log&quot; .= val]
+</code></pre>
+<p>we can start the application and try it out with swagger.</p>
+<h2 id="exercises"><a class="header" href="#exercises">Exercises</a></h2>
+<p>You can find the complete code of the example in the <a href="https://github.com/anton-k/mig/blob/main/examples/mig-example-apps/JsonApi"><code>mig</code> repo</a>.</p>
+<ul>
+<li>
+<p>implement routes for user registration. Only registered users can receive the authorization token.</p>
+</li>
+<li>
+<p>implement roles for the users:</p>
+<ul>
+<li>admin: can manage users</li>
+<li>db-writer: can update weather forecast</li>
+<li>visitor: can only view forecasts</li>
+</ul>
+</li>
+<li>
+<p>implement in-memory storage of the weather DB. Use maps to store weather data and info
+on valid users and tokens.</p>
+</li>
+<li>
+<p>implement real logger with <code>fast-logger</code> library</p>
+</li>
+<li>
+<p>implement interface that connects application to some real DB.
+The code for the server should stay the same and only initialization
+of interface should change. Use one of the DB libraries for haskell: <code>hasql</code>, <code>postgresql-simple</code></p>
+</li>
+</ul>
+<h2 id="summary-5"><a class="header" href="#summary-5">Summary</a></h2>
+<p>In this chapter we have defined a more substantial example of JSON HTTP application
+and saw how we can apply various concepts in practice.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="html-example-blog-site"><a class="header" href="#html-example-blog-site">HTML example: Blog site</a></h1>
+<p>We have seen many examples of JSON applications. But we can send data in other formats too.
+Most common forma t for human-readable information for HTTP applications
+is HTML. Any site that we visit sends HTML pages to us. Let's create a simple
+site that shos blog posts and quotes and we can add new blog posts to it.
+Complete code for example is in the <a href="https://github.com/anton-k/mig/tree/main/examples/mig-example-apps/Html"><code>mig</code> repo</a>
+We will cover the most interesting parts of the application.</p>
+<p>As in previous example we are going to use IO-based server. 
+The common actions that change internal state of the site or query useful data
+are expressed as collection of interfaces. All handlers accept interfaces as first argument.</p>
+<p>The structure of the application is similiar to the weather forecast example.
+The modules with their purpose:</p>
+<ul>
+<li><code>Types</code> - types that cover fdomain of our application</li>
+<li><code>Server</code> - defines server API and handlers</li>
+<li><code>Main</code> - runs the server</li>
+<li><code>View</code> - renders types as HTML-pages</li>
+<li><code>Interface</code> - actions that can be performed on shared internal state of the app</li>
+<li><code>Init</code> - initialization of the interfaces</li>
+<li><code>Content</code> - some mock data to show on page</li>
+<li><code>Internal</code> - internal state of the site</li>
+</ul>
+<h2 id="using-preset-module-for-htlm-servers"><a class="header" href="#using-preset-module-for-htlm-servers">Using preset module for HTLM servers</a></h2>
+<p>As we define server based on <code>IO</code> and <code>HTML</code> we will use the module <code>Mig.Html.IO</code>.
+Note that there is a difference in types from <code>JSON</code> brother of that module.
+We will not see the <code>Resp</code> type in the signatures of the handlers.</p>
+<p>Becuase for <code>HTML</code> the type synonyms to <code>Send</code> fix the output of <code>Send</code>-type
+so that it always has value wrapped in <code>Resp</code>:</p>
+<pre><code class="language-haskell">type Get a = Send GET IO (Resp a)
+</code></pre>
+<p>The <code>Resp</code>-type is built in the type because for HTML we almost never need the <code>RespOr</code>
+with different type of erorrs. Our errors are going to be HTML-pages to as the result.
+So we report errors to user in HTML-pages.</p>
+<h2 id="run-a-server-1"><a class="header" href="#run-a-server-1">Run a server</a></h2>
+<p>Let's define a function that will start an empty server:</p>
+<pre><code>module Main (
+  main,
+) where
+
+import Mig.Html.IO (runServer)
+
+main :: IO ()
+main = do
+  site &lt;- initSite
+  runServer port (server site)
+  where
+    port = 8085
+
+-- | Placeholder for collection of interfaces
+data Site = Site
+
+-- | Initialize site's interfaces
+initSite :: IO Site
+initSite = pure Site
+
+-- | Create a server that works in terms of interfaces
+server :: Site -&gt; Server IO
+server _ = mempty
+</code></pre>
+<h2 id="define-server-routes"><a class="header" href="#define-server-routes">Define server routes</a></h2>
+<p>Let's define the server and its routes.
+For our blogpost site we are going to show the pages:</p>
+<ul>
+<li>
+<p>main page with list of blog posts and greeting</p>
+</li>
+<li>
+<p>show random blog post</p>
+</li>
+<li>
+<p>show random quote</p>
+</li>
+<li>
+<p>save new blog post</p>
+</li>
+<li>
+<p>list all blog posts</p>
+</li>
+</ul>
+<p>Also our site serves static files which contain CSS-style file and images
+We keep them in separate directory called <code>resources</code>.</p>
+<p>Here is the definition of the server:</p>
+<pre><code class="language-haskell">-- | Server definition. Note how we assemble it from parts with monoid method mconcat.
+server :: Site -&gt; Server IO
+server site =
+  logRoutes $
+    mconcat
+      [ &quot;blog&quot;
+          /. [ readServer
+             , writeServer
+             ]
+      , defaultPage
+      , addFavicon $ &quot;static&quot; /. staticFiles resourceFiles
+      ]
+</code></pre>
+<p>The site serves several sub-servers:</p>
+<ul>
+<li><code>readServer</code> - pages that fetch content for us</li>
+<li><code>writeServer</code> - pages to update the content. to save new blog post</li>
+<li><code>defaultPage</code> - main page of the app</li>
+<li><code>staticFiles</code> with <code>addFavicon</code> - 
+serves static files and adds icon for our site that is shown in the tab of the browser</li>
+</ul>
+<h3 id="default-page-server"><a class="header" href="#default-page-server">default page server</a></h3>
+<p>Let's define the simplest server, the default page:</p>
+<pre><code class="language-haskell">-- default main page
+defaultPage =
+  mconcat
+    [ &quot;/&quot; /. handleGreeting site
+    , &quot;index.html&quot; /. handleGreeting site
+    ]
+
+handleGreeting :: Site -&gt; Get (Page Greeting)
+</code></pre>
+<p>It links two routes to the <code>handleGreeting</code> handler. We serve two routs: the route
+of the site and default route for main page &quot;/index.html&quot;.</p>
+<p>for now we can think of <code>Page</code> as main template of our site which contains
+some value that is renderable to HTML. Renderer converts the value to HTML
+and injects it to the site's template.</p>
+<h3 id="read-server"><a class="header" href="#read-server">Read server</a></h3>
+<p>Let's define read-only pages for our site.</p>
+<pre><code class="language-haskell">-- server to read info.
+-- We can read blog posts and quotes.
+readServer =
+  mconcat
+    [ &quot;read&quot;
+        /. [ &quot;post&quot; /. handleBlogPost site
+           , &quot;quote&quot; /. handleQuote site
+           ]
+    , &quot;list&quot; /. handleListPosts site
+    ]
+
+handleBlogPost :: Site -&gt; Optional &quot;id&quot; BlogPostId -&gt; Get (Page BlogPost)
+
+handleQuote :: Site -&gt; Get (Page Quote)
+
+handleListPosts :: Site -&gt; Get (Page ListPosts)
+</code></pre>
+<p>We have three pages to read in our site:</p>
+<ul>
+<li><code>handleBlogPost</code> - shows random blog post</li>
+<li><code>handleQuote</code> - shows random quote</li>
+<li><code>handleListPosts</code> - shows a list of all posts</li>
+</ul>
+<h3 id="write-server"><a class="header" href="#write-server">Write server</a></h3>
+<p>Let's define a route to add new blog posts to the site:</p>
+<pre><code class="language-haskell">    -- server to write new blog posts
+    writeServer =
+      &quot;write&quot;
+        /. [ toServer $ handleWriteForm site
+           , toServer $ handleWriteSubmit site
+           ]
+
+handleWriteForm :: Site -&gt; Get (Page WritePost)
+
+handleWriteSubmit :: Site -&gt; Body FormUrlEncoded SubmitBlogPost -&gt; Post (Page BlogPost)
+</code></pre>
+<p>We have two different routes which are served on the same path. 
+The first route shows the page with form to fill the post data.
+The second route is triggered when we hit the submit button.
+The data in the form is send to the site as request body with <code>Content-Type</code>
+set to corresponding <code>FormUrlEncoded</code> type.</p>
+<p>We can serve several route handlers on the same path if they differ by
+HTTP-method, input type or output type. In this example we use <code>toServer</code> function
+to convert route handler function to <code>Server IO</code>.</p>
+<p>As we can see all handlers expect the value <code>Site</code> as first argument.
+This value contains interfaces for all actions that can be performed with our site.</p>
+<h3 id="static-files"><a class="header" href="#static-files">Static files</a></h3>
+<p>We serve static files with the line:</p>
+<pre><code class="language-haskell">  , addFavicon $ &quot;static&quot; /. staticFiles resourceFiles
+</code></pre>
+<p>Let's explain what happens here. The standard function <code>staticFiles</code>
+takes a collection of files and turns them into server:</p>
+<pre><code class="language-haskell">staticFiels :: MonadIO m =&gt; [(FilePath, ByteString)] -&gt; Server m
+</code></pre>
+<p>The list of pairs contains pair of <code>(path-to-file, byte-string-content-of-the-file)</code>.
+It is convenient to use it with function <code>embedRecursiveDir</code>  which
+embeds all files from directory to haskell executable. It comes with linrary <code>file-embed-lzma</code>.
+We use it like this:</p>
+<pre><code class="language-haskell">server = &quot;static&quot; /. staticFiles resourceFiles
+
+resourceFiles :: [(FilePath, ByteString)]
+resourceFiles = $(embedRecursiveDir &quot;Html/resources&quot;)
+</code></pre>
+<p>For our site we use <code>milligram.css</code> framework for styling and couple of
+pictures.</p>
+<p>Also let's dicuss <code>addFavicon</code> function:</p>
+<pre><code class="language-haskell">addFavicon = addPathLink &quot;favicon.ico&quot; &quot;static/lambda-logo.png&quot;
+</code></pre>
+<p>It shows interesting concept of linking to the parts of the server.
+The standard function <code>addPathLink</code> serves all calls to <code>favicon.ico</code>
+with handler on path <code>&quot;static/lambda-logo.png&quot;</code>.
+This way we can create additional links to the server.</p>
+<p>Also we can reuse the sub-parts of another server in our server with
+function <code>atPath</code>:</p>
+<pre><code class="language-haskell">{-| Sub-server for a server on given path
+it might be usefule to emulate links from one route to another within the server
+or reuse part of the server inside another server.
+-}
+atPath :: forall m. Api.Path -&gt; Server m -&gt; Server m
+</code></pre>
+<p>It creates sub-server for all routes that match given path-prefix.
+So it can be not only single route but the whole sub-server.
+The function <code>addPathLink</code> rides on top of that useful function.</p>
+<h3 id="overview-of-the-site"><a class="header" href="#overview-of-the-site">Overview of the site</a></h3>
+<p>So for our site we have 5 handlers. Let's recall them:</p>
+<pre><code class="language-haskell">handleBlogPost :: Site -&gt; Optional &quot;id&quot; BlogPostId -&gt; Get (Page BlogPost)
+
+handleQuote :: Site -&gt; Get (Page Quote)
+
+handleListPosts :: Site -&gt; Get (Page ListPosts)
+
+handleWriteForm :: Site -&gt; Get (Page WritePost)
+
+handleWriteSubmit :: Site -&gt; Body FormUrlEncoded SubmitBlogPost -&gt; Post (Page BlogPost)
+</code></pre>
+<p>We can see from type signatures all the types for our domain.
+Let's define the types.</p>
+<h2 id="domain-model-of-the-blog-site"><a class="header" href="#domain-model-of-the-blog-site">Domain model of the blog site</a></h2>
+<p>We are going to show Blog posts. and we have a form to input a new content to the site.
+We can define the types for domain as follows:</p>
+<pre><code class="language-haskell">-- | Web-page for our site
+newtype Page a = Page a
+
+-- | Greeting page
+data Greeting = Greeting [BlogPost]
+
+-- | Form to submit new post
+data WritePost = WritePost
+
+-- | List all posts
+newtype ListPosts = ListPosts [BlogPost]
+
+-- | Blog post id
+newtype BlogPostId = BlogPostId {unBlogPostId :: UUID}
+  deriving newtype (FromHttpApiData, ToHttpApiData, Eq, Show, FromJSON, ToParamSchema)
+
+data BlogPostView
+  = ViewBlogPost BlogPost
+    -- | error: post not found by id
+  | PostNotFound BlogPostId
+
+-- | Blog post
+data BlogPost = BlogPost
+  { id :: BlogPostId
+  , title :: Text
+  , createdAt :: UTCTime
+  , content :: Text
+  }
+
+-- | A quote
+data Quote = Quote
+  { content :: Text
+  }
+
+-- | Data to submit new blog post
+data SubmitBlogPost = SubmitBlogPost
+  { title :: Text
+  , content :: Text
+  }
+  deriving (Generic, FromForm, ToSchema)
+</code></pre>
+<p>We need to define certian instances to be able to send the data over HTTP wires.
+The types come from standard libraries for web development in haskell: <code>openapi3</code>, <code>http-api-data</code>, <code>aeson</code>.</p>
+<h2 id="interfaces-for-the-site"><a class="header" href="#interfaces-for-the-site">Interfaces for the site</a></h2>
+<p>Our web site is going to support the following actions:</p>
+<pre><code class="language-haskell">{-| Web site actions. It defines interfaces that connect logic of our site
+with outside world: DBs, logger.
+-}
+data Site = Site
+  { readBlogPost :: BlogPostId -&gt; IO (Maybe BlogPost)
+  , writeBlogPost :: SubmitBlogPost -&gt; IO BlogPostId
+  , listBlogPosts :: IO [BlogPost]
+  , readQuote :: IO Quote
+  , logInfo :: Text -&gt; IO ()
+  , cleanup :: IO ()
+  }
+</code></pre>
+<p>The actions are natural and follow the design of domain and server.</p>
+<h2 id="implement-handlers"><a class="header" href="#implement-handlers">Implement handlers</a></h2>
+<p>Let's implement the handlers in terms of interfaces.</p>
+<h3 id="default-page"><a class="header" href="#default-page">Default page</a></h3>
+<p>Let's greet the user:</p>
+<pre><code class="language-haskell">-- | Greet the user on main page
+handleGreeting :: Site -&gt; Get (Page Greeting)
+handleGreeting site =
+  Send $ ok . Page . Greeting &lt;$&gt; site.listBlogPosts
+</code></pre>
+<p>We get the list of all blog posts and wrap them in <code>Greeting</code> page.</p>
+<h3 id="read-site"><a class="header" href="#read-site">Read site</a></h3>
+<p>Let's read the blog post:</p>
+<pre><code class="language-haskell">-- | Read blog post by id
+handleBlogPost :: Site -&gt; Optional &quot;id&quot; BlogPostId -&gt; Get (Page BlogPostView)
+handleBlogPost site (Optional mBlogId) = Send $
+  case mBlogId of
+    Nothing -&gt; ok . Page . ViewBlogPost &lt;$&gt; randomBlogPost site
+    Just blogId -&gt;
+      maybe
+        (bad notFound404 $ Page $ PostNotFound blogId)
+        (ok . Page . ViewBlogPost)
+      &lt;$&gt; site.readBlogPost blogId
+</code></pre>
+<p>We have an optional query parameter that contains <code>id</code> of the blog post.
+If <code>id</code> is missing we return some random blog post.
+If there is no blog post that corresponds to id we return error with page not foud status.</p>
+<p>Let's read the random quote:</p>
+<pre><code class="language-haskell">handleQuote :: Site -&gt; Get (Page Quote)
+handleQuote site = Send $ ok . Page &lt;$&gt; site.readQuote
+</code></pre>
+<p>Let's show all blog posts as a menu to the user:</p>
+<pre><code class="language-haskell">handleListPosts :: Site -&gt; Get (Page ListPosts)
+handleListPosts site = Send $ do
+  ok . Page . ListPosts &lt;$&gt; site.listBlogPosts
+</code></pre>
+<h3 id="write-site"><a class="header" href="#write-site">Write site</a></h3>
+<p>Let's show the form to the user to fill new post data:</p>
+<pre><code class="language-haskell">handleWriteForm :: Site -&gt; Get (Page WritePost)
+handleWriteForm _site =
+  Send $ pure $ ok $ Page WritePost
+</code></pre>
+<p>As we can see we just return the tag of the page that encodes
+the content with form. We will define the HTML-form in the rendering module <code>View.hs</code>.</p>
+<p>Let's define the logic to save the submited data to application:</p>
+<pre><code class="language-haskell">
+-- | Submit form with data provided by the user
+handleWriteSubmit :: Site -&gt; Body FormUrlEncoded SubmitBlogPost -&gt; Post (Page BlogPostView)
+handleWriteSubmit site (Body submitData) = Send $ do
+  pid &lt;- site.writeBlogPost submitData
+  maybe
+    (bad notFound404 $ Page $ PostNotFound pid)
+    (ok . Page . ViewBlogPost)
+    &lt;$&gt; site.readBlogPost pid
+</code></pre>
+<p>In this example we save the new blog post and read that post after saving to show 
+it to the user.</p>
+<p>As we can see the handlers follow the interfaces of the site. We just
+wrap data in the content.</p>
+<h2 id="view-html-pages"><a class="header" href="#view-html-pages">View HTML pages</a></h2>
+<p>To render HTML pages we use <code>blaze-html</code> library. All we need to do is to define
+instances for all types that show up in the result of handlers.</p>
+<p>The type <code>Page</code> is a container for our web site main template:</p>
+<pre><code class="language-haskell">-- writes the template for main page
+instance (ToMarkup a) =&gt; ToMarkup (Page a) where
+  toMarkup (Page page) = siteTemplate (H.toMarkup page)
+
+siteTemplate :: Html -&gt; Html
+</code></pre>
+<p>Also we define <code>ToMarkup</code> instances for all elements in the site:</p>
+<pre><code class="language-haskell">instance ToMarkup Greeting where
+instance ToMarkup WritePost where
+instance ToMarkup BlogPostView where
+...
+</code></pre>
+<p>You can find the full code in the <a href="https://github.com/anton-k/mig/tree/main/examples/mig-example-apps/Html">sources</a>.</p>
+<h2 id="internal-state-implementation"><a class="header" href="#internal-state-implementation">Internal state implementation</a></h2>
+<p>Our website server is ready to be launched.
+We only need to define the interfaces. You can find the implementation
+in the source code for <a href="https://github.com/anton-k/mig/tree/main/examples/mig-example-apps/Html">the example</a>. See the modules: </p>
+<ul>
+<li><code>Init</code> - initializes the interface</li>
+<li><code>Content</code> - contains run-time mock data</li>
+<li><code>Internal.State</code> - mutable state to save blog posts in memory</li>
+</ul>
+<h2 id="summary-6"><a class="header" href="#summary-6">Summary</a></h2>
+<p>We have learned how to build HTML-based servers. It goes almost the same as with JSON applications
+only we have some twists regarding static files.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="reference"><a class="header" href="#reference">Reference</a></h1>
+<p>Here is the list of main functions, types and classes</p>
+<h3 id="how-to-build-server"><a class="header" href="#how-to-build-server">How to build server</a></h3>
+<pre><code class="language-haskell">-- server on path
+(/.) :: ToServer a =&gt; Path -&gt; a -&gt; Server (MonadOf m)
+
+-- alternative cases for server:
+mconcat, (&lt;&gt;)
+
+-- | take sub-server at path
+atPath :: Path -&gt; Server m -&gt; Server m
+
+toServer :: ToServer a =&gt; a -&gt; Server (MonadOf m)
+</code></pre>
+<h3 id="how-to-run-server"><a class="header" href="#how-to-run-server">How to run server</a></h3>
+<pre><code class="language-haskell">runServer :: Int -&gt; Server IO -&gt; IO ()
+
+runServer' :: ServerConfig -&gt; Int -&gt; Server IO -&gt; IO ()
+</code></pre>
+<h3 id="server-presets"><a class="header" href="#server-presets">Server presets</a></h3>
+<ul>
+<li><code>Mig</code> - generic types</li>
+<li><code>Mig.IO</code> - <code>IO</code>-based servers with generic return types</li>
+<li><code>Mig.Json</code> - JSON-based servers</li>
+<li><code>Mig.Html</code> - HTML-based servers</li>
+<li><code>Mig.Json.IO</code> - JSON and IO-based servers </li>
+<li><code>Mig.Html.IO</code> - HTML and IO-based servers </li>
+</ul>
+<h3 id="media-types"><a class="header" href="#media-types">Media types</a></h3>
+<pre><code class="language-haskell">* Json
+* Text
+* Html
+* FormUrlEncoded
+* AnyMedia
+* OctetStream
+</code></pre>
+<h3 id="request-inputs"><a class="header" href="#request-inputs">Request inputs</a></h3>
+<pre><code class="language-haskell">-- rewquired query parameter
+newtype Body media value = Body value
+
+-- rewquired query parameter
+newtype Query name value = Query value
+
+-- optional query parameter
+newtype Optional name value = Optional (Maybe value)
+
+-- rewquired header parameter
+newtype Header name value = Header value
+
+-- optional header parameter
+newtype OptionalHeader name value = OptionalHeader (Maybe value)
+
+-- capture in path parameter
+newtype Capture name value = Capture value
+
+-- boolean query flag parameter
+newtype QueryFlag name = QueryFlag Bool
+
+-- Is connection made over SSL
+newtype IsSecure = IsSecure Bool
+
+-- full path with query parameters
+newtype PathInfo = Path [Text]
+
+-- | low-level request
+newtype RawRequest = RawRequest Request
+</code></pre>
+<h3 id="request-outputs"><a class="header" href="#request-outputs">Request outputs</a></h3>
+<pre><code class="language-haskell">-- | generic route handler
+newtype Send method m a = Send (m a)
+
+-- Sepcific methos
+type Get m a = Send GET m a
+type Post m a = Send POST m a
+...
+
+-- Response where type of the value and error are the same
+-- or only succesful result is expected
+data Resp media a = Resp ...
+
+-- Response where error and result have different types but media type is the same
+data RespOr media err a = RespOr ...
+</code></pre>
+<p>The response type class:</p>
+<pre><code class="language-haskell">class IsResp a where
+  -- | the type of response body value
+  type RespBody a :: Type
+
+  -- | the type of an error
+  type RespError a :: Type
+
+  -- | Returns valid repsonse with 200 status
+  ok :: RespBody a -&gt; a
+
+  -- | Returns an error with given status
+  bad :: Status -&gt; RespError a -&gt; a
+
+  -- | response with no content
+  noContent :: Status -&gt; a
+
+  -- | Add some header to the response
+  addHeaders :: ResponseHeaders -&gt; a -&gt; a
+
+  -- | Sets repsonse status
+  setStatus :: Status -&gt; a -&gt; a
+
+  -- | Set the media type of the response
+  setMedia :: MediaType -&gt; a -&gt; a
+
+  -- | Reads the media type by response type
+  getMedia :: MediaType
+
+  -- | Converts value to low-level response
+  toResponse :: a -&gt; Response
+
+setHeader :: (IsResp a, ToHttpApiData h) =&gt; HeaderName -&gt; h -&gt; a -&gt; a
+
+-- | Bad request. The @bad@ response with 400 status.
+badReq :: (IsResp a) =&gt; RespError a -&gt; a
+
+-- | Internal server error. The @bad@ response with 500 status.
+internalServerError :: (IsResp a) =&gt; RespError a -&gt; a
+
+-- | Not implemented route. The @bad@ response with 501 status.
+notImplemented :: (IsResp a) =&gt; RespError a -&gt; a
+
+-- | Redirect to url. It is @bad@ response with 302 status 
+-- and set header of &quot;Location&quot; to a given URL.
+redirect :: (IsResp a) =&gt; Text -&gt; a
+</code></pre>
+<h3 id="middlewares-1"><a class="header" href="#middlewares-1">Middlewares</a></h3>
+<pre><code class="language-haskell">applyMiddleware, ($:) :: ToMiddleware a =&gt; 
+  a -&gt; Server (MonadOf a) -&gt; Server (MonadOf a)
+
+-- composition of middlewares:
+Monoid(..): mconcat, (&lt;&gt;), mempty
+</code></pre>
+<h3 id="specific-servers"><a class="header" href="#specific-servers">specific servers</a></h3>
+<pre><code class="language-haskell">-- | add wagger to server
+withSwagger :: SwaggerConfig m -&gt; Server m -&gt; Server m
+
+-- | add link from one route to another
+addPathLink :: Path -&gt; Path -&gt; Server m
+
+-- static files
+staticFiles :: [(FilePath, ByteString)] -&gt; Server m
+</code></pre>
+<h3 id="specific-middlewares"><a class="header" href="#specific-middlewares">specific middlewares</a></h3>
+<pre><code class="language-haskell">-- prepend or append some acction to all routes
+prependServerAction, appendServerAction :: MonadIO m =&gt; m () -&gt; Middleware m
+
+-- change the response
+processResponse :: (m (Maybe Response) -&gt; m (Maybe Response)) -&gt; Middleware m
+
+-- only secure routes are allowed
+whenSecure :: forall m. (MonadIO m) =&gt; Middleware m
+
+-- logging with putStrLn for debug traces
+logHttp :: Verbosity -&gt; Middleware m
+
+-- logging with custom logger
+logHttpBy :: (Json.Value -&gt; m ()) -&gt; Verbosity -&gt; Middleware m
+
+-- | simple authorization
+withHeaderAuth :: WithHeaderAuth -&gt; Middleware m
+</code></pre>
+<h3 id="how-to-use-reader"><a class="header" href="#how-to-use-reader">How to use Reader</a></h3>
+<pre><code class="language-haskell">-- Derive instance of HasServer class for your Reader-IO based application:
+newtype App a = App (ReaderT Env IO a)
+  deriving newtype (Functor, Applicative, Monad, MonadReader Env, MonadIO, HasServer)
+
+renderServer :: Server App -&gt; Env -&gt; IO (Server IO)
+</code></pre>
+<h3 id="openapi-and-swagger"><a class="header" href="#openapi-and-swagger">OpenApi and Swagger</a></h3>
+<pre><code class="language-haskell">-- | Get OpenApi
+toOpenApi :: Server m -&gt; OpenApi
+
+-- add swagger to server
+withSwagger :: SwaggerConfig m -&gt; Server m -&gt; Server m
+
+-- create swagger server
+swagger :: SwaggerConfig m -&gt; m OpenApi -&gt; Server m
+
+-- | Print OpenApi schema
+printOpenApi :: Server m -&gt; IO ()
+
+-- | Writes openapi schema to file
+writeOpenApi :: FilePath -&gt; Server m -&gt; IO ()
+</code></pre>
+<p>The Swagger config:</p>
+<pre><code class="language-haskell">-- | Swagger config
+data SwaggerConfig m = SwaggerConfig
+  { staticDir :: Path
+  -- ^ path to server swagger (default is &quot;/swagger-ui&quot;)
+  , swaggerFile :: Path
+  -- ^ swagger file name (default is &quot;swaggger.json&quot;)
+  , mapSchema :: OpenApi -&gt; m OpenApi
+  -- ^ apply transformation to OpenApi schema on serving OpenApi schema.
+  -- it is useful to add additional info or set current date in the examples
+  -- or apply any real-time transformation.
+  }
+
+instance (Applicative m) =&gt; Default (SwaggerConfig m) where
+  def =
+    SwaggerConfig
+      { staticDir = &quot;swagger-ui&quot;
+      , swaggerFile = &quot;swagger.json&quot;
+      , mapSchema = pure
+      }
+</code></pre>
+<p>Set swagger title and description:</p>
+<pre><code class="language-haskell">-- | Default info that is often added to OpenApi schema
+data DefaultInfo = DefaultInfo
+  { title :: Text
+  , description :: Text
+  , version :: Text
+  }
+
+-- adds default info, use it in the mapSwagger field of SwaggerConfig record
+addDefaultInfo :: DefaultInfo -&gt; OpenApi -&gt; OpenApi
+</code></pre>
+<p>Describe routes with swagger:</p>
+<pre><code class="language-haskell">-- | Sets description of the route
+setDescription :: Text -&gt; Server m -&gt; Server m
+
+-- | Sets summary of the route
+setSummary :: Text -&gt; Server m -&gt; Server m
+
+-- | Adds OpenApi tag to the route
+addTag :: Text -&gt; Server m -&gt; Server m
+
+{-| Appends descriptiton for the inputs. It passes pairs for @(input-name, input-description)@.
+special name request-body is dedicated to request body input
+nd raw-input is dedicated to raw input
+-}
+describeInputs :: [(Text, Text)] -&gt; Server m -&gt; Server m
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                        
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                            </nav>
+
+        </div>
+
+        
+        
+        
+                <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        
+        
+                <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+                        <script type="text/javascript">
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+                
+    </body>
+</html>

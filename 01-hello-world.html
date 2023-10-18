@@ -1,0 +1,447 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Hello world example - Mig by example</title>
+                
+
+        <!-- Custom HTML head -->
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+                <link rel="icon" href="favicon.svg">
+                        <link rel="shortcut icon" href="favicon.png">
+                <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+                <link rel="stylesheet" href="css/print.css" media="print">
+        
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+                <link rel="stylesheet" href="fonts/fonts.css">
+        
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+            </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html" class="active"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-middleware.html"><strong aria-hidden="true">5.</strong> Middlewares</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                                                <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                                            </div>
+
+                    <h1 class="menu-title">Mig by example</h1>
+
+                    <div class="right-buttons">
+                                                <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                                                                        
+                    </div>
+                </div>
+
+                                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="hello-world"><a class="header" href="#hello-world">Hello world</a></h1>
+<p>Let's build hello world application. 
+We are going to build simple JSON API server with single route which replies
+with constant text to request</p>
+<p>We have installed the library <code>mig-server</code>. Let's import the main module.
+It brings into the scope all main functions of the library:</p>
+<pre><code class="language-haskell">module Main where
+
+import Mig
+</code></pre>
+<p>Let's define a server with single route:</p>
+<pre><code class="language-haskell">server :: Server IO
+server = &quot;api/v1/hello&quot; /. hello
+
+hello :: Get IO (Resp Json Text)
+hello = undefined
+</code></pre>
+<p>So we serve single route with path <code>&quot;api/v1/hello&quot;</code>.
+Let's cover the types first.</p>
+<h3 id="the-server-type"><a class="header" href="#the-server-type">The server type</a></h3>
+<p>The server is a description of both OpenAPI schema for our server and low-level function
+to run it. In the library it is a newtype wrapper:</p>
+<pre><code class="language-haskell">newtype Server m = Server (Api (Route m))
+</code></pre>
+<p>The <code>Api</code> type is a value to describe the API schema and <code>Route</code> contains
+useful info on the type of the route (method, decription of the inputs and outputs).
+The server is parametrized by some monad type. For this example we use <code>IO</code>-monad.
+It means that all our hadnlers are going to return <code>IO</code>-values.</p>
+<h3 id="how-to-link-paths-to-handlers"><a class="header" href="#how-to-link-paths-to-handlers">How to link paths to handlers</a></h3>
+<p>To bind path &quot;api/v1/hello&quot; to handler <code>hello</code> we use function <code>(/.)</code>. Let's look at it's type signature:</p>
+<pre><code class="language-haskell">(/.) :: (ToServer a) =&gt; Path -&gt; a -&gt; Server (MonadOf a)
+</code></pre>
+<p>It expects the <code>Path</code> which has instance of class <code>IsString</code> that is why we can
+use plain strings for it. the second argument is something that is convertible to <code>Server</code>.
+Here we use trick to be able to use arbitrary haskell functions as handlers.
+We have special class called <code>ToServer</code> which can convert many different types to <code>Server</code>.</p>
+<p>The output type is abit tricky: <code>Server (MonadOf a)</code>.
+The <code>MonadOf</code> is a type function which can extract <code>m</code> from <code>(Server m)</code>.
+Or for example it can extract <code>m</code> from the function <code>request -&gt; m response</code>.
+So the <code>MonadOf</code> is a way to get underlying server monad from any value.</p>
+<p>Let's be more specific and study our example. 
+The type of the handler is <code>Get IO (Resp Text)</code>
+In our case we get:</p>
+<pre><code>(/.) :: Path -&gt; Get IO (Resp Text) -&gt; Server IO
+</code></pre>
+<p>The type-level function <code>MonadOf</code> knows how to extract <code>IO</code> from <code>Get IO (Resp Text)</code>.</p>
+<h3 id="the-type-of-response"><a class="header" href="#the-type-of-response">The type of response</a></h3>
+<p>Let's stydy the signature of the <code>hello</code> handler: </p>
+<pre><code>hello :: Get IO (Resp Json Text)
+          |  |    |     |    |
+          |  |    |     |    +-- response body converted to byte string
+          |  |    |     |
+          |  |    |     +---- codec to convert it 
+          |  |    |           (the media-type route uses for response body)
+          |  |    |
+          |  |    +---- type of response which holds HTTP-response info with result
+          |  |
+          |  +----- the server monad. Our handler returns values in this monad
+          |
+          +----- http method encoded as a type
+</code></pre>
+<p>The type <code>Get</code> is a synonym for more generic <code>Send</code> type:</p>
+<pre><code class="language-haskell">type Get m a = Send GET m a
+</code></pre>
+<p>The type <code>Send</code> is just a wrapper on top of monadic value:</p>
+<pre><code class="language-haskell">newtype Send method m a = Send (m a)
+</code></pre>
+<p>It encodes HTTP-method on type level. This is useful to aggregate value for API-schema of our server.
+We have type synonyms for all HTTP-nethods (<code>Get</code>, <code>Post</code>, <code>Put</code> etc).</p>
+<p>It's interesting to know that library mig does not use any custom monads for operation. 
+Instead it runs on top of monad provided by the user. Usually it would be <code>IO</code> or <code>Reader</code> over <code>IO</code>.</p>
+<h3 id="http-response-type"><a class="header" href="#http-response-type">HTTP-response type</a></h3>
+<p>Let's study the <code>Resp</code> type. It is a type for HTTP response.
+It contains the value and additional HTTP information:</p>
+<pre><code class="language-haskell">-- | Response with info on the media-type encoded as type.
+data Resp media a = Resp
+  { status :: Status
+  -- ^ response status
+  , headers :: ResponseHeaders
+  -- ^ response headers
+  , body :: Maybe a
+  -- ^ response body. Nothing means &quot;no content&quot; in the body
+  }
+  deriving (Show, Functor)
+</code></pre>
+<p>The type argument <code>media</code> is interesting. It gives a hint to the compiler on how
+to convert the body to low-level byte string representation.
+In our example we use type-level tag <code>Json</code> to show that we are going to convert
+the result to JSON value in the response. So in our case of <code>Resp Json Text</code>
+we are going to return <code>Text</code> which will be converted to JSON value.</p>
+<p>To return successful response there is  a handy function:</p>
+<pre><code class="language-haskell">ok :: a -&gt; Resp media a
+</code></pre>
+<p>It returns response with 200 ok-status and sets <code>Content-Type</code> header to proper media-type.</p>
+<h3 id="define-a-handler"><a class="header" href="#define-a-handler">Define a handler</a></h3>
+<p>Let's complete the example and define a handler which returns static text:</p>
+<pre><code class="language-haskell">hello :: Get IO (Resp Json)
+hello = Send $ pure $ ok &quot;Hello World!&quot;
+</code></pre>
+<p>We have several wrappers here:</p>
+<ul>
+<li><code>ok</code> - converts text value to http-response <code>Resp Json Text</code></li>
+<li><code>pure</code> - converts pure value  to IO-based value</li>
+<li><code>Send</code> - send converts monadic value to server. It adds information on HTTP-method of the return type.</li>
+</ul>
+<h3 id="run-a-server"><a class="header" href="#run-a-server">Run a server</a></h3>
+<p>Let's run the server with warp. For that we define the <code>main</code> function for our application:</p>
+<pre><code class="language-haskell">main :: IO ()
+main = do
+  putStrLn $ &quot;Server starts on port: &quot; &lt;&gt; show port
+  runServer port server
+  where
+    port = 8085
+</code></pre>
+<p>That's it! We can compile the code and run it to query our server.
+We use the function <code>runServer</code>:</p>
+<pre><code class="language-haskell">runServer :: Int -&gt; Server IO -&gt; IO ()
+</code></pre>
+<p>It renders our server to WAI-application and runs it with warp.</p>
+<h3 id="complete-code-for-the-example"><a class="header" href="#complete-code-for-the-example">Complete code for the example</a></h3>
+<pre><code class="language-haskell">module Main (main) where
+
+import Mig
+
+main :: IO ()
+main = do
+  putStrLn $ &quot;Server starts on port: &quot; &lt;&gt; show port
+  runServer port server
+  where
+    port = 8085
+
+server :: Server IO
+server = &quot;api/v1/hello&quot; /. hello
+
+hello :: Get IO (Resp Json)
+hello = Send $ pure $ ok &quot;Hello World!&quot;
+</code></pre>
+<p>If we run the code we can test it with <code>curl</code> in command line:</p>
+<pre><code>&gt; curl http://localhost:8085/api/v1/hello
+
+&quot;Hello World!&quot;
+</code></pre>
+<h3 id="add-more-routes"><a class="header" href="#add-more-routes">Add more routes</a></h3>
+<p>Let's define another handler to say <code>bye</code>:</p>
+<pre><code class="language-haskell">bye :: Get IO (Resp Json)
+bye = Send $ pure $ ok &quot;Goodbye&quot;
+</code></pre>
+<p>We can add it to the server with monoid method as <code>Server m</code> is a <code>Monoid</code>:</p>
+<pre><code class="language-haskell">server :: Server IO
+server = 
+  &quot;api/v1&quot; /.
+    mconcat
+      [ &quot;hello&quot; /. hello
+      , &quot;bye&quot; /. bye
+      ]
+</code></pre>
+<p>The meaning of the monoid methods for <code>Server</code>:</p>
+<ul>
+<li><code>mempty</code> - server that always fails on any request</li>
+<li><code>a &lt;&gt; b</code> - try to serve the request with server <code>a</code> if it succeeds return the result.
+If it fails try to serve with server <code>b</code>.</li>
+</ul>
+<p>So we have just two functions to build nested trees of servers:</p>
+<ul>
+<li><code>path /. server</code> - to serve the server on specific path</li>
+<li><code>mconcat [a, b, c, d]</code> - to combine several servers into one</li>
+</ul>
+<p>Note that we can have several handlers on the same path if they
+have different methods or media-types for output or input:</p>
+<pre><code class="language-haskell">server = 
+  &quot;api/v1&quot; /.
+    mconcat
+      [ &quot;hello&quot; /. helloGet
+      , &quot;hello&quot; /. helloPost
+      ]
+
+helloGet :: Get IO (Resp Json Text)
+helloPost :: Post IO (Resp Json Text)
+</code></pre>
+<p>Servers on the same path are also distinguished by:</p>
+<ul>
+<li>http-method</li>
+<li>media-type of the result (value of &quot;Accept&quot; header) </li>
+<li>media-type of the request (value of &quot;Content-Type&quot; header)</li>
+</ul>
+<h3 id="subtle-nuance-on-monoid-instance-for-server"><a class="header" href="#subtle-nuance-on-monoid-instance-for-server">Subtle nuance on Monoid instance for Server</a></h3>
+<p>Yuo may ask: why not to write the previous example like this:</p>
+<pre><code class="language-haskell">server = 
+  &quot;api/v1/hello&quot; /.
+    mconcat
+      [ helloGet
+      , helloPost
+      ]
+</code></pre>
+<p>There is  a subtle nuance here. The <code>Server m</code> is a <code>Monoid</code>.
+But the value <code>Send method m a</code> is not. So we use the function <code>(/.)</code>
+which converts the second argument to <code>Server</code>. If we want to convert
+we can use the method of the class <code>ToServer</code>:</p>
+<pre><code class="language-haskell">toServer :: ToServer a =&gt; a -&gt; Server (MonadOf a)
+</code></pre>
+<p>So the right way to avoid duplication in path is:</p>
+<pre><code class="language-haskell">server = 
+  &quot;api/v1/hello&quot; /.
+    mconcat
+      [ toServer helloGet
+      , toServer helloPost
+      ]
+</code></pre>
+<p>Regarding the previous example we could not use <code>mconcat</code> even if we wnated to.
+Because <code>handelGet</code> and <code>handlePost</code> have different types. They can not
+be even put in the same list. But here lies the beauty of the library.
+We can use arbitrary types as handlers but in the end they all get converted
+to the value <code>Server m</code>. So we have the flexibility on DSL level but
+on the level of implementation to build the tree of handlers we use the same type.
+which makes type very simple.</p>
+<h3 id="list-instance-for-servers"><a class="header" href="#list-instance-for-servers">List instance for Servers</a></h3>
+<p>Because of the <code>ToServer a =&gt; ToServer [a]</code> instance we can omit the <code>mconcat</code>
+most of the time. Meaning we can write the previous examples as:</p>
+<pre><code class="language-haskell">server = 
+  &quot;api/v1/hello&quot; /.
+      [ toServer helloGet
+      , toServer helloPost
+      ]
+</code></pre>
+<h3 id="the-path-type"><a class="header" href="#the-path-type">The path type</a></h3>
+<p>Let's discuss the <code>Path</code> type.
+It is a list of atomic path items:</p>
+<pre><code class="language-haskell">newtype Path = Path [PathItem]
+  deriving (Show, Eq, Semigroup, Monoid)
+</code></pre>
+<p>The path item can be of two types:</p>
+<pre><code class="language-haskell">data PathItem 
+  = StaticPath Text
+  | CapturePath Text
+</code></pre>
+<p>The static path item is a rigid entity with exact match to string.
+We used it in all our examples so far. 
+but capture is wild-card that is going to be used as input to the handler.</p>
+<p>To construct only rigid paths we can use strings:</p>
+<pre><code>&quot;ap1/v1/get/blog/post&quot;
+&quot;foo/bar&quot;
+</code></pre>
+<p>To get captures we use <code>*</code>-wildcard:</p>
+<pre><code>api/v2/*/get
+</code></pre>
+<p>In the star request captures any text. There might be as many stars 
+in the path as you wish. But they should be supported by the handler. 
+We will touch upon that later.</p>
+<p>It's good to know that path is a special type which can be constructed from strings
+(use <code>OverloadedStrings</code> extension). And we can two types of atomic path elements.
+Static items and capture parameters. We will deal with captures in the next example.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                                                    <a rel="prev" href="00-foreword.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+                                                    <a rel="next" href="02-request-anatomy.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                                    <a rel="prev" href="00-foreword.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+                                    <a rel="next" href="02-request-anatomy.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                            </nav>
+
+        </div>
+
+        
+        
+        
+                <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        
+        
+                <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+        
+    </body>
+</html>

@@ -1,0 +1,562 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>HTML example: blog site - Mig by example</title>
+                
+
+        <!-- Custom HTML head -->
+        
+
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+                <link rel="icon" href="favicon.svg">
+                        <link rel="shortcut icon" href="favicon.png">
+                <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+                <link rel="stylesheet" href="css/print.css" media="print">
+        
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+                <link rel="stylesheet" href="fonts/fonts.css">
+        
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        
+            </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script type="text/javascript">
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-middleware.html"><strong aria-hidden="true">5.</strong> Middlewares</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html" class="active"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                                                <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                                            </div>
+
+                    <h1 class="menu-title">Mig by example</h1>
+
+                    <div class="right-buttons">
+                                                <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                                                                        
+                    </div>
+                </div>
+
+                                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="html-example-blog-site"><a class="header" href="#html-example-blog-site">HTML example: Blog site</a></h1>
+<p>We have seen many examples of JSON applications. But we can send data in other formats too.
+Most common forma t for human-readable information for HTTP applications
+is HTML. Any site that we visit sends HTML pages to us. Let's create a simple
+site that shos blog posts and quotes and we can add new blog posts to it.
+Complete code for example is in the <a href="https://github.com/anton-k/mig/tree/main/examples/mig-example-apps/Html"><code>mig</code> repo</a>
+We will cover the most interesting parts of the application.</p>
+<p>As in previous example we are going to use IO-based server. 
+The common actions that change internal state of the site or query useful data
+are expressed as collection of interfaces. All handlers accept interfaces as first argument.</p>
+<p>The structure of the application is similiar to the weather forecast example.
+The modules with their purpose:</p>
+<ul>
+<li><code>Types</code> - types that cover fdomain of our application</li>
+<li><code>Server</code> - defines server API and handlers</li>
+<li><code>Main</code> - runs the server</li>
+<li><code>View</code> - renders types as HTML-pages</li>
+<li><code>Interface</code> - actions that can be performed on shared internal state of the app</li>
+<li><code>Init</code> - initialization of the interfaces</li>
+<li><code>Content</code> - some mock data to show on page</li>
+<li><code>Internal</code> - internal state of the site</li>
+</ul>
+<h2 id="using-preset-module-for-htlm-servers"><a class="header" href="#using-preset-module-for-htlm-servers">Using preset module for HTLM servers</a></h2>
+<p>As we define server based on <code>IO</code> and <code>HTML</code> we will use the module <code>Mig.Html.IO</code>.
+Note that there is a difference in types from <code>JSON</code> brother of that module.
+We will not see the <code>Resp</code> type in the signatures of the handlers.</p>
+<p>Becuase for <code>HTML</code> the type synonyms to <code>Send</code> fix the output of <code>Send</code>-type
+so that it always has value wrapped in <code>Resp</code>:</p>
+<pre><code class="language-haskell">type Get a = Send GET IO (Resp a)
+</code></pre>
+<p>The <code>Resp</code>-type is built in the type because for HTML we almost never need the <code>RespOr</code>
+with different type of erorrs. Our errors are going to be HTML-pages to as the result.
+So we report errors to user in HTML-pages.</p>
+<h2 id="run-a-server"><a class="header" href="#run-a-server">Run a server</a></h2>
+<p>Let's define a function that will start an empty server:</p>
+<pre><code>module Main (
+  main,
+) where
+
+import Mig.Html.IO (runServer)
+
+main :: IO ()
+main = do
+  site &lt;- initSite
+  runServer port (server site)
+  where
+    port = 8085
+
+-- | Placeholder for collection of interfaces
+data Site = Site
+
+-- | Initialize site's interfaces
+initSite :: IO Site
+initSite = pure Site
+
+-- | Create a server that works in terms of interfaces
+server :: Site -&gt; Server IO
+server _ = mempty
+</code></pre>
+<h2 id="define-server-routes"><a class="header" href="#define-server-routes">Define server routes</a></h2>
+<p>Let's define the server and its routes.
+For our blogpost site we are going to show the pages:</p>
+<ul>
+<li>
+<p>main page with list of blog posts and greeting</p>
+</li>
+<li>
+<p>show random blog post</p>
+</li>
+<li>
+<p>show random quote</p>
+</li>
+<li>
+<p>save new blog post</p>
+</li>
+<li>
+<p>list all blog posts</p>
+</li>
+</ul>
+<p>Also our site serves static files which contain CSS-style file and images
+We keep them in separate directory called <code>resources</code>.</p>
+<p>Here is the definition of the server:</p>
+<pre><code class="language-haskell">-- | Server definition. Note how we assemble it from parts with monoid method mconcat.
+server :: Site -&gt; Server IO
+server site =
+  logRoutes $
+    mconcat
+      [ &quot;blog&quot;
+          /. [ readServer
+             , writeServer
+             ]
+      , defaultPage
+      , addFavicon $ &quot;static&quot; /. staticFiles resourceFiles
+      ]
+</code></pre>
+<p>The site serves several sub-servers:</p>
+<ul>
+<li><code>readServer</code> - pages that fetch content for us</li>
+<li><code>writeServer</code> - pages to update the content. to save new blog post</li>
+<li><code>defaultPage</code> - main page of the app</li>
+<li><code>staticFiles</code> with <code>addFavicon</code> - 
+serves static files and adds icon for our site that is shown in the tab of the browser</li>
+</ul>
+<h3 id="default-page-server"><a class="header" href="#default-page-server">default page server</a></h3>
+<p>Let's define the simplest server, the default page:</p>
+<pre><code class="language-haskell">-- default main page
+defaultPage =
+  mconcat
+    [ &quot;/&quot; /. handleGreeting site
+    , &quot;index.html&quot; /. handleGreeting site
+    ]
+
+handleGreeting :: Site -&gt; Get (Page Greeting)
+</code></pre>
+<p>It links two routes to the <code>handleGreeting</code> handler. We serve two routs: the route
+of the site and default route for main page &quot;/index.html&quot;.</p>
+<p>for now we can think of <code>Page</code> as main template of our site which contains
+some value that is renderable to HTML. Renderer converts the value to HTML
+and injects it to the site's template.</p>
+<h3 id="read-server"><a class="header" href="#read-server">Read server</a></h3>
+<p>Let's define read-only pages for our site.</p>
+<pre><code class="language-haskell">-- server to read info.
+-- We can read blog posts and quotes.
+readServer =
+  mconcat
+    [ &quot;read&quot;
+        /. [ &quot;post&quot; /. handleBlogPost site
+           , &quot;quote&quot; /. handleQuote site
+           ]
+    , &quot;list&quot; /. handleListPosts site
+    ]
+
+handleBlogPost :: Site -&gt; Optional &quot;id&quot; BlogPostId -&gt; Get (Page BlogPost)
+
+handleQuote :: Site -&gt; Get (Page Quote)
+
+handleListPosts :: Site -&gt; Get (Page ListPosts)
+</code></pre>
+<p>We have three pages to read in our site:</p>
+<ul>
+<li><code>handleBlogPost</code> - shows random blog post</li>
+<li><code>handleQuote</code> - shows random quote</li>
+<li><code>handleListPosts</code> - shows a list of all posts</li>
+</ul>
+<h3 id="write-server"><a class="header" href="#write-server">Write server</a></h3>
+<p>Let's define a route to add new blog posts to the site:</p>
+<pre><code class="language-haskell">    -- server to write new blog posts
+    writeServer =
+      &quot;write&quot;
+        /. [ toServer $ handleWriteForm site
+           , toServer $ handleWriteSubmit site
+           ]
+
+handleWriteForm :: Site -&gt; Get (Page WritePost)
+
+handleWriteSubmit :: Site -&gt; Body FormUrlEncoded SubmitBlogPost -&gt; Post (Page BlogPost)
+</code></pre>
+<p>We have two different routes which are served on the same path. 
+The first route shows the page with form to fill the post data.
+The second route is triggered when we hit the submit button.
+The data in the form is send to the site as request body with <code>Content-Type</code>
+set to corresponding <code>FormUrlEncoded</code> type.</p>
+<p>We can serve several route handlers on the same path if they differ by
+HTTP-method, input type or output type. In this example we use <code>toServer</code> function
+to convert route handler function to <code>Server IO</code>.</p>
+<p>As we can see all handlers expect the value <code>Site</code> as first argument.
+This value contains interfaces for all actions that can be performed with our site.</p>
+<h3 id="static-files"><a class="header" href="#static-files">Static files</a></h3>
+<p>We serve static files with the line:</p>
+<pre><code class="language-haskell">  , addFavicon $ &quot;static&quot; /. staticFiles resourceFiles
+</code></pre>
+<p>Let's explain what happens here. The standard function <code>staticFiles</code>
+takes a collection of files and turns them into server:</p>
+<pre><code class="language-haskell">staticFiels :: MonadIO m =&gt; [(FilePath, ByteString)] -&gt; Server m
+</code></pre>
+<p>The list of pairs contains pair of <code>(path-to-file, byte-string-content-of-the-file)</code>.
+It is convenient to use it with function <code>embedRecursiveDir</code>  which
+embeds all files from directory to haskell executable. It comes with linrary <code>file-embed-lzma</code>.
+We use it like this:</p>
+<pre><code class="language-haskell">server = &quot;static&quot; /. staticFiles resourceFiles
+
+resourceFiles :: [(FilePath, ByteString)]
+resourceFiles = $(embedRecursiveDir &quot;Html/resources&quot;)
+</code></pre>
+<p>For our site we use <code>milligram.css</code> framework for styling and couple of
+pictures.</p>
+<p>Also let's dicuss <code>addFavicon</code> function:</p>
+<pre><code class="language-haskell">addFavicon = addPathLink &quot;favicon.ico&quot; &quot;static/lambda-logo.png&quot;
+</code></pre>
+<p>It shows interesting concept of linking to the parts of the server.
+The standard function <code>addPathLink</code> serves all calls to <code>favicon.ico</code>
+with handler on path <code>&quot;static/lambda-logo.png&quot;</code>.
+This way we can create additional links to the server.</p>
+<p>Also we can reuse the sub-parts of another server in our server with
+function <code>atPath</code>:</p>
+<pre><code class="language-haskell">{-| Sub-server for a server on given path
+it might be usefule to emulate links from one route to another within the server
+or reuse part of the server inside another server.
+-}
+atPath :: forall m. Api.Path -&gt; Server m -&gt; Server m
+</code></pre>
+<p>It creates sub-server for all routes that match given path-prefix.
+So it can be not only single route but the whole sub-server.
+The function <code>addPathLink</code> rides on top of that useful function.</p>
+<h3 id="overview-of-the-site"><a class="header" href="#overview-of-the-site">Overview of the site</a></h3>
+<p>So for our site we have 5 handlers. Let's recall them:</p>
+<pre><code class="language-haskell">handleBlogPost :: Site -&gt; Optional &quot;id&quot; BlogPostId -&gt; Get (Page BlogPost)
+
+handleQuote :: Site -&gt; Get (Page Quote)
+
+handleListPosts :: Site -&gt; Get (Page ListPosts)
+
+handleWriteForm :: Site -&gt; Get (Page WritePost)
+
+handleWriteSubmit :: Site -&gt; Body FormUrlEncoded SubmitBlogPost -&gt; Post (Page BlogPost)
+</code></pre>
+<p>We can see from type signatures all the types for our domain.
+Let's define the types.</p>
+<h2 id="domain-model-of-the-blog-site"><a class="header" href="#domain-model-of-the-blog-site">Domain model of the blog site</a></h2>
+<p>We are going to show Blog posts. and we have a form to input a new content to the site.
+We can define the types for domain as follows:</p>
+<pre><code class="language-haskell">-- | Web-page for our site
+newtype Page a = Page a
+
+-- | Greeting page
+data Greeting = Greeting [BlogPost]
+
+-- | Form to submit new post
+data WritePost = WritePost
+
+-- | List all posts
+newtype ListPosts = ListPosts [BlogPost]
+
+-- | Blog post id
+newtype BlogPostId = BlogPostId {unBlogPostId :: UUID}
+  deriving newtype (FromHttpApiData, ToHttpApiData, Eq, Show, FromJSON, ToParamSchema)
+
+data BlogPostView
+  = ViewBlogPost BlogPost
+    -- | error: post not found by id
+  | PostNotFound BlogPostId
+
+-- | Blog post
+data BlogPost = BlogPost
+  { id :: BlogPostId
+  , title :: Text
+  , createdAt :: UTCTime
+  , content :: Text
+  }
+
+-- | A quote
+data Quote = Quote
+  { content :: Text
+  }
+
+-- | Data to submit new blog post
+data SubmitBlogPost = SubmitBlogPost
+  { title :: Text
+  , content :: Text
+  }
+  deriving (Generic, FromForm, ToSchema)
+</code></pre>
+<p>We need to define certian instances to be able to send the data over HTTP wires.
+The types come from standard libraries for web development in haskell: <code>openapi3</code>, <code>http-api-data</code>, <code>aeson</code>.</p>
+<h2 id="interfaces-for-the-site"><a class="header" href="#interfaces-for-the-site">Interfaces for the site</a></h2>
+<p>Our web site is going to support the following actions:</p>
+<pre><code class="language-haskell">{-| Web site actions. It defines interfaces that connect logic of our site
+with outside world: DBs, logger.
+-}
+data Site = Site
+  { readBlogPost :: BlogPostId -&gt; IO (Maybe BlogPost)
+  , writeBlogPost :: SubmitBlogPost -&gt; IO BlogPostId
+  , listBlogPosts :: IO [BlogPost]
+  , readQuote :: IO Quote
+  , logInfo :: Text -&gt; IO ()
+  , cleanup :: IO ()
+  }
+</code></pre>
+<p>The actions are natural and follow the design of domain and server.</p>
+<h2 id="implement-handlers"><a class="header" href="#implement-handlers">Implement handlers</a></h2>
+<p>Let's implement the handlers in terms of interfaces.</p>
+<h3 id="default-page"><a class="header" href="#default-page">Default page</a></h3>
+<p>Let's greet the user:</p>
+<pre><code class="language-haskell">-- | Greet the user on main page
+handleGreeting :: Site -&gt; Get (Page Greeting)
+handleGreeting site =
+  Send $ ok . Page . Greeting &lt;$&gt; site.listBlogPosts
+</code></pre>
+<p>We get the list of all blog posts and wrap them in <code>Greeting</code> page.</p>
+<h3 id="read-site"><a class="header" href="#read-site">Read site</a></h3>
+<p>Let's read the blog post:</p>
+<pre><code class="language-haskell">-- | Read blog post by id
+handleBlogPost :: Site -&gt; Optional &quot;id&quot; BlogPostId -&gt; Get (Page BlogPostView)
+handleBlogPost site (Optional mBlogId) = Send $
+  case mBlogId of
+    Nothing -&gt; ok . Page . ViewBlogPost &lt;$&gt; randomBlogPost site
+    Just blogId -&gt;
+      maybe
+        (bad notFound404 $ Page $ PostNotFound blogId)
+        (ok . Page . ViewBlogPost)
+      &lt;$&gt; site.readBlogPost blogId
+</code></pre>
+<p>We have an optional query parameter that contains <code>id</code> of the blog post.
+If <code>id</code> is missing we return some random blog post.
+If there is no blog post that corresponds to id we return error with page not foud status.</p>
+<p>Let's read the random quote:</p>
+<pre><code class="language-haskell">handleQuote :: Site -&gt; Get (Page Quote)
+handleQuote site = Send $ ok . Page &lt;$&gt; site.readQuote
+</code></pre>
+<p>Let's show all blog posts as a menu to the user:</p>
+<pre><code class="language-haskell">handleListPosts :: Site -&gt; Get (Page ListPosts)
+handleListPosts site = Send $ do
+  ok . Page . ListPosts &lt;$&gt; site.listBlogPosts
+</code></pre>
+<h3 id="write-site"><a class="header" href="#write-site">Write site</a></h3>
+<p>Let's show the form to the user to fill new post data:</p>
+<pre><code class="language-haskell">handleWriteForm :: Site -&gt; Get (Page WritePost)
+handleWriteForm _site =
+  Send $ pure $ ok $ Page WritePost
+</code></pre>
+<p>As we can see we just return the tag of the page that encodes
+the content with form. We will define the HTML-form in the rendering module <code>View.hs</code>.</p>
+<p>Let's define the logic to save the submited data to application:</p>
+<pre><code class="language-haskell">
+-- | Submit form with data provided by the user
+handleWriteSubmit :: Site -&gt; Body FormUrlEncoded SubmitBlogPost -&gt; Post (Page BlogPostView)
+handleWriteSubmit site (Body submitData) = Send $ do
+  pid &lt;- site.writeBlogPost submitData
+  maybe
+    (bad notFound404 $ Page $ PostNotFound pid)
+    (ok . Page . ViewBlogPost)
+    &lt;$&gt; site.readBlogPost pid
+</code></pre>
+<p>In this example we save the new blog post and read that post after saving to show 
+it to the user.</p>
+<p>As we can see the handlers follow the interfaces of the site. We just
+wrap data in the content.</p>
+<h2 id="view-html-pages"><a class="header" href="#view-html-pages">View HTML pages</a></h2>
+<p>To render HTML pages we use <code>blaze-html</code> library. All we need to do is to define
+instances for all types that show up in the result of handlers.</p>
+<p>The type <code>Page</code> is a container for our web site main template:</p>
+<pre><code class="language-haskell">-- writes the template for main page
+instance (ToMarkup a) =&gt; ToMarkup (Page a) where
+  toMarkup (Page page) = siteTemplate (H.toMarkup page)
+
+siteTemplate :: Html -&gt; Html
+</code></pre>
+<p>Also we define <code>ToMarkup</code> instances for all elements in the site:</p>
+<pre><code class="language-haskell">instance ToMarkup Greeting where
+instance ToMarkup WritePost where
+instance ToMarkup BlogPostView where
+...
+</code></pre>
+<p>You can find the full code in the <a href="https://github.com/anton-k/mig/tree/main/examples/mig-example-apps/Html">sources</a>.</p>
+<h2 id="internal-state-implementation"><a class="header" href="#internal-state-implementation">Internal state implementation</a></h2>
+<p>Our website server is ready to be launched.
+We only need to define the interfaces. You can find the implementation
+in the source code for <a href="https://github.com/anton-k/mig/tree/main/examples/mig-example-apps/Html">the example</a>. See the modules: </p>
+<ul>
+<li><code>Init</code> - initializes the interface</li>
+<li><code>Content</code> - contains run-time mock data</li>
+<li><code>Internal.State</code> - mutable state to save blog posts in memory</li>
+</ul>
+<h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
+<p>We have learned how to build HTML-based servers. It goes almost the same as with JSON applications
+only we have some twists regarding static files.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                                                    <a rel="prev" href="06-json-api-example.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+                                                    <a rel="next" href="08-reference.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                                    <a rel="prev" href="06-json-api-example.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+                                    <a rel="next" href="08-reference.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                            </nav>
+
+        </div>
+
+        
+        
+        
+                <script type="text/javascript">
+            window.playground_copyable = true;
+        </script>
+        
+        
+                <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        
+        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
+        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
+        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+        <!-- Custom JS scripts -->
+        
+        
+    </body>
+</html>
