@@ -5,7 +5,6 @@ Features, improvements and open problems for releases:
 
 ### Curent: v2
 
-* update external handler and reader apps examples
 * add TH for deriving of all classes by type: `IsParam`, `IsBody`, `IsParaBody`, `IsReaderServer`
    * deriveParam ''Type
    * deriveBody ''Type
