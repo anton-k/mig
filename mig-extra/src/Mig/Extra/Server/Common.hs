@@ -90,6 +90,8 @@ module Mig.Extra.Server.Common (
   mapServerFun,
   mapResponse,
   atPath,
+  filterPath,
+  getServerPaths,
   addPathLink,
 
   -- ** OpenApi
