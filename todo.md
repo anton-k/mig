@@ -1,10 +1,11 @@
 # TODO
 
+Next release due: start of November
 Features, improvements and open problems for releases:
 
 ### Curent: v2
 
--- after commit to main repo
+* rename `Middleware` to `Plugin` as it is less mouthful.
 * update external handler and reader apps examples
 * add TH for deriving of all classes by type: `IsParam`, `IsBody`, `IsParaBody`, `IsReaderServer`
    * deriveParam ''Type
