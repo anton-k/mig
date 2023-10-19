@@ -21,7 +21,8 @@ module Mig.Extra.Server.Json (
 
   -- * re-exports
   module X,
-) where
+)
+where
 
 import Mig.Client (FromClient (..), ToClient (..))
 import Mig.Core (
@@ -55,11 +56,6 @@ instance (ToSchema a, FromJSON a, ToRoute b) => ToRoute (Body a -> b) where
 
   toRouteFun f =
     (toRouteFun :: ((Core.Body Json a -> b) -> ServerFun (Core.MonadOf b)))
-      (\(Core.Body a) -> f (Body a))
-
-instance (ToSchema a, FromJSON a, ToRoute b) => ToServer (Body a -> b) where
-  toServer f =
-    (toServer :: ((Core.Body Json a -> b) -> Server (Core.MonadOf b)))
       (\(Core.Body a) -> f (Body a))
 
 instance (FromJSON a, ToSchema a, ToPlugin b) => ToPlugin (Body a -> b) where
