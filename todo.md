@@ -1,6 +1,7 @@
 # TODO
 
-Next release due: start of November
+Next release due: start of November.
+Also see isssue for the new features to implement. 
 Features, improvements and open problems for releases:
 
 ### Curent: v2
@@ -23,20 +24,10 @@ add client support
   * reuse JsonApi and hello-world
   * client from scratch (without defined server) to test client-only apps
 
-* filter Api by path: it can be useful to create client for subset of the big main server:
-  ```haskell
-  filterPath :: (Path -> Bool) -> Server m -> Server m
-  ```
-* get all paths of the server. Might be useful for docs generation:
-  ```haskell
-  getServerPaths :: Server m -> [Path]
-  ```
-  
 ## v3
 
 * add capture all case
 * add Queries case
-* add XML support
 * cookbook for main scenarios (add to tutorial)
 
 ## v3.2
