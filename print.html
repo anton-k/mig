@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-middleware.html"><strong aria-hidden="true">5.</strong> Middlewares</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-plugin.html"><strong aria-hidden="true">5.</strong> Plugins</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
@@ -824,29 +824,29 @@ but for now the default value whcih is set with <code>def</code> from library <c
 is fine.</p>
 <h3 id="add-simple-logs-to-the-server"><a class="header" href="#add-simple-logs-to-the-server">Add simple logs to the server</a></h3>
 <p>We can look at the request and trsponse data with tracing functions
-which come from library <code>mig-extra</code> from the module <code>Mig.Extra.Middleware.Trace</code>:</p>
+which come from library <code>mig-extra</code> from the module <code>Mig.Extra.Plugin.Trace</code>:</p>
 <pre><code class="language-haskell">data Verbosity = V0 | V1  | V2 | V3
 
 -- log http requests and responses
-logHttp :: Verbosity -&gt; Middleware m
+logHttp :: Verbosity -&gt; Plugin m
 
 -- | log requests
-logReq :: Verbosity -&gt; Middleware m
+logReq :: Verbosity -&gt; Plugin m
 
 -- | Log responses
-logResp :: Verbosity -&gt; Middleware m
+logResp :: Verbosity -&gt; Plugin m
 </code></pre>
-<p>The <code>Middleware m</code> is a function that can be applied to all routes of the server
-and modify their behavior. To apply middleware to server we can use functions:</p>
-<pre><code class="language-haskell">applyMiddleware :: Middleware m -&gt; Server m -&gt; Server m
+<p>The <code>Plugin m</code> is a function that can be applied to all routes of the server
+and modify their behavior. To apply plugin to server we can use functions:</p>
+<pre><code class="language-haskell">applyPlugin :: Plugin m -&gt; Server m -&gt; Server m
 
-($:) :: Middleware m -&gt; Server m -&gt; Server m
+($:) :: Plugin m -&gt; Server m -&gt; Server m
 </code></pre>
 <p>We show simplified signatures here. The real ones are overloaded by the first argument.
-but we will dicuss middlewares in depth in the separate chapter. For now it's
+but we will dicuss plugins in depth in the separate chapter. For now it's
 ok to assume that those functions are defined in that simplified way.</p>
 <p>So let's look at the data that goes through our server:</p>
-<pre><code class="language-haskell">import Mig.Extra.Middleware.Trace qualified as Trace
+<pre><code class="language-haskell">import Mig.Extra.Plugin.Trace qualified as Trace
 
 ...
 
@@ -854,7 +854,7 @@ server =
   withSwagger def $ 
     withTrace $ {-# the rest of the server code #-}
   where
-    withTrace = applyMiddleware (Trace.logHttp Trace.V2)
+    withTrace = applyPlugin (Trace.logHttp Trace.V2)
 </code></pre>
 <p>Let's restart the server and see what it logs:</p>
 <pre><code class="language-yaml">log:
@@ -885,7 +885,7 @@ which accept callback and we can pass the logger function defined in terms
 of one of the standard haskell logging libraries, say <code>katip</code> or <code>fast-logger</code>:</p>
 <pre><code class="language-haskell">import Data.Aeson as Json
 
-logHttpBy :: (Json.Value -&gt; m ()) -&gt; Verbosity -&gt; Middleware m
+logHttpBy :: (Json.Value -&gt; m ()) -&gt; Verbosity -&gt; Plugin m
 </code></pre>
 <h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
 <p>We have learned how various parts of the requests can be queries
@@ -910,7 +910,7 @@ and our signatures would bcome more simple and specific.</p>
 For calls to the server in the UI</p>
 </li>
 <li>
-<p>trace logs: <code>(applyMiddleware (logHttp V2))</code> 
+<p>trace logs: <code>(applyPlugin (logHttp V2))</code> 
 To see the data that flows through the server</p>
 </li>
 </ul>
@@ -1191,42 +1191,42 @@ You can find the complete code of the example in the <a href="https://github.com
 <p>In this chapter we have learned how to use Reader-monad with <code>mig</code> library.
 We can define our custom wrapper for <code>ReaderT+IO</code> and derive instance 
 of <code>HasServer</code> and we are ready to go.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="middlewares"><a class="header" href="#middlewares">Middlewares</a></h1>
-<p>A middleware is a transformation which is applied to all routes in the server.
+<div style="break-before: page; page-break-before: always;"></div><h1 id="plugins"><a class="header" href="#plugins">Plugins</a></h1>
+<p>A plugin is a transformation which is applied to all routes in the server.
 It is a pair of functions which transform API-description and server function:</p>
-<pre><code class="language-haskell">data Middleware m = Middleware
+<pre><code class="language-haskell">data Plugin m = Plugin
   { info :: RouteInfo -&gt; RouteInfo
   -- ^ update api schema
-  , run :: MiddlewareFun m
+  , run :: PluginFun m
   -- ^ update server function
   }
 
--- | Low-level middleware function.
-type MiddlewareFun m = ServerFun m -&gt; ServerFun m
+-- | Low-level plugin function.
+type PluginFun m = ServerFun m -&gt; ServerFun m
 </code></pre>
-<p>To apply middleware to server we ca use function <code>applyMiddleware</code>:</p>
-<pre><code class="language-haskell">-- | Applies middleware to all routes of the server.
-applyMiddleware :: forall f. (ToMiddleware f) =&gt; 
+<p>To apply plugin to server we ca use function <code>applyPlugin</code>:</p>
+<pre><code class="language-haskell">-- | Applies plugin to all routes of the server.
+applyPlugin :: forall f. (ToPlugin f) =&gt; 
   f -&gt; Server (MonadOf f) -&gt; Server (MonadOf f)
 </code></pre>
 <p>There is also infix operatore for application <code>($:)</code>.</p>
-<p>The class <code>ToMiddleware</code> contains all types that can be converted to middleware.
+<p>The class <code>ToPlugin</code> contains all types that can be converted to plugin.
 Here we use the same trick as with <code>ToServer</code> class to be able to read type-safe parts of the request
 and update the API-schema. The type-level function <code>MonadOf</code> knows how to find underlying monad <code>m</code>
 in various types.</p>
-<p>We have recursive set of rules for types that can be converted to <code>Middleware</code>:</p>
+<p>We have recursive set of rules for types that can be converted to <code>Plugin</code>:</p>
 <p>The identity rule:</p>
 <blockquote>
-<p><code>MiddlewareFun</code> has instance of <code>ToMiddleware</code> with obvious identity instance</p>
+<p><code>PluginFun</code> has instance of <code>ToPlugin</code> with obvious identity instance</p>
 </blockquote>
 <p>Recursive steps for inputs</p>
 <blockquote>
-<p>if <code>f</code> is <code>ToMiddleware</code> then <code>(Query name queryType -&gt; f)</code> is <code>ToMiddleware</code> too</p>
+<p>if <code>f</code> is <code>ToPlugin</code> then <code>(Query name queryType -&gt; f)</code> is <code>ToPlugin</code> too</p>
 </blockquote>
 <p>and so on for other types of request input (query params, headers, captures, request bodies).
-See the full list of instances in the module <code>Mig.Core.Class.Middleware</code>.</p>
+See the full list of instances in the module <code>Mig.Core.Class.Plugin</code>.</p>
 <h2 id="examples-1"><a class="header" href="#examples-1">Examples</a></h2>
-<p>So the middleware allows us to apply some behavior to all routes in the server.
+<p>So the plugin allows us to apply some behavior to all routes in the server.
 Let's discuss some examples</p>
 <h3 id="add-logging"><a class="header" href="#add-logging">Add logging</a></h3>
 <p>Let's add the logging to all methods which are called. We will log which route 
@@ -1237,38 +1237,38 @@ was called and we will include the time stamp and the full path in the log:</p>
 <p>We can query the path with <code>PathInfo</code> newtype:</p>
 <pre><code class="language-haskell">newtype PathInfo = PathInfo [Text]
 </code></pre>
-<p>And we have a rule for  <code>ToMiddleware</code> class:</p>
+<p>And we have a rule for  <code>ToPlugin</code> class:</p>
 <blockquote>
-<p>if <code>f</code> is <code>ToMiddleware</code> then <code>(PathInfo -&gt; ToMiddleware f)</code> is <code>ToMiddleware</code></p>
+<p>if <code>f</code> is <code>ToPlugin</code> then <code>(PathInfo -&gt; ToPlugin f)</code> is <code>ToPlugin</code></p>
 </blockquote>
-<p>so we can create a middleware function:</p>
-<pre><code class="language-haskell">logRoutes :: Middleware IO
-logRoutes = toMiddleware $ \(PathInfo pathItems) -&gt; prependServerAction $ do
+<p>so we can create a plugin function:</p>
+<pre><code class="language-haskell">logRoutes :: Plugin IO
+logRoutes = toPlugin $ \(PathInfo pathItems) -&gt; prependServerAction $ do
   now &lt;- getCurrentTime 
   logInfo $ mconcat
     [ &quot;Call route: &quot;, Text.intercalata &quot;/&quot; pathItems 
     , &quot; at &quot;, Text.pack (show now)
     ]
 </code></pre>
-<p>We use function <code>prependServerAction</code> that creates a <code>Middleware</code>
+<p>We use function <code>prependServerAction</code> that creates a <code>Plugin</code>
 from actino which is performed prior to call to server function:</p>
-<pre><code class="language-haskell">prependServerAction :: MonadIO m =&gt; m () -&gt; Middleware m
+<pre><code class="language-haskell">prependServerAction :: MonadIO m =&gt; m () -&gt; Plugin m
 </code></pre>
 <p>also there are similar functions in the module: <code>appendServerAction</code> and <code>processResponse</code>.</p>
 <h3 id="allow-only-secure-routes"><a class="header" href="#allow-only-secure-routes">Allow only secure routes</a></h3>
-<p>Another great example of middleware at work is to block routes on some conditions.
+<p>Another great example of plugin at work is to block routes on some conditions.
 For example if we want certain routes to be used only under secure SSL connection.
 We have a standard function for that <code>whenSecure</code>. But let's dive into it's definition to
-see how middlewares can be used:</p>
+see how plugins can be used:</p>
 <pre><code class="language-haskell">-- | Execute request only if it is secure (made with SSL connection)
-whenSecure :: forall m. (MonadIO m) =&gt; Middleware m
-whenSecure = toMiddleware $ \(IsSecure isSecure) -&gt; 
+whenSecure :: forall m. (MonadIO m) =&gt; Plugin m
+whenSecure = toPlugin $ \(IsSecure isSecure) -&gt; 
   processResponse (if isSecure then id else const (pure Nothing))
 </code></pre>
-<p>Here we use standard middleware <code>processResponse</code> which allows
+<p>Here we use standard plugin <code>processResponse</code> which allows
 us to alter the result of the HTTP-response:</p>
 <pre><code class="language-haskell">processResponse :: MonadIO m =&gt; 
-  (m (Maybe Response) -&gt; m (Maybe Response)) -&gt; Middleware m
+  (m (Maybe Response) -&gt; m (Maybe Response)) -&gt; Plugin m
 </code></pre>
 <p>Also we use query input <code>IsSecure</code> which is true if connection is made over SSL:</p>
 <pre><code class="language-haskell">newtype IsSecure = IsSecure Bool
@@ -1277,7 +1277,7 @@ us to alter the result of the HTTP-response:</p>
 and we block the execution by returning <code>Nothing</code> if connection is secure.
 The cool part of it is that due to Haskell's laziness there is no performance overhead and underlying
 route is not going to be performed if connection is insecure.</p>
-<h3 id="authorization-with-middleware"><a class="header" href="#authorization-with-middleware">Authorization with middleware</a></h3>
+<h3 id="authorization-with-plugin"><a class="header" href="#authorization-with-plugin">Authorization with plugin</a></h3>
 <p>Let's use this schema for authorization to site. 
 There is a route that provides authorized users with session tokens.
 User can pass credentials as request body over secure connection
@@ -1298,7 +1298,7 @@ We can create it in similiar way as <code>whenSecure</code>:</p>
 <pre><code class="language-haskell">isValid :: AuthToken -&gt; IO Bool
 isValid = ...
 
-headerAuth :: Header &quot;auth&quot; AuthToken -&gt; Middleware IO
+headerAuth :: Header &quot;auth&quot; AuthToken -&gt; Plugin IO
 headerAuth (Header token) = processResponse $ \getResp -&gt; do
   isOk &lt;- isValid token
   if isOk
@@ -1306,13 +1306,13 @@ headerAuth (Header token) = processResponse $ \getResp -&gt; do
     else pure $ Just $ bad badRequest400 &quot;Auth token is invalid&quot;
 
 whenAuth :: Server IO -&gt; Server IO
-whenAuth = applyMiddleware headerAuth
+whenAuth = applyPlugin headerAuth
 </code></pre>
 <p>In this example we use <code>IsResp</code> instance for low-level http <code>Response</code>
 to report authorization error. The header with name <code>&quot;auth&quot;</code> is required
-for all routes which are part of the server to which we apply the middleware.</p>
+for all routes which are part of the server to which we apply the plugin.</p>
 <h2 id="summary-3"><a class="header" href="#summary-3">Summary</a></h2>
-<p>In this chapter we have learned on middlewares. They provide a tool to apply
+<p>In this chapter we have learned on plugins. They provide a tool to apply
 transformation to all routes in the server. Which can be useful for logging, authrization
 and adding common behavior to all routes.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="how-to-use-swagger"><a class="header" href="#how-to-use-swagger">How to use Swagger</a></h1>
@@ -1533,7 +1533,7 @@ updateWeather = undefined
 requestAuthToken :: Env -&gt; Body User -&gt; Post (RespOr Text AuthToken)
 requestAuthToken = undefined
 
-withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Middleware IO
+withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Plugin IO
 withAuth = undefined
 </code></pre>
 <p>we have one route to query for token:</p>
@@ -1552,8 +1552,8 @@ updateWeather ::
   Body UpdateData -&gt;
   Post (RespOr Text ())
 </code></pre>
-<p>also we have a middleware that filters out non aunthorized calls:</p>
-<pre><code class="language-haskell">withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Middleware IO
+<p>also we have a plugin that filters out non aunthorized calls:</p>
+<pre><code class="language-haskell">withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Plugin IO
 </code></pre>
 <p>From its type-signature we can assume that authroization token
 is passed in the header of the request.</p>
@@ -1711,9 +1711,9 @@ that hnadles the request. If user has no rights to use our service we report err
 <p>Let's check for authorization tokens. Ideally we would like to add
 this action to all handlers of our application. We would like to keep
 the business logic handlers for the weather domain the same.
-And we can do it with middleware. Let's define such a middleware
+And we can do it with plugin. Let's define such a plugin
 that expects authorization tokens with required header:</p>
-<pre><code class="language-haskell">withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Middleware IO
+<pre><code class="language-haskell">withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Plugin IO
 withAuth env (Header token) = processResponse $ \getResp -&gt; do
   isOk &lt;- env.auth.validToken token
   if isOk
@@ -1724,7 +1724,7 @@ withAuth env (Header token) = processResponse $ \getResp -&gt; do
   where
     errMessage = &quot;Token is invalid&quot;
 </code></pre>
-<p>we have covered in depth how to implement it in the chapter on Middlewares
+<p>we have covered in depth how to implement it in the chapter on Plugins
 so this code should look familiar to us.</p>
 <h3 id="run-application"><a class="header" href="#run-application">Run application</a></h3>
 <p>That completes the definition of the server. Let's run it. We define the main function
@@ -2229,16 +2229,16 @@ runServer' :: ServerConfig -&gt; Int -&gt; Server IO -&gt; IO ()
 * OctetStream
 </code></pre>
 <h3 id="request-inputs"><a class="header" href="#request-inputs">Request inputs</a></h3>
-<pre><code class="language-haskell">-- rewquired query parameter
+<pre><code class="language-haskell">-- required query parameter
 newtype Body media value = Body value
 
--- rewquired query parameter
+-- required query parameter
 newtype Query name value = Query value
 
 -- optional query parameter
 newtype Optional name value = Optional (Maybe value)
 
--- rewquired header parameter
+-- required header parameter
 newtype Header name value = Header value
 
 -- optional header parameter
@@ -2322,11 +2322,11 @@ notImplemented :: (IsResp a) =&gt; RespError a -&gt; a
 -- and set header of &quot;Location&quot; to a given URL.
 redirect :: (IsResp a) =&gt; Text -&gt; a
 </code></pre>
-<h3 id="middlewares-1"><a class="header" href="#middlewares-1">Middlewares</a></h3>
-<pre><code class="language-haskell">applyMiddleware, ($:) :: ToMiddleware a =&gt; 
+<h3 id="plugins-1"><a class="header" href="#plugins-1">Plugins</a></h3>
+<pre><code class="language-haskell">applyPlugin, ($:) :: ToPlugin a =&gt; 
   a -&gt; Server (MonadOf a) -&gt; Server (MonadOf a)
 
--- composition of middlewares:
+-- composition of plugins:
 Monoid(..): mconcat, (&lt;&gt;), mempty
 </code></pre>
 <h3 id="specific-servers"><a class="header" href="#specific-servers">specific servers</a></h3>
@@ -2339,24 +2339,24 @@ addPathLink :: Path -&gt; Path -&gt; Server m
 -- static files
 staticFiles :: [(FilePath, ByteString)] -&gt; Server m
 </code></pre>
-<h3 id="specific-middlewares"><a class="header" href="#specific-middlewares">specific middlewares</a></h3>
+<h3 id="specific-plugins"><a class="header" href="#specific-plugins">specific plugins</a></h3>
 <pre><code class="language-haskell">-- prepend or append some acction to all routes
-prependServerAction, appendServerAction :: MonadIO m =&gt; m () -&gt; Middleware m
+prependServerAction, appendServerAction :: MonadIO m =&gt; m () -&gt; Plugin m
 
 -- change the response
-processResponse :: (m (Maybe Response) -&gt; m (Maybe Response)) -&gt; Middleware m
+processResponse :: (m (Maybe Response) -&gt; m (Maybe Response)) -&gt; Plugin m
 
 -- only secure routes are allowed
-whenSecure :: forall m. (MonadIO m) =&gt; Middleware m
+whenSecure :: forall m. (MonadIO m) =&gt; Plugin m
 
 -- logging with putStrLn for debug traces
-logHttp :: Verbosity -&gt; Middleware m
+logHttp :: Verbosity -&gt; Plugin m
 
 -- logging with custom logger
-logHttpBy :: (Json.Value -&gt; m ()) -&gt; Verbosity -&gt; Middleware m
+logHttpBy :: (Json.Value -&gt; m ()) -&gt; Verbosity -&gt; Plugin m
 
 -- | simple authorization
-withHeaderAuth :: WithHeaderAuth -&gt; Middleware m
+withHeaderAuth :: WithHeaderAuth -&gt; Plugin m
 </code></pre>
 <h3 id="how-to-use-reader"><a class="header" href="#how-to-use-reader">How to use Reader</a></h3>
 <pre><code class="language-haskell">-- Derive instance of HasServer class for your Reader-IO based application:

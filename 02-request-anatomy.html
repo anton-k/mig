@@ -82,7 +82,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html" class="active"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-middleware.html"><strong aria-hidden="true">5.</strong> Middlewares</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html" class="active"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-plugin.html"><strong aria-hidden="true">5.</strong> Plugins</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
@@ -464,29 +464,29 @@ but for now the default value whcih is set with <code>def</code> from library <c
 is fine.</p>
 <h3 id="add-simple-logs-to-the-server"><a class="header" href="#add-simple-logs-to-the-server">Add simple logs to the server</a></h3>
 <p>We can look at the request and trsponse data with tracing functions
-which come from library <code>mig-extra</code> from the module <code>Mig.Extra.Middleware.Trace</code>:</p>
+which come from library <code>mig-extra</code> from the module <code>Mig.Extra.Plugin.Trace</code>:</p>
 <pre><code class="language-haskell">data Verbosity = V0 | V1  | V2 | V3
 
 -- log http requests and responses
-logHttp :: Verbosity -&gt; Middleware m
+logHttp :: Verbosity -&gt; Plugin m
 
 -- | log requests
-logReq :: Verbosity -&gt; Middleware m
+logReq :: Verbosity -&gt; Plugin m
 
 -- | Log responses
-logResp :: Verbosity -&gt; Middleware m
+logResp :: Verbosity -&gt; Plugin m
 </code></pre>
-<p>The <code>Middleware m</code> is a function that can be applied to all routes of the server
-and modify their behavior. To apply middleware to server we can use functions:</p>
-<pre><code class="language-haskell">applyMiddleware :: Middleware m -&gt; Server m -&gt; Server m
+<p>The <code>Plugin m</code> is a function that can be applied to all routes of the server
+and modify their behavior. To apply plugin to server we can use functions:</p>
+<pre><code class="language-haskell">applyPlugin :: Plugin m -&gt; Server m -&gt; Server m
 
-($:) :: Middleware m -&gt; Server m -&gt; Server m
+($:) :: Plugin m -&gt; Server m -&gt; Server m
 </code></pre>
 <p>We show simplified signatures here. The real ones are overloaded by the first argument.
-but we will dicuss middlewares in depth in the separate chapter. For now it's
+but we will dicuss plugins in depth in the separate chapter. For now it's
 ok to assume that those functions are defined in that simplified way.</p>
 <p>So let's look at the data that goes through our server:</p>
-<pre><code class="language-haskell">import Mig.Extra.Middleware.Trace qualified as Trace
+<pre><code class="language-haskell">import Mig.Extra.Plugin.Trace qualified as Trace
 
 ...
 
@@ -494,7 +494,7 @@ server =
   withSwagger def $ 
     withTrace $ {-# the rest of the server code #-}
   where
-    withTrace = applyMiddleware (Trace.logHttp Trace.V2)
+    withTrace = applyPlugin (Trace.logHttp Trace.V2)
 </code></pre>
 <p>Let's restart the server and see what it logs:</p>
 <pre><code class="language-yaml">log:
@@ -525,7 +525,7 @@ which accept callback and we can pass the logger function defined in terms
 of one of the standard haskell logging libraries, say <code>katip</code> or <code>fast-logger</code>:</p>
 <pre><code class="language-haskell">import Data.Aeson as Json
 
-logHttpBy :: (Json.Value -&gt; m ()) -&gt; Verbosity -&gt; Middleware m
+logHttpBy :: (Json.Value -&gt; m ()) -&gt; Verbosity -&gt; Plugin m
 </code></pre>
 <h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
 <p>We have learned how various parts of the requests can be queries
@@ -550,7 +550,7 @@ and our signatures would bcome more simple and specific.</p>
 For calls to the server in the UI</p>
 </li>
 <li>
-<p>trace logs: <code>(applyMiddleware (logHttp V2))</code> 
+<p>trace logs: <code>(applyPlugin (logHttp V2))</code> 
 To see the data that flows through the server</p>
 </li>
 </ul>

@@ -82,7 +82,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-middleware.html"><strong aria-hidden="true">5.</strong> Middlewares</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html" class="active"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-plugin.html"><strong aria-hidden="true">5.</strong> Plugins</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html" class="active"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
@@ -254,7 +254,7 @@ updateWeather = undefined
 requestAuthToken :: Env -&gt; Body User -&gt; Post (RespOr Text AuthToken)
 requestAuthToken = undefined
 
-withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Middleware IO
+withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Plugin IO
 withAuth = undefined
 </code></pre>
 <p>we have one route to query for token:</p>
@@ -273,8 +273,8 @@ updateWeather ::
   Body UpdateData -&gt;
   Post (RespOr Text ())
 </code></pre>
-<p>also we have a middleware that filters out non aunthorized calls:</p>
-<pre><code class="language-haskell">withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Middleware IO
+<p>also we have a plugin that filters out non aunthorized calls:</p>
+<pre><code class="language-haskell">withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Plugin IO
 </code></pre>
 <p>From its type-signature we can assume that authroization token
 is passed in the header of the request.</p>
@@ -432,9 +432,9 @@ that hnadles the request. If user has no rights to use our service we report err
 <p>Let's check for authorization tokens. Ideally we would like to add
 this action to all handlers of our application. We would like to keep
 the business logic handlers for the weather domain the same.
-And we can do it with middleware. Let's define such a middleware
+And we can do it with plugin. Let's define such a plugin
 that expects authorization tokens with required header:</p>
-<pre><code class="language-haskell">withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Middleware IO
+<pre><code class="language-haskell">withAuth :: Env -&gt; Header &quot;auth&quot; AuthToken -&gt; Plugin IO
 withAuth env (Header token) = processResponse $ \getResp -&gt; do
   isOk &lt;- env.auth.validToken token
   if isOk
@@ -445,7 +445,7 @@ withAuth env (Header token) = processResponse $ \getResp -&gt; do
   where
     errMessage = &quot;Token is invalid&quot;
 </code></pre>
-<p>we have covered in depth how to implement it in the chapter on Middlewares
+<p>we have covered in depth how to implement it in the chapter on Plugins
 so this code should look familiar to us.</p>
 <h3 id="run-application"><a class="header" href="#run-application">Run application</a></h3>
 <p>That completes the definition of the server. Let's run it. We define the main function

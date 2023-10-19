@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Middlewares - Mig by example</title>
+        <title>Plugins - Mig by example</title>
                 
 
         <!-- Custom HTML head -->
@@ -82,7 +82,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-middleware.html" class="active"><strong aria-hidden="true">5.</strong> Middlewares</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-plugin.html" class="active"><strong aria-hidden="true">5.</strong> Plugins</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
@@ -143,42 +143,42 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="middlewares"><a class="header" href="#middlewares">Middlewares</a></h1>
-<p>A middleware is a transformation which is applied to all routes in the server.
+                        <h1 id="plugins"><a class="header" href="#plugins">Plugins</a></h1>
+<p>A plugin is a transformation which is applied to all routes in the server.
 It is a pair of functions which transform API-description and server function:</p>
-<pre><code class="language-haskell">data Middleware m = Middleware
+<pre><code class="language-haskell">data Plugin m = Plugin
   { info :: RouteInfo -&gt; RouteInfo
   -- ^ update api schema
-  , run :: MiddlewareFun m
+  , run :: PluginFun m
   -- ^ update server function
   }
 
--- | Low-level middleware function.
-type MiddlewareFun m = ServerFun m -&gt; ServerFun m
+-- | Low-level plugin function.
+type PluginFun m = ServerFun m -&gt; ServerFun m
 </code></pre>
-<p>To apply middleware to server we ca use function <code>applyMiddleware</code>:</p>
-<pre><code class="language-haskell">-- | Applies middleware to all routes of the server.
-applyMiddleware :: forall f. (ToMiddleware f) =&gt; 
+<p>To apply plugin to server we ca use function <code>applyPlugin</code>:</p>
+<pre><code class="language-haskell">-- | Applies plugin to all routes of the server.
+applyPlugin :: forall f. (ToPlugin f) =&gt; 
   f -&gt; Server (MonadOf f) -&gt; Server (MonadOf f)
 </code></pre>
 <p>There is also infix operatore for application <code>($:)</code>.</p>
-<p>The class <code>ToMiddleware</code> contains all types that can be converted to middleware.
+<p>The class <code>ToPlugin</code> contains all types that can be converted to plugin.
 Here we use the same trick as with <code>ToServer</code> class to be able to read type-safe parts of the request
 and update the API-schema. The type-level function <code>MonadOf</code> knows how to find underlying monad <code>m</code>
 in various types.</p>
-<p>We have recursive set of rules for types that can be converted to <code>Middleware</code>:</p>
+<p>We have recursive set of rules for types that can be converted to <code>Plugin</code>:</p>
 <p>The identity rule:</p>
 <blockquote>
-<p><code>MiddlewareFun</code> has instance of <code>ToMiddleware</code> with obvious identity instance</p>
+<p><code>PluginFun</code> has instance of <code>ToPlugin</code> with obvious identity instance</p>
 </blockquote>
 <p>Recursive steps for inputs</p>
 <blockquote>
-<p>if <code>f</code> is <code>ToMiddleware</code> then <code>(Query name queryType -&gt; f)</code> is <code>ToMiddleware</code> too</p>
+<p>if <code>f</code> is <code>ToPlugin</code> then <code>(Query name queryType -&gt; f)</code> is <code>ToPlugin</code> too</p>
 </blockquote>
 <p>and so on for other types of request input (query params, headers, captures, request bodies).
-See the full list of instances in the module <code>Mig.Core.Class.Middleware</code>.</p>
+See the full list of instances in the module <code>Mig.Core.Class.Plugin</code>.</p>
 <h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
-<p>So the middleware allows us to apply some behavior to all routes in the server.
+<p>So the plugin allows us to apply some behavior to all routes in the server.
 Let's discuss some examples</p>
 <h3 id="add-logging"><a class="header" href="#add-logging">Add logging</a></h3>
 <p>Let's add the logging to all methods which are called. We will log which route 
@@ -189,38 +189,38 @@ was called and we will include the time stamp and the full path in the log:</p>
 <p>We can query the path with <code>PathInfo</code> newtype:</p>
 <pre><code class="language-haskell">newtype PathInfo = PathInfo [Text]
 </code></pre>
-<p>And we have a rule for  <code>ToMiddleware</code> class:</p>
+<p>And we have a rule for  <code>ToPlugin</code> class:</p>
 <blockquote>
-<p>if <code>f</code> is <code>ToMiddleware</code> then <code>(PathInfo -&gt; ToMiddleware f)</code> is <code>ToMiddleware</code></p>
+<p>if <code>f</code> is <code>ToPlugin</code> then <code>(PathInfo -&gt; ToPlugin f)</code> is <code>ToPlugin</code></p>
 </blockquote>
-<p>so we can create a middleware function:</p>
-<pre><code class="language-haskell">logRoutes :: Middleware IO
-logRoutes = toMiddleware $ \(PathInfo pathItems) -&gt; prependServerAction $ do
+<p>so we can create a plugin function:</p>
+<pre><code class="language-haskell">logRoutes :: Plugin IO
+logRoutes = toPlugin $ \(PathInfo pathItems) -&gt; prependServerAction $ do
   now &lt;- getCurrentTime 
   logInfo $ mconcat
     [ &quot;Call route: &quot;, Text.intercalata &quot;/&quot; pathItems 
     , &quot; at &quot;, Text.pack (show now)
     ]
 </code></pre>
-<p>We use function <code>prependServerAction</code> that creates a <code>Middleware</code>
+<p>We use function <code>prependServerAction</code> that creates a <code>Plugin</code>
 from actino which is performed prior to call to server function:</p>
-<pre><code class="language-haskell">prependServerAction :: MonadIO m =&gt; m () -&gt; Middleware m
+<pre><code class="language-haskell">prependServerAction :: MonadIO m =&gt; m () -&gt; Plugin m
 </code></pre>
 <p>also there are similar functions in the module: <code>appendServerAction</code> and <code>processResponse</code>.</p>
 <h3 id="allow-only-secure-routes"><a class="header" href="#allow-only-secure-routes">Allow only secure routes</a></h3>
-<p>Another great example of middleware at work is to block routes on some conditions.
+<p>Another great example of plugin at work is to block routes on some conditions.
 For example if we want certain routes to be used only under secure SSL connection.
 We have a standard function for that <code>whenSecure</code>. But let's dive into it's definition to
-see how middlewares can be used:</p>
+see how plugins can be used:</p>
 <pre><code class="language-haskell">-- | Execute request only if it is secure (made with SSL connection)
-whenSecure :: forall m. (MonadIO m) =&gt; Middleware m
-whenSecure = toMiddleware $ \(IsSecure isSecure) -&gt; 
+whenSecure :: forall m. (MonadIO m) =&gt; Plugin m
+whenSecure = toPlugin $ \(IsSecure isSecure) -&gt; 
   processResponse (if isSecure then id else const (pure Nothing))
 </code></pre>
-<p>Here we use standard middleware <code>processResponse</code> which allows
+<p>Here we use standard plugin <code>processResponse</code> which allows
 us to alter the result of the HTTP-response:</p>
 <pre><code class="language-haskell">processResponse :: MonadIO m =&gt; 
-  (m (Maybe Response) -&gt; m (Maybe Response)) -&gt; Middleware m
+  (m (Maybe Response) -&gt; m (Maybe Response)) -&gt; Plugin m
 </code></pre>
 <p>Also we use query input <code>IsSecure</code> which is true if connection is made over SSL:</p>
 <pre><code class="language-haskell">newtype IsSecure = IsSecure Bool
@@ -229,7 +229,7 @@ us to alter the result of the HTTP-response:</p>
 and we block the execution by returning <code>Nothing</code> if connection is secure.
 The cool part of it is that due to Haskell's laziness there is no performance overhead and underlying
 route is not going to be performed if connection is insecure.</p>
-<h3 id="authorization-with-middleware"><a class="header" href="#authorization-with-middleware">Authorization with middleware</a></h3>
+<h3 id="authorization-with-plugin"><a class="header" href="#authorization-with-plugin">Authorization with plugin</a></h3>
 <p>Let's use this schema for authorization to site. 
 There is a route that provides authorized users with session tokens.
 User can pass credentials as request body over secure connection
@@ -250,7 +250,7 @@ We can create it in similiar way as <code>whenSecure</code>:</p>
 <pre><code class="language-haskell">isValid :: AuthToken -&gt; IO Bool
 isValid = ...
 
-headerAuth :: Header &quot;auth&quot; AuthToken -&gt; Middleware IO
+headerAuth :: Header &quot;auth&quot; AuthToken -&gt; Plugin IO
 headerAuth (Header token) = processResponse $ \getResp -&gt; do
   isOk &lt;- isValid token
   if isOk
@@ -258,13 +258,13 @@ headerAuth (Header token) = processResponse $ \getResp -&gt; do
     else pure $ Just $ bad badRequest400 &quot;Auth token is invalid&quot;
 
 whenAuth :: Server IO -&gt; Server IO
-whenAuth = applyMiddleware headerAuth
+whenAuth = applyPlugin headerAuth
 </code></pre>
 <p>In this example we use <code>IsResp</code> instance for low-level http <code>Response</code>
 to report authorization error. The header with name <code>&quot;auth&quot;</code> is required
-for all routes which are part of the server to which we apply the middleware.</p>
+for all routes which are part of the server to which we apply the plugin.</p>
 <h2 id="summary"><a class="header" href="#summary">Summary</a></h2>
-<p>In this chapter we have learned on middlewares. They provide a tool to apply
+<p>In this chapter we have learned on plugins. They provide a tool to apply
 transformation to all routes in the server. Which can be useful for logging, authrization
 and adding common behavior to all routes.</p>
 

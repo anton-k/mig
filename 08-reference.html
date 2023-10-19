@@ -82,7 +82,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-middleware.html"><strong aria-hidden="true">5.</strong> Middlewares</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html" class="active"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-plugin.html"><strong aria-hidden="true">5.</strong> Plugins</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html" class="active"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
@@ -180,16 +180,16 @@ runServer' :: ServerConfig -&gt; Int -&gt; Server IO -&gt; IO ()
 * OctetStream
 </code></pre>
 <h3 id="request-inputs"><a class="header" href="#request-inputs">Request inputs</a></h3>
-<pre><code class="language-haskell">-- rewquired query parameter
+<pre><code class="language-haskell">-- required query parameter
 newtype Body media value = Body value
 
--- rewquired query parameter
+-- required query parameter
 newtype Query name value = Query value
 
 -- optional query parameter
 newtype Optional name value = Optional (Maybe value)
 
--- rewquired header parameter
+-- required header parameter
 newtype Header name value = Header value
 
 -- optional header parameter
@@ -273,11 +273,11 @@ notImplemented :: (IsResp a) =&gt; RespError a -&gt; a
 -- and set header of &quot;Location&quot; to a given URL.
 redirect :: (IsResp a) =&gt; Text -&gt; a
 </code></pre>
-<h3 id="middlewares"><a class="header" href="#middlewares">Middlewares</a></h3>
-<pre><code class="language-haskell">applyMiddleware, ($:) :: ToMiddleware a =&gt; 
+<h3 id="plugins"><a class="header" href="#plugins">Plugins</a></h3>
+<pre><code class="language-haskell">applyPlugin, ($:) :: ToPlugin a =&gt; 
   a -&gt; Server (MonadOf a) -&gt; Server (MonadOf a)
 
--- composition of middlewares:
+-- composition of plugins:
 Monoid(..): mconcat, (&lt;&gt;), mempty
 </code></pre>
 <h3 id="specific-servers"><a class="header" href="#specific-servers">specific servers</a></h3>
@@ -290,24 +290,24 @@ addPathLink :: Path -&gt; Path -&gt; Server m
 -- static files
 staticFiles :: [(FilePath, ByteString)] -&gt; Server m
 </code></pre>
-<h3 id="specific-middlewares"><a class="header" href="#specific-middlewares">specific middlewares</a></h3>
+<h3 id="specific-plugins"><a class="header" href="#specific-plugins">specific plugins</a></h3>
 <pre><code class="language-haskell">-- prepend or append some acction to all routes
-prependServerAction, appendServerAction :: MonadIO m =&gt; m () -&gt; Middleware m
+prependServerAction, appendServerAction :: MonadIO m =&gt; m () -&gt; Plugin m
 
 -- change the response
-processResponse :: (m (Maybe Response) -&gt; m (Maybe Response)) -&gt; Middleware m
+processResponse :: (m (Maybe Response) -&gt; m (Maybe Response)) -&gt; Plugin m
 
 -- only secure routes are allowed
-whenSecure :: forall m. (MonadIO m) =&gt; Middleware m
+whenSecure :: forall m. (MonadIO m) =&gt; Plugin m
 
 -- logging with putStrLn for debug traces
-logHttp :: Verbosity -&gt; Middleware m
+logHttp :: Verbosity -&gt; Plugin m
 
 -- logging with custom logger
-logHttpBy :: (Json.Value -&gt; m ()) -&gt; Verbosity -&gt; Middleware m
+logHttpBy :: (Json.Value -&gt; m ()) -&gt; Verbosity -&gt; Plugin m
 
 -- | simple authorization
-withHeaderAuth :: WithHeaderAuth -&gt; Middleware m
+withHeaderAuth :: WithHeaderAuth -&gt; Plugin m
 </code></pre>
 <h3 id="how-to-use-reader"><a class="header" href="#how-to-use-reader">How to use Reader</a></h3>
 <pre><code class="language-haskell">-- Derive instance of HasServer class for your Reader-IO based application:
