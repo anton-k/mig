@@ -58,11 +58,11 @@ module Mig.Extra.Server.Common (
   -- ** specific cases
   staticFiles,
 
-  -- ** Middlewares
-  Middleware (..),
-  MiddlewareFun,
-  ToMiddleware (..),
-  applyMiddleware,
+  -- ** Plugins
+  Plugin (..),
+  PluginFun,
+  ToPlugin (..),
+  applyPlugin,
   ($:),
   prependServerAction,
   appendServerAction,

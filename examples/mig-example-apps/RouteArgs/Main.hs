@@ -7,7 +7,7 @@ module Main (
   main,
 ) where
 
-import Mig.Extra.Middleware.Trace qualified as Trace
+import Mig.Extra.Plugin.Trace qualified as Trace
 import Mig.Json.IO
 
 main :: IO ()
@@ -42,7 +42,7 @@ routeArgs =
           "square-root" /. handleSquareRoot
         ]
   where
-    withTrace = applyMiddleware (Trace.logHttp Trace.V2)
+    withTrace = applyPlugin (Trace.logHttp Trace.V2)
 
 -- | Simple getter
 helloWorld :: Get (Resp Text)

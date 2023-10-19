@@ -8,7 +8,7 @@ import Control.Monad
 import Data.Text qualified as Text
 import Data.Text.Lazy.Encoding qualified as Text
 import Data.Time
-import Mig.Extra.Middleware.Trace qualified as Trace
+import Mig.Extra.Plugin.Trace qualified as Trace
 import Mig.Json.IO
 
 import Interface
@@ -32,7 +32,7 @@ server env =
         , "update" /. updateWeather env
         ]
 
-    withTrace = applyMiddleware (Trace.logHttpBy (logInfo env) Trace.V2)
+    withTrace = applyPlugin (Trace.logHttpBy (logInfo env) Trace.V2)
 
 -------------------------------------------------------------------------------------
 -- application handlers
@@ -79,7 +79,7 @@ requestAuthToken env (Body user) = Send $ do
       threadDelay (1_000_000 * 60 * 10) -- 10 minutes
       env.auth.expireToken token
 
-withAuth :: Env -> Header "auth" AuthToken -> Middleware IO
+withAuth :: Env -> Header "auth" AuthToken -> Plugin IO
 withAuth env (Header token) = processResponse $ \getResp -> do
   isOk <- env.auth.validToken token
   if isOk

@@ -134,7 +134,7 @@ updateWeather = undefined
 requestAuthToken :: Env -> Body User -> Post (RespOr Text AuthToken)
 requestAuthToken = undefined
 
-withAuth :: Env -> Header "auth" AuthToken -> Middleware IO
+withAuth :: Env -> Header "auth" AuthToken -> Plugin IO
 withAuth = undefined
 ```
 
@@ -160,10 +160,10 @@ updateWeather ::
   Post (RespOr Text ())
 ```
 
-also we have a middleware that filters out non aunthorized calls:
+also we have a plugin that filters out non aunthorized calls:
 
 ```haskell
-withAuth :: Env -> Header "auth" AuthToken -> Middleware IO
+withAuth :: Env -> Header "auth" AuthToken -> Plugin IO
 ```
 
 From its type-signature we can assume that authroization token
@@ -353,11 +353,11 @@ that hnadles the request. If user has no rights to use our service we report err
 Let's check for authorization tokens. Ideally we would like to add
 this action to all handlers of our application. We would like to keep
 the business logic handlers for the weather domain the same.
-And we can do it with middleware. Let's define such a middleware
+And we can do it with plugin. Let's define such a plugin
 that expects authorization tokens with required header:
 
 ```haskell
-withAuth :: Env -> Header "auth" AuthToken -> Middleware IO
+withAuth :: Env -> Header "auth" AuthToken -> Plugin IO
 withAuth env (Header token) = processResponse $ \getResp -> do
   isOk <- env.auth.validToken token
   if isOk
@@ -369,7 +369,7 @@ withAuth env (Header token) = processResponse $ \getResp -> do
     errMessage = "Token is invalid"
 ```
 
-we have covered in depth how to implement it in the chapter on Middlewares
+we have covered in depth how to implement it in the chapter on Plugins
 so this code should look familiar to us.
 
 

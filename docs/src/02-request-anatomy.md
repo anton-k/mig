@@ -407,38 +407,38 @@ is fine.
 ### Add simple logs to the server
 
 We can look at the request and trsponse data with tracing functions
-which come from library `mig-extra` from the module `Mig.Extra.Middleware.Trace`:
+which come from library `mig-extra` from the module `Mig.Extra.Plugin.Trace`:
 
 ```haskell
 data Verbosity = V0 | V1  | V2 | V3
 
 -- log http requests and responses
-logHttp :: Verbosity -> Middleware m
+logHttp :: Verbosity -> Plugin m
 
 -- | log requests
-logReq :: Verbosity -> Middleware m
+logReq :: Verbosity -> Plugin m
 
 -- | Log responses
-logResp :: Verbosity -> Middleware m
+logResp :: Verbosity -> Plugin m
 ```
 
-The `Middleware m` is a function that can be applied to all routes of the server
-and modify their behavior. To apply middleware to server we can use functions:
+The `Plugin m` is a function that can be applied to all routes of the server
+and modify their behavior. To apply plugin to server we can use functions:
 
 ```haskell
-applyMiddleware :: Middleware m -> Server m -> Server m
+applyPlugin :: Plugin m -> Server m -> Server m
 
-($:) :: Middleware m -> Server m -> Server m
+($:) :: Plugin m -> Server m -> Server m
 ```
 
 We show simplified signatures here. The real ones are overloaded by the first argument.
-but we will dicuss middlewares in depth in the separate chapter. For now it's
+but we will dicuss plugins in depth in the separate chapter. For now it's
 ok to assume that those functions are defined in that simplified way.
 
 So let's look at the data that goes through our server:
 
 ```haskell
-import Mig.Extra.Middleware.Trace qualified as Trace
+import Mig.Extra.Plugin.Trace qualified as Trace
 
 ...
 
@@ -446,7 +446,7 @@ server =
   withSwagger def $ 
     withTrace $ {-# the rest of the server code #-}
   where
-    withTrace = applyMiddleware (Trace.logHttp Trace.V2)
+    withTrace = applyPlugin (Trace.logHttp Trace.V2)
 ```
 
 Let's restart the server and see what it logs:
@@ -484,7 +484,7 @@ of one of the standard haskell logging libraries, say `katip` or `fast-logger`:
 ```haskell
 import Data.Aeson as Json
 
-logHttpBy :: (Json.Value -> m ()) -> Verbosity -> Middleware m
+logHttpBy :: (Json.Value -> m ()) -> Verbosity -> Plugin m
 ```
 
 ## Summary
@@ -510,7 +510,7 @@ we have learned how by ony-liners we can add to the server some useful features:
 * swagger: `(withSwagger def server)` 
     For calls to the server in the UI  
 
-* trace logs: `(applyMiddleware (logHttp V2))` 
+* trace logs: `(applyPlugin (logHttp V2))` 
   To see the data that flows through the server
 
 Both expressions transform servers and have signatures: 
