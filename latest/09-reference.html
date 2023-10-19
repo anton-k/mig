@@ -1,47 +1,48 @@
 <!DOCTYPE HTML>
-<html lang="en" class="sidebar-visible no-js light">
+<html lang="en" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
         <title>Reference - Mig by example</title>
-                
+
 
         <!-- Custom HTML head -->
-        
 
-        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#ffffff">
 
-                <link rel="icon" href="favicon.svg">
-                        <link rel="shortcut icon" href="favicon.png">
-                <link rel="stylesheet" href="css/variables.css">
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
         <link rel="stylesheet" href="css/general.css">
         <link rel="stylesheet" href="css/chrome.css">
-                <link rel="stylesheet" href="css/print.css" media="print">
-        
+        <link rel="stylesheet" href="css/print.css" media="print">
+
         <!-- Fonts -->
         <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
-                <link rel="stylesheet" href="fonts/fonts.css">
-        
+        <link rel="stylesheet" href="fonts/fonts.css">
+
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="highlight.css">
-        <link rel="stylesheet" href="tomorrow-night.css">
-        <link rel="stylesheet" href="ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
-        
-            </head>
-    <body>
+
+
         <!-- Provide site root to javascript -->
-        <script type="text/javascript">
+        <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
-
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
-        <script type="text/javascript">
+        <script>
             try {
                 var theme = localStorage.getItem('mdbook-theme');
                 var sidebar = localStorage.getItem('mdbook-sidebar');
@@ -57,71 +58,79 @@
         </script>
 
         <!-- Set the theme before any content is loaded, prevents flash -->
-        <script type="text/javascript">
+        <script>
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
-            var html = document.querySelector('html');
-            html.classList.remove('no-js')
+            const html = document.documentElement;
             html.classList.remove('light')
             html.classList.add(theme);
-            html.classList.add('js');
+            html.classList.add("js");
         </script>
 
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
         <!-- Hide / unhide sidebar before it is displayed -->
-        <script type="text/javascript">
-            var html = document.querySelector('html');
-            var sidebar = 'hidden';
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
             }
+            sidebar_toggle.checked = sidebar === 'visible';
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="00-foreword.html">Foreword</a></li><li class="chapter-item expanded "><a href="01-hello-world.html"><strong aria-hidden="true">1.</strong> Hello world example</a></li><li class="chapter-item expanded "><a href="02-request-anatomy.html"><strong aria-hidden="true">2.</strong> Anatomy of the request</a></li><li class="chapter-item expanded "><a href="03-response-anatomy.html"><strong aria-hidden="true">3.</strong> Anatomy of the response</a></li><li class="chapter-item expanded "><a href="04-other-monads.html"><strong aria-hidden="true">4.</strong> Using other monads</a></li><li class="chapter-item expanded "><a href="05-plugin.html"><strong aria-hidden="true">5.</strong> Plugins</a></li><li class="chapter-item expanded "><a href="06-swagger.html"><strong aria-hidden="true">6.</strong> Using Swagger</a></li><li class="chapter-item expanded "><a href="06-json-api-example.html"><strong aria-hidden="true">7.</strong> JSON application: weather forecast</a></li><li class="chapter-item expanded "><a href="07-blog-post-example.html"><strong aria-hidden="true">8.</strong> HTML example: blog site</a></li><li class="chapter-item expanded "><a href="08-reference.html" class="active"><strong aria-hidden="true">9.</strong> Reference</a></li></ol>            </div>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
         </nav>
 
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                
                 <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky bordered">
+                <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
                             <i class="fa fa-bars"></i>
-                        </button>
+                        </label>
                         <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
-                                                <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
                             <i class="fa fa-search"></i>
                         </button>
-                                            </div>
+                    </div>
 
                     <h1 class="menu-title">Mig by example</h1>
 
                     <div class="right-buttons">
-                                                <a href="print.html" title="Print this book" aria-label="Print this book">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
                             <i id="print-button" class="fa fa-print"></i>
                         </a>
-                                                                        
+
                     </div>
                 </div>
 
-                                <div id="search-wrapper" class="hidden">
+                <div id="search-wrapper" class="hidden">
                     <form id="searchbar-outer" class="searchbar-outer">
                         <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
                     </form>
@@ -131,9 +140,9 @@
                         </ul>
                     </div>
                 </div>
-                
+
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
-                <script type="text/javascript">
+                <script>
                     document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
                     document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
                     Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
@@ -168,8 +177,8 @@ runServer' :: ServerConfig -&gt; Int -&gt; Server IO -&gt; IO ()
 <li><code>Mig.IO</code> - <code>IO</code>-based servers with generic return types</li>
 <li><code>Mig.Json</code> - JSON-based servers</li>
 <li><code>Mig.Html</code> - HTML-based servers</li>
-<li><code>Mig.Json.IO</code> - JSON and IO-based servers </li>
-<li><code>Mig.Html.IO</code> - HTML and IO-based servers </li>
+<li><code>Mig.Json.IO</code> - JSON and IO-based servers</li>
+<li><code>Mig.Html.IO</code> - HTML and IO-based servers</li>
 </ul>
 <h3 id="media-types"><a class="header" href="#media-types">Media types</a></h3>
 <pre><code class="language-haskell">* Json
@@ -200,6 +209,9 @@ newtype Capture name value = Capture value
 
 -- boolean query flag parameter
 newtype QueryFlag name = QueryFlag Bool
+
+-- optional cookies (set in the header)
+newtype Cookie value = Cookie (Maybe value)
 
 -- Is connection made over SSL
 newtype IsSecure = IsSecure Bool
@@ -260,6 +272,21 @@ data RespOr media err a = RespOr ...
 
 setHeader :: (IsResp a, ToHttpApiData h) =&gt; HeaderName -&gt; h -&gt; a -&gt; a
 
+-- | Set cookie as http header from form url encoded value
+setCookie :: (ToForm cookie, IsResp resp) =&gt; SetCookie cookie -&gt; resp -&gt; resp
+
+data SetCookie a = SetCookie
+  { cookie :: a
+  , expires :: Maybe UTCTime
+  , domain :: Maybe Text
+  , path :: Maybe Text
+  , secure :: Bool
+  , httpOnly :: Bool
+  }
+
+-- | Default cookie which sets only the cookie itself.
+defCookie :: a -&gt; SetCookie a
+
 -- | Bad request. The @bad@ response with 400 status.
 badReq :: (IsResp a) =&gt; RespError a -&gt; a
 
@@ -270,7 +297,7 @@ internalServerError :: (IsResp a) =&gt; RespError a -&gt; a
 notImplemented :: (IsResp a) =&gt; RespError a -&gt; a
 
 -- | Redirect to url. It is @bad@ response with 302 status 
--- and set header of &quot;Location&quot; to a given URL.
+-- and set header of "Location" to a given URL.
 redirect :: (IsResp a) =&gt; Text -&gt; a
 </code></pre>
 <h3 id="plugins"><a class="header" href="#plugins">Plugins</a></h3>
@@ -336,9 +363,9 @@ writeOpenApi :: FilePath -&gt; Server m -&gt; IO ()
 <pre><code class="language-haskell">-- | Swagger config
 data SwaggerConfig m = SwaggerConfig
   { staticDir :: Path
-  -- ^ path to server swagger (default is &quot;/swagger-ui&quot;)
+  -- ^ path to server swagger (default is "/swagger-ui")
   , swaggerFile :: Path
-  -- ^ swagger file name (default is &quot;swaggger.json&quot;)
+  -- ^ swagger file name (default is "swaggger.json")
   , mapSchema :: OpenApi -&gt; m OpenApi
   -- ^ apply transformation to OpenApi schema on serving OpenApi schema.
   -- it is useful to add additional info or set current date in the examples
@@ -348,8 +375,8 @@ data SwaggerConfig m = SwaggerConfig
 instance (Applicative m) =&gt; Default (SwaggerConfig m) where
   def =
     SwaggerConfig
-      { staticDir = &quot;swagger-ui&quot;
-      , swaggerFile = &quot;swagger.json&quot;
+      { staticDir = "swagger-ui"
+      , swaggerFile = "swagger.json"
       , mapSchema = pure
       }
 </code></pre>
@@ -380,48 +407,166 @@ nd raw-input is dedicated to raw input
 -}
 describeInputs :: [(Text, Text)] -&gt; Server m -&gt; Server m
 </code></pre>
+<h2 id="clients"><a class="header" href="#clients">Clients</a></h2>
+<p>The class to convert server definitions to clients:</p>
+<pre><code class="language-haskell">class (MapRequest a) =&gt; ToClient a where
+  -- | converts to client function
+  toClient :: Server m -&gt; a
+
+  -- | how many routes client has
+  clientArity :: Int
+</code></pre>
+<p>An example:</p>
+<pre><code class="language-haskell">helloWorld :: Get Client (Resp Text)
+handleSucc :: Header "Trace-Id" TraceId -&gt; Query "value" Int -&gt; Get Client (Resp Int)
+handleSuccOpt :: Optional "value" Int -&gt; Get Client (RespOr Text Int)
+
+helloWorld
+  :| handleSucc
+  :| handleSuccOpt = toClient server
+</code></pre>
+<p>We use synonym for pair <code>:|</code> to avoid redundant parens.</p>
+<p>The Client-monad:</p>
+<pre><code class="language-haskell">newtype Client a = ...
+
+runClient :: ClientConfig -&gt; Client a -&gt; IO (RespOr AnyMedia BL.ByteString a)
+
+-- | Config to run the clients
+data ClientConfig = ClientConfig
+  { port :: Int
+  -- ^ port to connect to
+  , manager :: Http.Manager
+  -- ^ HTTP-manager
+  }
+</code></pre>
+<p>The class to strip away request input <code>newtype</code> wrappers:</p>
+<pre><code class="language-haskell">class FromClient a where
+  type ClientResult a :: Type
+  fromClient :: a -&gt; ClientResult a
+</code></pre>
+<p>It turns types like:</p>
+<pre><code class="language-haskell">Query "a" Int -&gt; Capture "b" Text -&gt; Get Client (Resp Json Text)
+</code></pre>
+<p>To types:</p>
+<pre><code class="language-haskell">Int -&gt; Text -&gt; Client' (RespOr Json BL.ByteString Text)
+</code></pre>
+<p>Where <code>Client'</code> is a monad which encapsulates the <code>ClientConfig</code> as reader:</p>
+<pre><code class="language-haskell">newtype Client' a = Client' (ReaderT ClientConfig IO a)
+</code></pre>
+<p>Also we can use the function:</p>
+<pre><code class="language-haskell">getRespOrValue :: RespOr media BL.ByteString a -&gt; Either BL.ByteString a
+</code></pre>
+<p>To unwrap <code>Resp</code> from response.</p>
+<h2 id="other-utilities"><a class="header" href="#other-utilities">Other utilities</a></h2>
+<h3 id="type-safe-urls"><a class="header" href="#type-safe-urls">Type-safe URLs</a></h3>
+<p>The type-level function <code>UrlOf</code> creates a type-safe <code>Url</code> for a given route handler type.
+With class <code>ToUrl</code> we can generate the URLs for a collection of handlers.</p>
+<pre><code class="language-haskell">class ToUrl a where
+  toUrl :: Server m -&gt; a
+  mapUrl :: (Url -&gt; Url) -&gt; a -&gt; a
+  urlArity :: Int
+</code></pre>
+<p>An example of usage.
+URL's should be listed in the same order as they appear in the server</p>
+<pre><code class="language-haskell">urls :: Urls
+urls = Urls{..}
+   where
+     greeting
+       :| blogPost
+       :| listPosts
+         toUrl (server undefined)
+</code></pre>
+<p>We can render <code>Url</code> to <code>String</code>-like type with function:</p>
+<pre><code class="language-haskell">renderUrl :: IsString a =&gt; Url -&gt; a
+</code></pre>
+<h3 id="deriving-helpers"><a class="header" href="#deriving-helpers">deriving helpers</a></h3>
+<p>Sometimes we need to derive too many types at once
+to use the type in the library. There are helpers to reduce deriving boiler-plate:</p>
+<pre><code class="language-haskell">deriveParam ''FooType          -- derives parameter instances for a FooType
+deriveNewtypeParam ''FooType   -- derives parameter instances for a newtype FooType
+
+deriveBody ''FooType          -- derives request body instances for a FooType
+deriveNewtypeBody ''FooType   -- derives request body instances for a newtype FooType
+
+deriveHttp ''FooType          -- derives both parameter and request body instances for a FooType
+deriveNewtypeHttp ''FooType   -- derives both parameterrequest body instances for a newtype FooType
+
+mapDerive fun [''Foo, ''Bar]  -- maps deriving over several types
+</code></pre>
+<p>We need to activate <code>TemplateHaskell</code>, <code>StandaloneDeriving</code>, <code>DerivingStrategies</code>, <code>DeriveGeneric</code> extensions to use it.</p>
+<p>Also note that for this to work all types should be in scope.
+So it better to define drivings at the bottom of the module which is dedicated to types.</p>
+<p>Also type should not have generic arguments for deriving to work.
+If it does we have to declare the types manually. For example:</p>
+<pre><code class="language-haskell">data Timed a = Timed
+  { from :: Day
+  , content :: [a]
+  }
+  deriving (Generic, ToJSON, FromJSON)
+
+deriving instance (ToSchema a) =&gt; ToSchema (Timed a)
+</code></pre>
+<p>The data type <code>Timed</code> has an argument and we have to define the instance
+explicitly.</p>
+<h3 id="html-links"><a class="header" href="#html-links">HTML Links</a></h3>
+<p>For usage with template engines that expect JSON as argument for template
+there is the type <code>Link</code> in the module <code>Mig.Extra.Html</code> (also re-exported by all <code>Html</code>-related modules):</p>
+<pre><code class="language-haskell">data Link = Link
+  { href :: Url
+  , name :: Text
+  }
+  deriving (Generic, ToJSON)
+</code></pre>
+<p>Also it has <code>ToMarkup</code> instance and rendered as <code>a</code>-element link.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                                                    <a rel="prev" href="07-blog-post-example.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="08-client.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
-                        
-                        
+
+                            <a rel="next prefetch" href="10-how-to-contribute.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
                         <div style="clear: both"></div>
                     </nav>
                 </div>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                                    <a rel="prev" href="07-blog-post-example.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="08-client.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
-                
-                            </nav>
+
+                    <a rel="next prefetch" href="10-how-to-contribute.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
 
         </div>
 
-        
-        
-        
-                <script type="text/javascript">
+
+
+
+        <script>
             window.playground_copyable = true;
         </script>
-        
-        
-                <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
-        
-        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
-        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
-        
-        
+
+
+    </div>
     </body>
 </html>
