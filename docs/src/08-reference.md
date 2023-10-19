@@ -149,13 +149,13 @@ notImplemented :: (IsResp a) => RespError a -> a
 redirect :: (IsResp a) => Text -> a
 ```
 
-### Middlewares
+### Plugins
 
 ```haskell
-applyMiddleware, ($:) :: ToMiddleware a => 
+applyPlugin, ($:) :: ToPlugin a => 
   a -> Server (MonadOf a) -> Server (MonadOf a)
 
--- composition of middlewares:
+-- composition of plugins:
 Monoid(..): mconcat, (<>), mempty
 ```
 
@@ -172,27 +172,27 @@ addPathLink :: Path -> Path -> Server m
 staticFiles :: [(FilePath, ByteString)] -> Server m
 ```
 
-### specific middlewares
+### specific plugins
 
 
 ```haskell
 -- prepend or append some acction to all routes
-prependServerAction, appendServerAction :: MonadIO m => m () -> Middleware m
+prependServerAction, appendServerAction :: MonadIO m => m () -> Plugin m
 
 -- change the response
-processResponse :: (m (Maybe Response) -> m (Maybe Response)) -> Middleware m
+processResponse :: (m (Maybe Response) -> m (Maybe Response)) -> Plugin m
 
 -- only secure routes are allowed
-whenSecure :: forall m. (MonadIO m) => Middleware m
+whenSecure :: forall m. (MonadIO m) => Plugin m
 
 -- logging with putStrLn for debug traces
-logHttp :: Verbosity -> Middleware m
+logHttp :: Verbosity -> Plugin m
 
 -- logging with custom logger
-logHttpBy :: (Json.Value -> m ()) -> Verbosity -> Middleware m
+logHttpBy :: (Json.Value -> m ()) -> Verbosity -> Plugin m
 
 -- | simple authorization
-withHeaderAuth :: WithHeaderAuth -> Middleware m
+withHeaderAuth :: WithHeaderAuth -> Plugin m
 ```
 
 ### How to use Reader
