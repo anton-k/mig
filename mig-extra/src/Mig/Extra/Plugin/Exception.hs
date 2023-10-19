@@ -1,5 +1,5 @@
--- | Middlewares to handle exceptions
-module Mig.Extra.Middleware.Exception (
+-- | Plugins to handle exceptions
+module Mig.Extra.Plugin.Exception (
   handleRespError,
 ) where
 
@@ -16,8 +16,8 @@ handleRespError ::
   forall a b m.
   (MonadIO m, MonadCatch m, Exception a, IsResp b) =>
   (a -> m b) ->
-  Middleware m
-handleRespError handle = fromMiddlewareFun $ \f -> \req -> do
+  Plugin m
+handleRespError handle = fromPluginFun $ \f -> \req -> do
   eResult <- try @m @a (f req)
   case eResult of
     Right res -> pure res

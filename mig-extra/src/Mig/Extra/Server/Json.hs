@@ -62,11 +62,11 @@ instance (ToSchema a, FromJSON a, ToRoute b) => ToServer (Body a -> b) where
     (toServer :: ((Core.Body Json a -> b) -> Server (Core.MonadOf b)))
       (\(Core.Body a) -> f (Body a))
 
-instance (FromJSON a, ToSchema a, ToMiddleware b) => ToMiddleware (Body a -> b) where
-  toMiddlewareInfo = toMiddlewareInfo @(Core.Body Json a -> b)
+instance (FromJSON a, ToSchema a, ToPlugin b) => ToPlugin (Body a -> b) where
+  toPluginInfo = toPluginInfo @(Core.Body Json a -> b)
 
-  toMiddlewareFun f =
-    (toMiddlewareFun :: ((Core.Body Json a -> b) -> MiddlewareFun (Core.MonadOf b)))
+  toPluginFun f =
+    (toPluginFun :: ((Core.Body Json a -> b) -> PluginFun (Core.MonadOf b)))
       (\(Core.Body a) -> f (Body a))
 
 -- client instances

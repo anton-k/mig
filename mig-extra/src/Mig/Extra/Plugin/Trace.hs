@@ -5,7 +5,7 @@ with no ordering of the concurrent prints.
 
 It can be useful for fast setup of debug for your application.
 -}
-module Mig.Extra.Middleware.Trace (
+module Mig.Extra.Plugin.Trace (
   logReq,
   logResp,
   logReqBy,
@@ -60,23 +60,23 @@ ifLevel current level vals
 -- through
 
 -- | Logging of requests and responses
-logHttp :: (MonadIO m) => Verbosity -> Middleware m
+logHttp :: (MonadIO m) => Verbosity -> Plugin m
 logHttp verbosity = logResp verbosity <> logReq verbosity
 
 -- | Logging of requests and responses with custom logger
-logHttpBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Middleware m
+logHttpBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Plugin m
 logHttpBy printer verbosity = logRespBy printer verbosity <> logReqBy printer verbosity
 
 -------------------------------------------------------------------------------------
 -- request
 
 -- | Logs requests
-logReq :: (MonadIO m) => Verbosity -> Middleware m
+logReq :: (MonadIO m) => Verbosity -> Plugin m
 logReq = logReqBy defaultPrinter
 
 -- | Logs requests with custom logger
-logReqBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Middleware m
-logReqBy printer verbosity = toMiddleware $ \(RawRequest req) -> prependServerAction $ do
+logReqBy :: (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Plugin m
+logReqBy printer verbosity = toPlugin $ \(RawRequest req) -> prependServerAction $ do
   when (verbosity > V0) $ do
     reqTrace <- liftIO $ do
       eBody <- req.readBody
@@ -126,14 +126,14 @@ ppReq verbosity now body req =
 -- response
 
 -- | Logs response
-logResp :: (MonadIO m) => Verbosity -> Middleware m
+logResp :: (MonadIO m) => Verbosity -> Plugin m
 logResp = logRespBy defaultPrinter
 
 -- | Logs response with custom logger
-logRespBy :: forall m. (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Middleware m
-logRespBy printer verbosity = toMiddleware go
+logRespBy :: forall m. (MonadIO m) => (Json.Value -> m ()) -> Verbosity -> Plugin m
+logRespBy printer verbosity = toPlugin go
   where
-    go :: MiddlewareFun m
+    go :: PluginFun m
     go = \f -> \req -> do
       (dur, resp) <- duration (f req)
       when (verbosity > V0) $ do

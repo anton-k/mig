@@ -60,7 +60,7 @@ server site =
         ]
 
     logRoutes :: Server IO -> Server IO
-    logRoutes = applyMiddleware $ \(PathInfo path) -> prependServerAction $
+    logRoutes = applyPlugin $ \(PathInfo path) -> prependServerAction $
       when (path /= ["favicon.ico"] && headMay path /= Just "static") $ do
         logRoute site (Text.intercalate "/" path)
 

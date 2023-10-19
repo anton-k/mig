@@ -4,7 +4,7 @@ module Mig.Core.Class (
 ) where
 
 import Mig.Core.Class.MediaType as X
-import Mig.Core.Class.Middleware as X
+import Mig.Core.Class.Plugin as X
 import Mig.Core.Class.Monad as X
 import Mig.Core.Class.Response as X
 import Mig.Core.Class.Route as X

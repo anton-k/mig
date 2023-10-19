@@ -1,4 +1,4 @@
-cabal-version:      1.12
+cabal-version: 1.12
 
 -- This file has been generated from package.yaml by hpack version 0.35.2.
 --
@@ -16,26 +16,25 @@ maintainer:         anton.kholomiov@gmail.com
 copyright:          2023 Anton Kholomiov
 license:            BSD3
 build-type:         Simple
-extra-source-files: README.md
+extra-source-files:
+    README.md
 
 source-repository head
-  type:     git
+  type: git
   location: https://github.com/anton-k/mig
 
 library
-  exposed-modules:    Mig.RIO
-  other-modules:      Paths_mig_rio
-  hs-source-dirs:     src
-  default-extensions: DerivingStrategies
-  ghc-options:
-    -Wall -Wcompat -Widentities -Wincomplete-record-updates
-    -Wincomplete-uni-patterns -Wmissing-export-lists
-    -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
-    -Wunused-packages
-
+  exposed-modules:
+      Mig.RIO
+  other-modules:
+      Paths_mig_rio
+  hs-source-dirs:
+      src
+  default-extensions:
+      DerivingStrategies
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wunused-packages
   build-depends:
       base >=4.7 && <5
     , mig-server
     , rio
-
-  default-language:   GHC2021
+  default-language: GHC2021

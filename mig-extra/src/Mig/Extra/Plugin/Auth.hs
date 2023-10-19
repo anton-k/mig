@@ -1,5 +1,5 @@
--- | Middleware to handle authorization. Just a sketch for now.
-module Mig.Extra.Middleware.Auth (
+-- | Plugin to handle authorization. Just a sketch for now.
+module Mig.Extra.Plugin.Auth (
   WithAuth (..),
   withHeaderAuth,
 ) where
@@ -13,7 +13,7 @@ data WithAuth m token resp = WithAuth
   , authFail :: token -> m resp
   }
 
-withHeaderAuth :: forall m token resp. (IsResp resp, MonadIO m) => WithAuth m token resp -> Header "auth" token -> Middleware m
+withHeaderAuth :: forall m token resp. (IsResp resp, MonadIO m) => WithAuth m token resp -> Header "auth" token -> Plugin m
 withHeaderAuth env (Header token) = processResponse $ \getResp -> do
   isOk <- env.isValid token
   if isOk

@@ -1,4 +1,4 @@
-cabal-version:      1.12
+cabal-version: 1.12
 
 -- This file has been generated from package.yaml by hpack version 0.35.2.
 --
@@ -7,10 +7,8 @@ cabal-version:      1.12
 name:               mig-client
 version:            0.1.0.0
 synopsis:           Build http-clients from API definition for mig servers
-description:
-  With this library we can build client functions for HTTP-applications
-  from the same code as server definition.
-
+description:        With this library we can build client functions for HTTP-applications
+                    from the same code as server definition.
 category:           Web
 homepage:           https://github.com/anton-k/mig#readme
 bug-reports:        https://github.com/anton-k/mig/issues
@@ -19,32 +17,30 @@ maintainer:         anton.kholomiov@gmail.com
 copyright:          2023 Anton Kholomiov
 license:            BSD3
 build-type:         Simple
-extra-source-files: README.md
+extra-source-files:
+    README.md
 
 source-repository head
-  type:     git
+  type: git
   location: https://github.com/anton-k/mig
 
 library
-  exposed-modules:    Mig.Client
-  other-modules:      Paths_mig_client
-  hs-source-dirs:     src
+  exposed-modules:
+      Mig.Client
+  other-modules:
+      Paths_mig_client
+  hs-source-dirs:
+      src
   default-extensions:
-    AllowAmbiguousTypes
-    DerivingStrategies
-    DuplicateRecordFields
-    LambdaCase
-    OverloadedRecordDot
-    OverloadedStrings
-    StrictData
-    TypeFamilies
-
-  ghc-options:
-    -Wall -Wcompat -Widentities -Wincomplete-record-updates
-    -Wincomplete-uni-patterns -Wmissing-export-lists
-    -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
-    -Wunused-packages
-
+      OverloadedStrings
+      TypeFamilies
+      OverloadedRecordDot
+      DuplicateRecordFields
+      LambdaCase
+      DerivingStrategies
+      StrictData
+      AllowAmbiguousTypes
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wunused-packages
   build-depends:
       base >=4.7 && <5
     , bytestring
@@ -56,5 +52,4 @@ library
     , mig
     , mtl
     , text
-
-  default-language:   GHC2021
+  default-language: GHC2021
