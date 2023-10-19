@@ -30,7 +30,6 @@ module Mig.Core.Types.Info (
 
 import Data.List.Extra (firstJust)
 import Data.Map.Strict qualified as Map
-import Data.Maybe
 import Data.OpenApi
 import Data.OpenApi.Declare (runDeclare)
 import Data.Proxy
@@ -104,8 +103,8 @@ data RouteInput
   deriving (Show, Eq)
 
 -- | Get input media-type
-getInputType :: RouteInfo -> MediaType
-getInputType route = fromMaybe "*/*" $ firstJust (fromInput . (.content)) route.inputs
+getInputType :: RouteInfo -> Maybe MediaType
+getInputType route = firstJust (fromInput . (.content)) route.inputs
   where
     fromInput = \case
       ReqBodyInput ty _ -> Just ty
