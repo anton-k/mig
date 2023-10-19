@@ -14,6 +14,8 @@ module Mig.Core.Server (
   staticFiles,
   describeInputs,
   atPath,
+  filterPath,
+  getServerPaths,
   addPathLink,
 ) where
 
@@ -354,6 +356,13 @@ atPath rootPath rootServer = maybe mempty Server $ find rootPath rootServer.unSe
         (pathHead, pathTail) <- List.uncons path
         guard (prefixHead == pathHead)
         matchPath prefixTail pathTail
+
+filterPath :: (Api.Path -> Bool) -> Server m -> Server m
+filterPath cond (Server a) =
+  Server (Api.fromFlatApi $ filter (cond . fst) $ Api.flatApi a)
+
+getServerPaths :: Server m -> [Api.Path]
+getServerPaths (Server a) = fmap fst $ Api.flatApi a
 
 {-| Links one route of the server to another
 so that every call to first path is redirected to the second path

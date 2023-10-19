@@ -129,6 +129,8 @@ module Mig (
   mapServerFun,
   mapResponse,
   atPath,
+  filterPath,
+  getServerPaths,
   addPathLink,
 
   -- ** OpenApi
