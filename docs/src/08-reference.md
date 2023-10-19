@@ -49,16 +49,16 @@ runServer' :: ServerConfig -> Int -> Server IO -> IO ()
 ### Request inputs
 
 ```haskell
--- rewquired query parameter
+-- required query parameter
 newtype Body media value = Body value
 
--- rewquired query parameter
+-- required query parameter
 newtype Query name value = Query value
 
 -- optional query parameter
 newtype Optional name value = Optional (Maybe value)
 
--- rewquired header parameter
+-- required header parameter
 newtype Header name value = Header value
 
 -- optional header parameter
