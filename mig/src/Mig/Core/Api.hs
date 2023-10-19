@@ -91,15 +91,18 @@ toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (to
     toInputMediaMap = InputMediaMap . toMediaMapBy getInputType
 
     toOutputMediaMap :: Api (Route.Route m) -> OutputMediaMap (Api (Route.Route m))
-    toOutputMediaMap = OutputMediaMap . toMediaMapBy (\routeInfo -> routeInfo.output.media)
+    toOutputMediaMap = OutputMediaMap . toMediaMapBy (\routeInfo -> Just routeInfo.output.media)
 
-    toMediaMapBy :: (RouteInfo -> MediaType) -> Api (Route.Route m) -> MediaMap (Api (Route.Route m))
+    toMediaMapBy :: (RouteInfo -> Maybe MediaType) -> Api (Route.Route m) -> MediaMap (Api (Route.Route m))
     toMediaMapBy getMedia a =
-      MediaMap (toMediaApi <$> medias) a
+      MediaMap (filterAnyCases $ toMediaApi <$> medias) a
       where
-        medias = Set.toList $ foldMap (\route -> Set.singleton (getMedia route.info)) a
+        medias = Set.toList $ foldMap (\route -> maybe Set.empty Set.singleton (getMedia route.info)) a
 
-        toMediaApi media = (media, filterApi (\route -> getMedia route.info == media) a)
+        toMediaApi media = (media, filterApi (\route -> getMedia route.info == Just media) a)
+
+        -- filter out any cases as they are covered by second argument of MediaMap value
+        filterAnyCases = filter (("*/*" /= ) . fst)
 
 -- | Read sub-api by HTTP method, accept-type and content-type
 fromNormalApi :: Method -> ByteString -> ByteString -> ApiNormal a -> Maybe (Api a)
