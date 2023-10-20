@@ -192,7 +192,7 @@ main = do
 server :: Server IO
 server = "api/v1/hello" /. hello
 
-hello :: Get IO (Resp Json)
+hello :: Get IO (Resp Json Text)
 hello = Send $ pure $ ok "Hello World!"
 ```
 

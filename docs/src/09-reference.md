@@ -280,3 +280,82 @@ nd raw-input is dedicated to raw input
 describeInputs :: [(Text, Text)] -> Server m -> Server m
 ```
 
+
+## Clients
+
+The class to convert server definitions to clients:
+
+```haskell
+class (MapRequest a) => ToClient a where
+  -- | converts to client function
+  toClient :: Server m -> a
+
+  -- | how many routes client has
+  clientArity :: Int
+```
+
+An example:
+
+```haskell
+helloWorld :: Get Client (Resp Text)
+handleSucc :: Header "Trace-Id" TraceId -> Query "value" Int -> Get Client (Resp Int)
+handleSuccOpt :: Optional "value" Int -> Get Client (RespOr Text Int)
+
+helloWorld
+  :| handleSucc
+  :| handleSuccOpt = toClient server
+```
+
+We use synonym for pair `:|` to avoid redundant parens.
+
+The Client-monad:
+
+```haskell
+newtype Client a = ...
+
+runClient :: ClientConfig -> Client a -> IO (RespOr AnyMedia BL.ByteString a)
+
+-- | Config to run the clients
+data ClientConfig = ClientConfig
+  { port :: Int
+  -- ^ port to connect to
+  , manager :: Http.Manager
+  -- ^ HTTP-manager
+  }
+```
+
+The class to strip away request input newtype wrappers:
+
+```haskell
+class FromClient a where
+  type ClientResult a :: Type
+  fromClient :: a -> ClientResult a
+```
+It turns types like:
+
+```haskell
+Query "a" Int -> Capture "b" Text -> Get Client (Resp Json Text)
+```
+
+
+to types:
+
+```haskell
+Int -> Text -> Client' (RespOr Json BL.ByteString Text)
+```
+
+
+Where `Client'` is a monad which encapsulates the ClientConfig as reader:
+
+```haskell
+newtype Client' a = Client' (ReaderT ClientConfig IO a)
+```
+
+Also we can use the function:
+
+```haskell
+getRespOrValue :: RespOr media BL.ByteString a -> Either BL.ByteString a
+```
+
+To unwrap `Resp` from response.
+
