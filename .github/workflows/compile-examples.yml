@@ -1,0 +1,10 @@
+on: [push]
+name: "build examples"
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: freckle/stack-action@v4
+        with:
+          working-directory: ./examples/mig-example-apps
