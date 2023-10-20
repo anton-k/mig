@@ -1,0 +1,25 @@
+on: [push]
+name: build
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - id: generate
+        uses: freckle/stack-action/generate-matrix@v4
+    outputs:
+      stack-yamls: ${{ steps.generate.outputs.stack-yamls }}
+
+  test:
+    needs: generate
+    strategy:
+      matrix:
+        stack-yaml: ${{ fromJSON(needs.generate.outputs.stack-yamls) }}
+      fail-fast: false
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: freckle/stack-action@v4
+        with:
+          stack-yaml: ${{ matrix.stack-yaml }}
