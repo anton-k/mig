@@ -145,7 +145,7 @@ Let's parametrize by the monad type to share the code:
 -- | Routes for the server
 data Routes m = Routes
   { get :: Get m (Resp Int)
-  , put :: Capture "args" Int -> Get m (Resp ())
+  , put :: Capture "args" Int -> Post m (Resp ())
   }
 
 server :: Routes m -> Server m
@@ -304,7 +304,13 @@ runGetBlogPost arg1 = getRespOrValue <$> fromClient appClient.getBlogPost arg1
 ...
 ```
 
-You can find examples of the clients in the `examples` directory of the mig repo.
+## Examples of the clients
 
+You can find examples of the clients in the `examples` directory of the mig repo.
+There are several examples:
+
+* [`HelloClient`](https://github.com/anton-k/mig/tree/main/examples/mig-example-apps/HelloClient) - basic hello world client
+* [`RouteArgsClient`](https://github.com/anton-k/mig/tree/main/examples/mig-example-apps/RouteArgsClient) - client with many routes and all sorts of inputs
+* [`CounterClient`](https://github.com/anton-k/mig/tree/main/examples/mig-example-apps/CounterClient) - how to build client and server from the same code
 
 

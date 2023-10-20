@@ -25,6 +25,50 @@ source-repository head
   type: git
   location: https://github.com/githubuser/mig-example-apps
 
+executable counter-client-mig-example-app
+  main-is: Main.hs
+  other-modules:
+      Api
+      Client
+      Server
+      Paths_mig_example_apps
+  hs-source-dirs:
+      CounterClient
+  default-extensions:
+      ImportQualifiedPost
+      OverloadedStrings
+      TypeFamilies
+      OverloadedRecordDot
+      DuplicateRecordFields
+      LambdaCase
+      DerivingStrategies
+      DataKinds
+      StrictData
+      DeriveAnyClass
+      RecordWildCards
+  ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , aeson-pretty
+    , base >=4.7 && <5
+    , bytestring
+    , containers
+    , http-client
+    , http-types
+    , mig
+    , mig-client
+    , mig-extra
+    , mig-server
+    , mig-swagger-ui
+    , mtl
+    , openapi3
+    , pretty-show
+    , random
+    , safe
+    , text
+    , time
+  default-language: GHC2021
+
 executable counter-mig-example-app
   main-is: Main.hs
   other-modules:

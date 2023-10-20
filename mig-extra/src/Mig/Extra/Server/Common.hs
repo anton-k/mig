@@ -125,3 +125,4 @@ import Network.HTTP.Types.Status as X
 import Text.Blaze.Html as X (Html, ToMarkup (..))
 import Web.FormUrlEncoded as X
 import Web.HttpApiData as X
+import Control.Monad.IO.Class as X
