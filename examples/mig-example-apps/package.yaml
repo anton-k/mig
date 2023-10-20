@@ -126,6 +126,17 @@ executables:
     dependencies:
     - mtl
 
+  counter-client-mig-example-app:
+    main:                Main.hs
+    source-dirs:         CounterClient
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+      - http-client
+      - mtl
+
   html-mig-example-app:
     main:                Main.hs
     source-dirs:         Html/src

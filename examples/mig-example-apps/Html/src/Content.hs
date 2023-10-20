@@ -8,7 +8,7 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 
 poems :: [Text]
-poems = [lukomorye, tweedle, peasants, dream, pie, zhongnanMountains, toSeeAWorld]
+poems = [lukomorye, tweedle, peasants, dream, pie, zhongnanMountains, zvyozdy, toSeeAWorld]
 
 lukomorye :: Text
 lukomorye =
@@ -141,6 +141,62 @@ tweedle =
     , "Lewis Carroll"
     ]
 
+zvyozdy :: Text
+zvyozdy =
+  Text.unlines
+  [ "По ночам, когда в тумане"
+  , "Звезды в небе время ткут,"
+  , "Я ловлю разрывы ткани"
+  , "В вечном кружеве минут."
+  , "Я ловлю в мгновенья эти,"
+  , "Как свивается покров"
+  , "Со всего, что в формах, в цвете,"
+  , "Со всего, что в звуке слов."
+  , "Да, я помню мир иной —"
+  , "Полустертый, непохожий,"
+  , "В вашем мире я — прохожий,"
+  , "Близкий всем, всему чужой."
+  , "Ряд случайных сочетаний"
+  , "Мировых путей и сил"
+  , "В этот мир замкнутых граней"
+  , "Влил меня и воплотил."
+  , "Как ядро к ноге прикован"
+  , "Шар земной. Свершая путь,"
+  , "Я не смею, зачарован,"
+  , "Вниз на звезды заглянуть."
+  , "Что одни зовут звериным,"
+  , "Что одни зовут людским —"
+  , "Мне, который был единым,"
+  , "Стать отдельным и мужским!"
+  , "Вечность с жгучей пустотою"
+  , "Неразгаданных чудес"
+  , "Скрыта близкой синевою"
+  , "Примиряющих небес."
+  , "Мне так радостно и ново"
+  , "Все обычное для вас —"
+  , "Я люблю обманность слова"
+  , "И прозрачность ваших глаз."
+  , "Ваши детские понятья"
+  , "Смерти, зла, любви, грехов —"
+  , "Мир души, одетый в платье"
+  , "Из священных, лживых слов."
+  , "Гармонично и поблёкло"
+  , "В них мерцает мир вещей,"
+  , "Как узорчатые стекла"
+  , "В мгле готических церквей…"
+  , "В вечных поисках истоков"
+  , "Я люблю в себе следить"
+  , "Жутких мыслей и пороков"
+  , "Нас связующую нить."
+  , "Когда ж уйду я в вечность снова?"
+  , "И мне раскроется она,"
+  , "Так ослепительно ясна"
+  , "Так беспощадна, так сурова"
+  , "И звездным ужасом полна!"
+  , ""
+  , "Максимилиан Волошин"
+  ]
+
 -------------------------------------------------------------------------------------
 -- random content for quotes
 
@@ -168,4 +224,21 @@ quotes =
   , "“Inside every large program is a small program struggling to get out.” - Tony Hoare"
   , "“Man is most nearly himself when he achieves the seriousness of a child at play.” - Heraclitus"
   , "“Most of us are just about as happy as we make up our minds to be.” - Abraham Lincoln"
+  , "“Keep away from people who try to belittle your ambitions. Small people always do that, but the really great make you feel that you, too, can become great.” - Mark Twain"
+  , "“The best and most beautiful things in the world cannot be seen or even touched. They must be felt with the heart.” - Helen Adams Keller"
+  , "“If words are to enter men’s minds and bear fruit, they must be the right words shaped cunningly to pass men’s defenses and explode silently and effectually within their minds.” - J.B. Phillips"
+  , "“A cynic is not merely one who reads bitter lessons from the past; he is one who is prematurely disappointed in the future.” - Sydney J. Harris"
+  , "Do not praise yourself\nnot slander others:\nThere are still many days to go\nand any thing could happen.\n\nKabir"
+  , "“War is an instrument entirely inefficient toward redressing wrong; and multiplies, instead of indemnifying losses.” - Thomas Jefferson"
+  , "“It is preoccupation with possessions, more than anything else, that prevents us from living freely and nobly.” - Bertrand Russell"
+  , "“New and stirring things are belittled because if they are not belittled, the humiliating question arises, ``Why then are you not taking part in them?’’” - H.G. Wells"
+  , "“The mass of men lead lives of quiet desperation and go to the grave with the song still in them.” - Henry David Thoreau"
+  , "“Noise proves nothing—often a hen who has merely laid an egg cackles as if she had laid an asteroid.” - Mark Twain"
+  , "“It is easier to fight for one’s principles than to live up to them.” - Alfred Adler"
+  , "“We could never learn to be brave and patient, if there were only joy in the world.” - Helen Adams Keller"
+  , "“One is always a long way from solving a problem until one actually has the answer.” - Stephen Hawking"
+  , "“Knowing all truth is less than doing a little bit of good.” - Albert Schweitzer"
+  , "“If a man points at the moon, an idiot will look at the finger.” - Sufi wisdom"
+  , "“A friend is a person with whom I may be sincere. Before him I may think aloud.” - Ralph Waldo Emerson"
+  , "“Happiness is the absence of the striving for happiness.” - Chuang-tzu"
   ]

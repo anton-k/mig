@@ -13,5 +13,13 @@ We can find out how to build various servers:
 
 * `Html` - simple blog post site that servers HTML.
 
+Also we can build clients:
+
+* `HelloClient` - basic hello world client
+
+* `RouteArgsClient` - client with all sorts of inputs
+
+* `CounterClient` - how to build client and server from the same code
+
 See `Makefile` for commands to build examples and run them.
 
