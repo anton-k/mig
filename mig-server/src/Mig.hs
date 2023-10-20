@@ -151,6 +151,7 @@ module Mig (
 
 -- common codecs and types
 
+import Control.Monad.IO.Class as X
 import Data.Aeson as X (FromJSON (..), ToJSON (..))
 import Data.Default as X
 import Data.OpenApi as X (OpenApi, ToParamSchema (..), ToSchema (..))
@@ -161,7 +162,6 @@ import Network.HTTP.Types.Status as X
 import Text.Blaze.Html as X (Html, ToMarkup (..))
 import Web.FormUrlEncoded as X
 import Web.HttpApiData as X
-import Control.Monad.IO.Class as X
 
 import Mig.Core
 import Mig.Server.Wai

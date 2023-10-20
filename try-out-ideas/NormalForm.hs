@@ -1,3 +1,6 @@
+{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE ImportQualifiedPost #-}
+
 module Mig.Core.Api.NormalForm (
   ApiNormal (..),
   getPath,
@@ -67,12 +70,10 @@ toApiNormal = \case
   Api.WithPath path a -> case parsePath path of
     Nothing -> toApiNormal a
     Just (prefix, rest) ->
-      let
-        nextApi = toApiNormal (Api.WithPath rest a)
-       in
-        case prefix of
-          StaticPath ts -> StaticPrefix ts nextApi
-          CapturePath name -> CapturePrefix name nextApi
+      let nextApi = toApiNormal (Api.WithPath rest a)
+       in case prefix of
+            StaticPath ts -> StaticPrefix ts nextApi
+            CapturePath name -> CapturePrefix name nextApi
   _ -> undefined
 
 data ParsePath

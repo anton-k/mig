@@ -1,12 +1,12 @@
 module Main (main) where
 
 import Control.Concurrent
-import Network.HTTP.Client qualified as Http
 import Mig
 import Mig.Client
+import Network.HTTP.Client qualified as Http
 
-import Server
 import Client
+import Server
 
 -- Starts counter server in the background thread
 -- and runs client script to interact with application.

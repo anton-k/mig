@@ -24,17 +24,16 @@ initSite :: IO Site
 initSite = do
   env <- initEnv
   (writeLog, closeLogger) <- newFastLogger (LogStdout defaultBufSize)
-  let
-    logInfo msg = do
-      now <- getCurrentTime
-      writeLog $
-        toLogStr $
-          Text.unwords
-            [ "[INFO]:"
-            , msg <> "."
-            , "at"
-            , Text.pack (show now) <> "\n"
-            ]
+  let logInfo msg = do
+        now <- getCurrentTime
+        writeLog $
+          toLogStr $
+            Text.unwords
+              [ "[INFO]:"
+              , msg <> "."
+              , "at"
+              , Text.pack (show now) <> "\n"
+              ]
   pure $
     Site
       { readBlogPost = mockRead env

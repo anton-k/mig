@@ -1,10 +1,10 @@
-module Client
-  ( runGet
-  , runPut
-  ) where
+module Client (
+  runGet,
+  runPut,
+) where
 
-import Mig.Client
 import Api
+import Mig.Client
 
 runGet :: ClientOr Int
 runGet =
