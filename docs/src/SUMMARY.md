@@ -10,4 +10,5 @@
 - [Using Swagger](./06-swagger.md)
 - [JSON application: weather forecast](./06-json-api-example.md)
 - [HTML example: blog site](./07-blog-post-example.md)
-- [Reference](./08-reference.md)
+- [Clients](./08-client.md)
+- [Reference](./09-reference.md)
