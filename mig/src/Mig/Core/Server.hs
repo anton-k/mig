@@ -124,10 +124,8 @@ fillCaptures = go mempty 0
   where
     go pathSoFar n = \case
       Api.WithPath path api ->
-        let
-          (pathNext, m) = goPath (pathSoFar <> path) n path api
-         in
-          Api.WithPath pathNext (go (pathSoFar <> path) m api)
+        let (pathNext, m) = goPath (pathSoFar <> path) n path api
+         in Api.WithPath pathNext (go (pathSoFar <> path) m api)
       Api.Append a b -> Api.Append (go pathSoFar n a) (go pathSoFar n b)
       Api.Empty -> Api.Empty
       Api.HandleRoute a -> goRoute pathSoFar n a
@@ -136,17 +134,13 @@ fillCaptures = go mempty 0
     goPath pathSoFar n (Api.Path path) api = case path of
       [] -> (Api.Path path, n)
       Api.CapturePath "*" : rest ->
-        let
-          (nextRest, m) = goPath pathSoFar (n + 1) (Api.Path rest) api
-         in
-          case getCaptureName n api of
-            Just name -> (Api.Path [Api.CapturePath name] <> nextRest, m)
-            Nothing -> error $ "No capture argument for start in path " <> Text.unpack (toUrlPiece pathSoFar) <> " at the index: " <> show n
+        let (nextRest, m) = goPath pathSoFar (n + 1) (Api.Path rest) api
+         in case getCaptureName n api of
+              Just name -> (Api.Path [Api.CapturePath name] <> nextRest, m)
+              Nothing -> error $ "No capture argument for start in path " <> Text.unpack (toUrlPiece pathSoFar) <> " at the index: " <> show n
       a : rest ->
-        let
-          (nextRest, m) = goPath pathSoFar n (Api.Path rest) api
-         in
-          (Api.Path [a] <> nextRest, m)
+        let (nextRest, m) = goPath pathSoFar n (Api.Path rest) api
+         in (Api.Path [a] <> nextRest, m)
 
     goRoute pathSoFar pathCaptureCount route
       | missingCapturesCount > 0 = withMissingCaptures pathSoFar [pathCaptureCount .. routeCaptureCount - 1] (Api.HandleRoute route)

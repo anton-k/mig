@@ -102,7 +102,7 @@ toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (to
         toMediaApi media = (media, filterApi (\route -> getMedia route.info == Just media) a)
 
         -- filter out any cases as they are covered by second argument of MediaMap value
-        filterAnyCases = filter (("*/*" /= ) . fst)
+        filterAnyCases = filter (("*/*" /=) . fst)
 
 -- | Read sub-api by HTTP method, accept-type and content-type
 fromNormalApi :: Method -> ByteString -> ByteString -> ApiNormal a -> Maybe (Api a)
@@ -201,10 +201,8 @@ getPath mainPath = go mempty (filter (not . Text.null) mainPath)
             then goPathNext captureMap pathTail templateRest restApi
             else Nothing
         CapturePath name : templateRest ->
-          let
-            nextCaptureMap = Map.insert name pathHead captureMap
-           in
-            goPathNext nextCaptureMap pathTail templateRest restApi
+          let nextCaptureMap = Map.insert name pathHead captureMap
+           in goPathNext nextCaptureMap pathTail templateRest restApi
 
     goPathNext !captureMap !pathTail !templateRest restApi =
       case templateRest of

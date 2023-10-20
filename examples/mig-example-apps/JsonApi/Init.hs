@@ -39,11 +39,10 @@ initEnv port = do
 initProc :: Int -> IO Proc
 initProc port = do
   (writeLog, closeLogger) <- newFastLogger (LogStdout defaultBufSize)
-  let
-    logger = initLogger writeLog
+  let logger = initLogger writeLog
 
-    logMessage :: Text -> IO ()
-    logMessage msg = logger.info $ Json.toJSON msg
+      logMessage :: Text -> IO ()
+      logMessage msg = logger.info $ Json.toJSON msg
   pure $
     Proc
       { logger = logger
@@ -71,8 +70,7 @@ initWeather st =
     { get = \location day interval -> do
         locationMap <- readIORef st.weatherData
         fmap join $ forM (Map.lookup location locationMap) $ \weatherMap -> do
-          let
-            mWeatherByDays = mapM (flip Map.lookup weatherMap) $ toDaySpan day interval
+          let mWeatherByDays = mapM (flip Map.lookup weatherMap) $ toDaySpan day interval
           pure $ Timed day <$> mWeatherByDays
     , update = \(UpdateData day location content) -> atomicModify st.weatherData (Map.adjust (Map.insert day content) location)
     }

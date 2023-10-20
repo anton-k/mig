@@ -1,15 +1,16 @@
 {-# LANGUAGE UndecidableInstances #-}
-module Server
-  ( counterServer
-  , initEnv
-  , App
-  , Env
-  ) where
 
+module Server (
+  counterServer,
+  initEnv,
+  App,
+  Env,
+) where
+
+import Api
 import Control.Monad.Reader
 import Data.IORef
 import Mig.Json
-import Api
 
 {-| Custom type for application monad which is based on Reader-IO pattern.
 Note the HasServer instance. It allows us to render server to IO-based one

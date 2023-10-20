@@ -1,9 +1,9 @@
-module Api
-  ( GetCounter
-  , PutCounter
-  , Routes (..)
-  , server
-  ) where
+module Api (
+  GetCounter,
+  PutCounter,
+  Routes (..),
+  server,
+) where
 
 import Mig.Json
 
@@ -15,7 +15,7 @@ data Routes m = Routes
   , put :: PutCounter m
   }
 
-server :: MonadIO m => Routes m -> Server m
+server :: (MonadIO m) => Routes m -> Server m
 server routes =
   "counter"
     /. [ "get" /. routes.get

@@ -33,10 +33,8 @@ poemToBlogPost poem = do
       { id = pid
       , createdAt = time
       , title =
-          let
-            ls = Text.lines poem
-           in
-            mconcat [last ls, ": ", head ls]
+          let ls = Text.lines poem
+           in mconcat [last ls, ": ", head ls]
       , content = poem
       }
 

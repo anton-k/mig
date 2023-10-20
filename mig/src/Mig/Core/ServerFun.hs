@@ -70,18 +70,16 @@ withQuery name act = withQueryBy (join . getQuery name) processResponse
 -- | Reads query flag
 withQueryFlag :: Text -> (Bool -> ServerFun m) -> ServerFun m
 withQueryFlag name act = \req ->
-  let
-    val =
-      case getQuery name req of
-        Just (Just "") -> True
-        Just (Just arg) ->
-          case parseQueryParam @Bool arg of
-            Right flag -> flag
-            Left _ -> False
-        Just Nothing -> True -- we interpret empty value as True for a flag
-        Nothing -> False
-   in
-    act val req
+  let val =
+        case getQuery name req of
+          Just (Just "") -> True
+          Just (Just arg) ->
+            case parseQueryParam @Bool arg of
+              Right flag -> flag
+              Left _ -> False
+          Just Nothing -> True -- we interpret empty value as True for a flag
+          Nothing -> False
+   in act val req
 
 {-| The first maybe means that query with that name is missing
 the second maybe is weather value is present or empty in the query
@@ -111,11 +109,9 @@ withQueryBy ::
   (Maybe a -> ServerFun m) ->
   ServerFun m
 withQueryBy getVal act = \req ->
-  let
-    -- TODO: do not ignore parse failure
-    mArg = either (const Nothing) Just . parseQueryParam =<< getVal req
-   in
-    act mArg req
+  let -- TODO: do not ignore parse failure
+      mArg = either (const Nothing) Just . parseQueryParam =<< getVal req
+   in act mArg req
 
 -- | Reads capture from the path
 withCapture :: (Monad m, FromHttpApiData a) => Text -> (a -> ServerFun m) -> ServerFun m
