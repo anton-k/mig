@@ -359,3 +359,44 @@ getRespOrValue :: RespOr media BL.ByteString a -> Either BL.ByteString a
 
 To unwrap `Resp` from response.
 
+## Other utils
+
+### deriving helpers
+
+Sometimes we need to derive too many types at once
+to use the type in the library. There are helpers to reduce deriving boiler-plate:
+
+
+```haskell
+deriveParam ''FooType          -- derives parameter instances for a FooType
+deriveNewtypeParam ''FooType   -- derives parameter instances for a newtype FooType
+
+deriveBody ''FooType          -- derives request body instances for a FooType
+deriveNewtypeBody ''FooType   -- derives request body instances for a newtype FooType
+
+deriveHttp ''FooType          -- derives both parameter and request body instances for a FooType
+deriveNewtypeHttp ''FooType   -- derives both parameterrequest body instances for a newtype FooType
+
+mapDerive fun [''Foo, ''Bar]  -- maps deriving over several types
+```
+We need to activate `TemplateHaskell`, `StandaloneDeriving`, `DerivingStrategies`, `DeriveGeneric` extensions to use it.
+
+Also note that for this to work all types should be in scope. 
+So it better to define derivings at the bottom of the module which is dedicated to types.
+
+Also type should not have generic arguments for deriving to work.
+If it does we have to declare the types manyally. For example:
+
+```haskell
+data Timed a = Timed
+  { from :: Day
+  , content :: [a]
+  }
+  deriving (Generic, ToJSON, FromJSON)
+
+deriving instance (ToSchema a) => ToSchema (Timed a)
+```
+
+The data type `Timed` has an argument and we have to define the instance 
+explicitly.
+

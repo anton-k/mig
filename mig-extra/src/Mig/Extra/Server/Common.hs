@@ -122,7 +122,7 @@ import Data.Aeson as X (FromJSON (..), ToJSON (..))
 import Data.OpenApi as X (OpenApi, ToParamSchema (..), ToSchema (..))
 import Data.Text as X (Text)
 import GHC.Generics as X (Generic)
-import Mig.Core.Derive as X
+import Mig.Extra.Derive as X
 import Network.HTTP.Types.Header as X (RequestHeaders, ResponseHeaders)
 import Network.HTTP.Types.Status as X
 import Text.Blaze.Html as X (Html, ToMarkup (..))

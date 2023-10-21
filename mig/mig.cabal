@@ -44,7 +44,6 @@ library
     Mig.Core.Class.Response
     Mig.Core.Class.Route
     Mig.Core.Class.Server
-    Mig.Core.Derive
     Mig.Core.OpenApi
     Mig.Core.Server
     Mig.Core.Server.Cache
@@ -91,7 +90,6 @@ library
     , mtl
     , openapi3
     , safe
-    , template-haskell
     , text
 
   default-language:   GHC2021

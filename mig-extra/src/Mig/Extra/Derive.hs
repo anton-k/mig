@@ -3,7 +3,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 -- | Derive standard HTTP-classes
-module Mig.Core.Derive (
+module Mig.Extra.Derive (
   deriveParam,
   deriveNewtypeParam,
   deriveBody,
