@@ -90,6 +90,10 @@ instance (ToRoute b) => ToRoute (PathInfo -> b) where
   toRouteInfo = toRouteInfo @b
   toRouteFun f = withPathInfo (toRouteFun . f . PathInfo)
 
+instance (ToRoute b) => ToRoute (FullPathInfo -> b) where
+  toRouteInfo = toRouteInfo @b
+  toRouteFun f = withFullPathInfo (toRouteFun . f . FullPathInfo)
+
 instance (ToRoute b) => ToRoute (RawRequest -> b) where
   toRouteInfo = toRouteInfo @b
   toRouteFun f = \req -> toRouteFun (f (RawRequest req)) req

@@ -79,6 +79,7 @@ module Mig (
   Body (..),
   Header (..),
   PathInfo (..),
+  FullPathInfo (..),
   RawRequest (..),
 
   -- ** response

@@ -49,6 +49,7 @@ module Mig.Extra.Server.Common (
   Optional (..),
   Header (..),
   PathInfo (..),
+  FullPathInfo (..),
   RawRequest (..),
 
   -- ** response
