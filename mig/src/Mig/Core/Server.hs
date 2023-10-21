@@ -103,7 +103,7 @@ mapResponse f = mapServerFun $ \fun -> fmap (fmap f) . fun
 {-| Converts server to server function. Server function can be used to implement low-level handlers
 in various server-libraries.
 -}
-fromServer :: forall m. (Monad m) => Server m -> ServerFun m
+fromServer :: (Monad m) => Server m -> ServerFun m
 fromServer (Server server) = \req -> do
   case getRoute req of
     Just (routes, captureMap) -> routes.run req{capture = captureMap}
@@ -111,12 +111,11 @@ fromServer (Server server) = \req -> do
   where
     serverNormal = toNormalApi (fillCaptures server)
 
-    getRoute :: Request -> Maybe (Route m, Api.CaptureMap)
     getRoute req = do
-      api <- fromNormalApi key.method key.outputType key.inputType serverNormal
-      Api.getPath key.path api
-      where
-        key = getCacheKey req
+      api <- fromNormalApi req.method (getMediaType "Accept" req) (getMediaType "Content-Type" req) serverNormal
+      Api.getPath req.path api
+
+    getMediaType name req = fromMaybe "*/*" $ Map.lookup name req.headers
 
 {-| Converts server to server function. Server function can be used to implement low-level handlers
 in various server-libraries. This function also uses LRU-cache to cache fetching of
