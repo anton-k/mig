@@ -45,6 +45,11 @@ default-extensions:
   - StrictData
   - DeriveAnyClass
   - RecordWildCards
+  - TemplateHaskell
+  - StandaloneDeriving
+  - DeriveGeneric
+  - DeriveDataTypeable
+  - GeneralizedNewtypeDeriving
 
 language: GHC2021
 
@@ -66,6 +71,7 @@ dependencies:
   - safe
   - containers
   - http-types
+  - derive-topdown
 
 executables:
   hello-world-mig-example-app:
