@@ -165,6 +165,7 @@ import Web.FormUrlEncoded as X
 import Web.HttpApiData as X
 
 import Mig.Core
+import Mig.Core.Derive as X
 import Mig.Server.Wai
 import Mig.Server.Warp
 import Mig.Swagger

@@ -11,12 +11,10 @@ module Types (
   SubmitBlogPost (..),
 ) where
 
-import Data.Aeson (FromJSON)
 import Data.Text (Text)
 import Data.Time
 import Data.UUID
-import GHC.Generics
-import Mig (FromForm, FromHttpApiData, ToHttpApiData, ToParamSchema, ToSchema)
+import Mig (deriveForm, deriveNewtypeParam, mapDerive)
 
 -- | Web-page for our site
 newtype Page a = Page a
@@ -32,7 +30,6 @@ newtype ListPosts = ListPosts [BlogPost]
 
 -- | Blog post id
 newtype BlogPostId = BlogPostId {unBlogPostId :: UUID}
-  deriving newtype (FromHttpApiData, ToHttpApiData, Eq, Show, FromJSON, ToParamSchema)
 
 data BlogPostView
   = ViewBlogPost BlogPost
@@ -57,4 +54,9 @@ data SubmitBlogPost = SubmitBlogPost
   { title :: Text
   , content :: Text
   }
-  deriving (Generic, FromForm, ToSchema)
+
+--------------------------------------------
+-- derivings
+
+mapDerive deriveNewtypeParam [''BlogPostId]
+deriveForm ''SubmitBlogPost
