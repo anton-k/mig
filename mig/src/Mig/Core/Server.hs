@@ -6,6 +6,7 @@ module Mig.Core.Server (
   mapServerFun,
   mapResponse,
   fromServer,
+  fromServerWithCache,
   fillCaptures,
   addTag,
   setDescription,
@@ -40,6 +41,7 @@ import Mig.Core.Api qualified as Api
 import Mig.Core.Class.MediaType
 import Mig.Core.Class.Response (IsResp (..), Resp (..))
 import Mig.Core.Class.Route
+import Mig.Core.Server.Cache
 import Mig.Core.ServerFun (ServerFun)
 import Mig.Core.Types (Request (..), Response, setContent)
 import Mig.Core.Types.Info (RouteInfo (..), RouteInput (..), describeInfoInputs, setOutputMedia)
@@ -101,7 +103,7 @@ mapResponse f = mapServerFun $ \fun -> fmap (fmap f) . fun
 {-| Converts server to server function. Server function can be used to implement low-level handlers
 in various server-libraries.
 -}
-fromServer :: (Monad m) => Server m -> ServerFun m
+fromServer :: forall m. (Monad m) => Server m -> ServerFun m
 fromServer (Server server) = \req -> do
   case getRoute req of
     Just (routes, captureMap) -> routes.run req{capture = captureMap}
@@ -109,11 +111,41 @@ fromServer (Server server) = \req -> do
   where
     serverNormal = toNormalApi (fillCaptures server)
 
+    getRoute :: Request -> Maybe (Route m, Api.CaptureMap)
     getRoute req = do
-      api <- fromNormalApi req.method (getMediaType "Accept" req) (getMediaType "Content-Type" req) serverNormal
-      Api.getPath req.path api
+      api <- fromNormalApi key.method key.outputType key.inputType serverNormal
+      Api.getPath key.path api
+      where
+        key = getCacheKey req
 
-    getMediaType name req = fromMaybe "*/*" $ Map.lookup name req.headers
+{-| Converts server to server function. Server function can be used to implement low-level handlers
+in various server-libraries. This function also uses LRU-cache to cache fetching of
+the routes
+-}
+fromServerWithCache :: forall m. (MonadIO m) => RouteCache m -> Server m -> ServerFun m
+fromServerWithCache cache (Server server) = \req -> do
+  mRoute <- liftIO $ withCache cache getRouteCache (getCacheKey req)
+  case mRoute of
+    Just (CacheValue captureMap routes) -> routes.run req{capture = captureMap}
+    Nothing -> pure Nothing
+  where
+    serverNormal = toNormalApi (fillCaptures server)
+
+    getRouteCache :: CacheKey -> Maybe (CacheValue m)
+    getRouteCache key = do
+      api <- fromNormalApi key.method key.outputType key.inputType serverNormal
+      uncurry (flip CacheValue) <$> Api.getPath key.path api
+
+getCacheKey :: Request -> CacheKey
+getCacheKey req =
+  CacheKey
+    { inputType = getMediaType "Content-Type"
+    , outputType = getMediaType "Accept"
+    , method = req.method
+    , path = req.path
+    }
+  where
+    getMediaType name = fromMaybe "*/*" $ Map.lookup name req.headers
 
 {-| Substitutes all stars * for corresponding names in captures
 if there are more captures in the route than in the path it adds

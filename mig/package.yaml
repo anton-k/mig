@@ -47,6 +47,7 @@ dependencies:
 - extra
 - insert-ordered-containers
 - lens
+- lrucache
 
 default-extensions:
   - OverloadedStrings
