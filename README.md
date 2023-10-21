@@ -16,5 +16,6 @@ So I wanted to create something in the middle. Something composable and simple
 at the same time.
 The name `mig` (pronounced as meeg) is a russian word for "instant moment".
 
-* For quick start guide see [tutorial](https://anton-k.github.io/mig/)
-* For summary of the main functions see [docs](https://anton-k.github.io/mig/08-reference.html)
+* Quick start guide: [tutorial](https://anton-k.github.io/mig/)
+* Summary of the main functions: [refs](https://anton-k.github.io/mig/09-reference.html)
+* How to contribute: [guide](https://anton-k.github.io/mig/10-how-to-contribute.html)
