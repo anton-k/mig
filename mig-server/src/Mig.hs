@@ -110,6 +110,7 @@ module Mig (
   runServer,
   runServer',
   ServerConfig (..),
+  CacheConfig (..),
   toApplication,
 
   -- ** Render

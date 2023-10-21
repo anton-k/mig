@@ -18,6 +18,7 @@ import Data.Text (Text)
 import Network.Wai qualified as Wai
 
 import Mig.Core
+import Mig.Core.Server.Cache
 
 -- | Size of the input body
 type Kilobytes = Int
@@ -26,12 +27,30 @@ type Kilobytes = Int
 data ServerConfig = ServerConfig
   { maxBodySize :: Maybe Kilobytes
   -- ^ limit the request body size. By default it is unlimited.
+  , cache :: Maybe CacheConfig
   }
 
--- | Convert server to WAI-application
 toApplication :: ServerConfig -> Server IO -> Wai.Application
-toApplication config server req procResponse = do
+toApplication config = case config.cache of
+  Just cacheConfig -> toApplicationWithCache cacheConfig config
+  Nothing -> toApplicationNoCache config
+
+-- | Convert server to WAI-application
+toApplicationNoCache :: ServerConfig -> Server IO -> Wai.Application
+toApplicationNoCache config server req procResponse = do
   mResp <- handleError onErr (fromServer server) =<< fromRequest config.maxBodySize req
+  procResponse $ toWaiResponse $ fromMaybe noResult mResp
+  where
+    noResult = badRequest @Text ("Server produces nothing" :: Text)
+
+    onErr :: SomeException -> ServerFun IO
+    onErr err = const $ pure $ Just $ badRequest @Text $ "Error: Exception has happened: " <> toText (show err)
+
+-- | Convert server to WAI-application
+toApplicationWithCache :: CacheConfig -> ServerConfig -> Server IO -> Wai.Application
+toApplicationWithCache cacheConfig config server req procResponse = do
+  cache <- newRouteCache cacheConfig
+  mResp <- handleError onErr (fromServerWithCache cache server) =<< fromRequest config.maxBodySize req
   procResponse $ toWaiResponse $ fromMaybe noResult mResp
   where
     noResult = badRequest @Text ("Server produces nothing" :: Text)
