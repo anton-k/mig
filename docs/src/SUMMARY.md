@@ -12,3 +12,4 @@
 - [HTML example: blog site](./07-blog-post-example.md)
 - [Clients](./08-client.md)
 - [Reference](./09-reference.md)
+- [How to contribute](./10-how-to-contribute.md)
