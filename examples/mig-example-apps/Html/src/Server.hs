@@ -9,7 +9,6 @@ import Control.Monad
 import Data.ByteString (ByteString)
 import Data.Text qualified as Text
 import FileEmbedLzma
-import Safe (headMay)
 
 import Mig.Html.IO
 import System.Random
@@ -60,9 +59,9 @@ server site =
         ]
 
     logRoutes :: Server IO -> Server IO
-    logRoutes = applyPlugin $ \(PathInfo path) -> prependServerAction $
-      when (path /= ["favicon.ico"] && headMay path /= Just "static") $ do
-        logRoute site (Text.intercalate "/" path)
+    logRoutes = applyPlugin $ \(FullPathInfo path) -> prependServerAction $
+      when (not $ path == "favicon.ico" || Text.isPrefixOf "static" path) $ do
+        logRoute site path
 
 -------------------------------------------------------------------------------------
 -- server handlers

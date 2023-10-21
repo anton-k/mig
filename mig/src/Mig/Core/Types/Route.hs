@@ -9,6 +9,7 @@ module Mig.Core.Types.Route (
   Header (..),
   OptionalHeader (..),
   PathInfo (..),
+  FullPathInfo (..),
   RawRequest (..),
   IsSecure (..),
 
@@ -96,6 +97,12 @@ newtype OptionalHeader (sym :: Symbol) a = OptionalHeader (Maybe a)
 > "api/foo/bar" ==> PathInfo ["foo", "bar"]
 -}
 newtype PathInfo = PathInfo [Text]
+
+{-| Reads current full-path info with queries.
+
+> "api/foo/bar?param=value" ==> FullPathInfo "api/foo/bar?param=value"
+-}
+newtype FullPathInfo = FullPathInfo Text
 
 -- | Read low-level request. Note that it does not affect the API schema
 newtype RawRequest = RawRequest Request

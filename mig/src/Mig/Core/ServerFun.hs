@@ -19,6 +19,7 @@ module Mig.Core.ServerFun (
   withHeader,
   withOptionalHeader,
   withPathInfo,
+  withFullPathInfo,
   handleError,
 ) where
 
@@ -145,6 +146,10 @@ withOptionalHeader name act = withQueryBy getVal act
 -- | Reads full path (without qury parameters)
 withPathInfo :: ([Text] -> ServerFun m) -> ServerFun m
 withPathInfo act = \req -> act req.path req
+
+-- | Reads full path (without qury parameters)
+withFullPathInfo :: (Text -> ServerFun m) -> ServerFun m
+withFullPathInfo act = \req -> act (toFullPath req) req
 
 sendResponse :: (Functor m) => m Response -> ServerFun m
 sendResponse act = const $ fmap Just act

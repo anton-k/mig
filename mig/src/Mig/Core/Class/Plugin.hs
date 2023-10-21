@@ -120,7 +120,12 @@ instance (ToPlugin a) => ToPlugin (PathInfo -> a) where
   toPluginInfo = id
   toPluginFun f = \fun -> withPathInfo (\path -> toPluginFun (f (PathInfo path)) fun)
 
--- path info
+-- full path info
+instance (ToPlugin a) => ToPlugin (FullPathInfo -> a) where
+  toPluginInfo = id
+  toPluginFun f = \fun -> withFullPathInfo (\path -> toPluginFun (f (FullPathInfo path)) fun)
+
+-- is secure
 instance (ToPlugin a) => ToPlugin (IsSecure -> a) where
   toPluginInfo = id
   toPluginFun f = \fun -> \req -> (toPluginFun (f (IsSecure req.isSecure)) fun) req

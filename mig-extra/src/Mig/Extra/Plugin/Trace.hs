@@ -29,7 +29,6 @@ import Data.CaseInsensitive qualified as CI
 import Data.Map.Strict qualified as Map
 import Data.String
 import Data.Text (Text)
-import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
 import Data.Time
 import Data.Yaml qualified as Yaml
@@ -94,7 +93,7 @@ ppReq verbosity now body req =
             [ maybe [] (pure . ("time" .=)) now
             ,
               [ "type" .= ("http-request" :: Text)
-              , "path" .= toPath req
+              , "path" .= toFullPath req
               , "method" .= Text.decodeUtf8 (renderHeader req.method)
               ]
             ]
@@ -152,7 +151,7 @@ ppResp verbosity now dur req resp =
           [ "time" .= now
           , "duration" .= dur
           , "type" .= ("http-response" :: Text)
-          , "path" .= toPath req
+          , "path" .= toFullPath req
           , "status" .= resp.status.statusCode
           , "method" .= Text.decodeUtf8 (renderHeader req.method)
           ]
@@ -183,19 +182,6 @@ defaultPrinter =
 
 addLogPrefix :: Json.Value -> Json.Value
 addLogPrefix val = Json.object ["log" .= val]
-
-toPath :: Request -> Text
-toPath req = Text.intercalate "/" req.path <> queries
-  where
-    queries
-      | Map.null req.query = mempty
-      | otherwise = "?" <> Text.intercalate "&" (fmap fromQuery (Map.toList req.query))
-
-    fromQuery (name, mVal) = case mVal of
-      Just val -> nameText <> "=" <> Text.decodeUtf8 val
-      Nothing -> nameText
-      where
-        nameText = Text.decodeUtf8 name
 
 headerName :: CI ByteString -> Json.Key
 headerName name = Json.fromText (Text.decodeUtf8 $ CI.foldedCase name)

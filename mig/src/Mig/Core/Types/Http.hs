@@ -19,14 +19,17 @@ module Mig.Core.Types.Http (
   -- * utils
   setRespStatus,
   addRespHeaders,
+  toFullPath,
 ) where
 
 import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BL
 import Data.Map.Strict (Map)
+import Data.Map.Strict qualified as Map
 import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
+import Data.Text.Encoding qualified as Text
 import Data.Text.Lazy qualified as TL
 import Mig.Core.Class.MediaType (MediaType, ToMediaType (..), ToRespBody (..))
 import Network.HTTP.Media.RenderHeader
@@ -129,3 +132,16 @@ badResponse :: forall mime a. (ToRespBody mime a) => Status -> a -> Response
 badResponse status = Response status (setContent media) . RawResp media . toRespBody @mime
   where
     media = toMediaType @mime
+
+toFullPath :: Request -> Text
+toFullPath req = Text.intercalate "/" req.path <> queries
+  where
+    queries
+      | Map.null req.query = mempty
+      | otherwise = "?" <> Text.intercalate "&" (fmap fromQuery (Map.toList req.query))
+
+    fromQuery (name, mVal) = case mVal of
+      Just val -> nameText <> "=" <> Text.decodeUtf8 val
+      Nothing -> nameText
+      where
+        nameText = Text.decodeUtf8 name
