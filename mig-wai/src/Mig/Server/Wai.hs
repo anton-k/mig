@@ -9,6 +9,7 @@ module Mig.Server.Wai (
 import Control.Monad.Catch
 import Data.ByteString qualified as B
 import Data.ByteString.Lazy qualified as BL
+import Data.Default
 import Data.Foldable
 import Data.IORef
 import Data.Map.Strict qualified as Map
@@ -31,6 +32,9 @@ data ServerConfig = ServerConfig
   , cache :: Maybe CacheConfig
   , findRoute :: FindRouteType
   }
+
+instance Default ServerConfig where
+  def = ServerConfig Nothing Nothing TreeFinder
 
 -- | Algorithm to find route handlers by path
 data FindRouteType = TreeFinder | PlainFinder
