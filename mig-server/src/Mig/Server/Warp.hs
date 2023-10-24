@@ -3,6 +3,7 @@ module Mig.Server.Warp (
   runServer,
   runServer',
   ServerConfig (..),
+  FindRouteType (..),
   CacheConfig (..),
 ) where
 
