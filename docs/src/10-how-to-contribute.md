@@ -6,8 +6,8 @@ We have a list of upcoming features in the [list of Issues](https://github.com/a
 Also there is a CI which checks for:
 
 * build and test of all libraries with stack
-* build and test of all examples in the dir `examples` with stack
-* fourmolu formatting
+* build and test of all examples in the directory `examples` with stack
+* `fourmolu` formatting
 
 ## how to automate formatter check
 
@@ -42,14 +42,14 @@ else
 fi
 ```
 
-Save this as file `.git/hooks/pre-commit` in your repo.
+Save this as file `.git/hooks/pre-commit` in your repo
 and make it executable:
 
 ```sh
 chmod +x .git/hooks/pre-commit
 ```
 
-The script requires two executables which both can be installed from hackage:
+The script requires two executables which both can be installed from Hackage:
 
 * `fourmolu`
 * `cabal-fmt`

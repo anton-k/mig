@@ -36,9 +36,9 @@ newtype Server m = Server (Api (Route m))
 ```
 
 The `Api` type is a value to describe the API schema and `Route` contains
-useful info on the type of the route (method, decription of the inputs and outputs).
+useful info on the type of the route (method, description of the inputs and outputs).
 The server is parametrized by some monad type. For this example we use `IO`-monad.
-It means that all our hadnlers are going to return `IO`-values.
+It means that all our handlers are going to return `IO`-values.
 
 ### How to link paths to handlers
 
@@ -49,11 +49,11 @@ To bind path "api/v1/hello" to handler `hello` we use function `(/.)`. Let's loo
 ```
 
 It expects the `Path` which has instance of class `IsString` that is why we can
-use plain strings for it. the second argument is something that is convertible to `Server`.
-Here we use trick to be able to use arbitrary haskell functions as handlers.
+use plain strings for it. The second argument is something that is convertible to `Server`.
+Here we use trick to be able to use arbitrary Haskell functions as handlers.
 We have special class called `ToServer` which can convert many different types to `Server`.
 
-The output type is abit tricky: `Server (MonadOf a)`.
+The output type is a bit tricky: `Server (MonadOf a)`.
 The `MonadOf` is a type function which can extract `m` from `(Server m)`.
 Or for example it can extract `m` from the function `request -> m response`.
 So the `MonadOf` is a way to get underlying server monad from any value.
@@ -70,7 +70,7 @@ The type-level function `MonadOf` knows how to extract `IO` from `Get IO (Resp T
 
 ### The type of response
 
-Let's stydy the signature of the `hello` handler: 
+Let's study the signature of the `hello` handler: 
 
 ```
 hello :: Get IO (Resp Json Text)
@@ -100,7 +100,7 @@ newtype Send method m a = Send (m a)
 ```
 
 It encodes HTTP-method on type level. This is useful to aggregate value for API-schema of our server.
-We have type synonyms for all HTTP-nethods (`Get`, `Post`, `Put` etc).
+We have type synonyms for all HTTP-methods (`Get`, `Post`, `Put` etc).
 
 It's interesting to know that library mig does not use any custom monads for operation. 
 Instead it runs on top of monad provided by the user. Usually it would be `IO` or `Reader` over `IO`.
@@ -259,7 +259,7 @@ Servers on the same path are also distinguished by:
 
 ### Subtle nuance on Monoid instance for Server
 
-Yuo may ask: why not to write the previous example like this:
+You may ask: why not to write the previous example like this:
 
 ```haskell
 server = 
@@ -290,13 +290,13 @@ server =
       ]
 ```
 
-Regarding the previous example we could not use `mconcat` even if we wnated to.
+Regarding the previous example we could not use `mconcat` even if we wanted to.
 Because `handelGet` and `handlePost` have different types. They can not
 be even put in the same list. But here lies the beauty of the library.
 We can use arbitrary types as handlers but in the end they all get converted
 to the value `Server m`. So we have the flexibility on DSL level but
 on the level of implementation to build the tree of handlers we use the same type.
-which makes type very simple.
+Which makes type very simple.
 
 ### List instance for Servers
 Because of the `ToServer a => ToServer [a]` instance we can omit the `mconcat`

@@ -5,7 +5,7 @@ But we can use other monads with it. Although so far
 only three types of monads are supported for `Servers`:
 
 * `IO`-monad
-* `ReaderT env IO` and newtype wrappers on top of it
+* `ReaderT env IO` and `newtype` wrappers on top of it
 * `ReaderT env (EitherT IO)` and new type wrappers on top of it
 
 So the library is limited in monad choice but all of the cases
@@ -16,7 +16,7 @@ Let's study how to use `ReaderT` with the server.
 
 As example we will build a server that contains mutable state.
 It has internal counter which we can query and increment.
-To store the internal state as shared envirnment for all handlers
+To store the internal state as shared environment for all handlers
 we are going to Reader-pattern or server with `ReaderT` over `IO` monad. 
 
 ## Reader-pattern
@@ -28,7 +28,7 @@ for `Json`:
 import Mig.Json
 ```
 
-also we import `ReaderT` from `mtl` library and `IORef` to store mutable shared state:
+Also we import `ReaderT` from `mtl` library and `IORef` to store mutable shared state:
 
 ```haskell
 import Control.Monad.Reader
@@ -55,9 +55,9 @@ initEnv = Env <$> newIORef 0
 
 ### `HasServer` class
 
-We declare it as newtype-wrapper with `ReaderT` under the hood.
+We declare it as `newtype`-wrapper with `ReaderT` under the hood.
 We can derive all the classes that we need to use it as `Reader`.
-All classes but last are common repertiore of the haskeller. 
+All classes but last are common repertoire of the Haskell. 
 The last class `HasServer` is special to `mig` library.
 It can be also auto-derived as the instance for `ReaderT+IO` is already defined.
 
@@ -70,7 +70,7 @@ to `Server IO`. For a reader it defines a method:
 
 So if we pass the common shared environment `env` to server
 we can use it as `Server IO`. We need to convert to `Server IO`
-becuase for WAI and warp we can run only `Server IO` based servers.
+because for WAI and warp we can run only `Server IO` based servers.
 As in library `mig-wai`:
 
 ```haskell
@@ -79,7 +79,7 @@ toApplication :: Server IO -> Wai.Application
 
 ### How to run Reader based server
 
-So to run the readerT server we need to convert it to `IO`-based server
+So to run the `ReaderT` server we need to convert it to `IO`-based server
 and we can run it with usual `runServer` function:
 
 
@@ -109,7 +109,7 @@ Note that we use bind operator:
 
 Our server has two routes:
 
-* get - to querry current state
+* get - to query current state
 * put - to add some integer to the state
 
 ```haskell
@@ -139,7 +139,7 @@ So we ask for the common mutable state and read it with `readIORef` function.
 Also we use `liftIO` to lift `IO` result to `App` monad.
 We just use `App` monad inside `Send`-wrapper to create a handler.
 
-LEt's define the `put` handler:
+Let's define the `put` handler:
 
 ```haskell
 -- | Put handler. It logs the call and updates 

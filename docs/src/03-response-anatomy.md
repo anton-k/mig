@@ -25,10 +25,10 @@ from response.
 
 An HTTP-response contains:
 
-* integer status. It's 200 when everything is allright
+* integer status. It's 200 when everything is alright
 * list of headers which provide useful info on response type
 * the byte string body which contains result of handler operation. It can
-   hold JSOn, HTML, plain text, raw byte string and other types of outputs.
+   hold JSON, HTML, plain text, raw byte string and other types of outputs.
 
 In the `Resp` type the `media` type argument specifies which
 type the body has. By this type handler knows how to convert value
@@ -80,8 +80,8 @@ When things go bad we can report error with method `bad`:
   bad :: Status -> RespError a -> a
 ```
 
-Sometimes at rare cases we do not wnat to return any content from response.
-we can just report error status and leave the body empty:
+Sometimes at rare cases we do not what to return any content from response.
+We can just report error status and leave the body empty:
 
 ```haskell
   -- | response with no content
@@ -103,7 +103,7 @@ we would like set it explicitly. For that we have the method:
   setMedia :: MediaType -> a -> a
 ```
 
-also the core of the class is the method to convert value to low-level response:
+Also the core of the class is the method to convert value to low-level response:
 
 ```haskell
   -- | Converts value to low-level response
@@ -124,7 +124,7 @@ and we use `RespOr` if handler can produce and error.
 We already have seen many usages of `Resp` type. Let's define something
 that can produce an error. Let's define server that calculates
 square root of the value. For negative numbers it is not defined in the 
-realm of real numbers. So let's define the handler that use RespOr type:
+realm of real numbers. So let's define the handler that use `RespOr` type:
 
 ```haskell
 import Mig.Json.IO
@@ -148,7 +148,7 @@ we can not have body request in the GET-method. So we use POST instead.
 
 
 Also we have special case function for bad requests called `badReq`. The
-values for status come from the library http-types. See the module dediicated
+values for status come from the library http-types. See the module dedicated
 to [HTTP-statuses](https://hackage.haskell.org/package/http-types-0.12.3/docs/Network-HTTP-Types-Status.html#t:Status).
 It is reexported by the `mig` library.
 
@@ -168,7 +168,7 @@ passTrace (Header traceId) = Send $
 The function `toHeader` is re-exported from the library [`http-api-data`](https://hackage.haskell.org/package/http-api-data-0.5/docs/Web-HttpApiData.html).
 It converts various values to header byte string.
 
-also there is a function if we want to add only one header and not a list of them:
+Also there is a function if we want to add only one header and not a list of them:
 
 ```haskell
 setHeader :: (IsResp a, ToHttpApiData h) => HeaderName -> h -> a -> a
@@ -176,8 +176,8 @@ setHeader :: (IsResp a, ToHttpApiData h) => HeaderName -> h -> a -> a
 
 It has `toHeader` built into it.
 
-Just like we set headrs we also can set HTTP-status of the response.
-we just apply it to Resp-like value. It works both for `Resp` and `RespOr`:
+Just like we set headers we also can set HTTP-status of the response.
+We just apply it to Resp-like value. It works both for `Resp` and `RespOr`:
 
 ```haskell
 setStatus :: IsResp a => Status -> a -> a
@@ -190,11 +190,11 @@ for successful response and all functions that need the status take it as argume
 
 How we can use both of the types as responses: `Resp` and `RespOr`.
 Recall that `/.` function is overloaded by the second argument and
-we have a rule for `ToServer` class thar:
+we have a rule for `ToServer` class that:
 
 > if `a` has `IsResp` instance then `Send method m a` is convertible to server
 
-As for both `Resp` and `RespOr` the inctance for `IsResp` is defined we can use
+As for both `Resp` and `RespOr` the instance for `IsResp` is defined we can use
 both types as a result of the HTTP-handler.
 
 ## Summary

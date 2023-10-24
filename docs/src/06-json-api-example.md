@@ -2,7 +2,7 @@
 
 We have learned all we need to know about `mig` to be able to build something cool with it.
 Let's build a weather forecast application. The app has registered users
-which can request authroization tokens. With that token users can request for weather
+which can request authorization tokens. With that token users can request for weather
 in specific city and on specific time and also they can update the weather data.
 For simplicity we omit user registration and defining roles for the user.
 
@@ -35,7 +35,7 @@ newtype AuthToken = AuthToken Text
     (ToJSON, FromJSON, FromHttpApiData, Eq, Ord, Show, ToParamSchema, ToSchema)
 ```
 
-We need instances to pass the dat over HTTP wires.
+We need instances to pass the data over HTTP wires.
 
 ### Domain of weather
 
@@ -58,7 +58,7 @@ newtype Location = Location Text
     (ToJSON, FromJSON, FromHttpApiData, Eq, Ord, Show, ToParamSchema, ToSchema)
 ```
 
-The weather has information on temperature, speed of the wind, sun/rain nratio and pressure:
+The weather has information on temperature, speed of the wind, sun/rain ratio and pressure:
 
 ```haskell
 data WeatherData = WeatherData
@@ -138,13 +138,13 @@ withAuth :: Env -> Header "auth" AuthToken -> Plugin IO
 withAuth = undefined
 ```
 
-we have one route to query for token:
+We have one route to query for token:
 
 ```haskell
 requestAuthToken :: Env -> Body User -> Post (RespOr Text AuthToken)
 ```
 
-and two routes that query info on weather and update it:
+And two routes that query info on weather and update it:
 
 ```haskell
 getWeather ::
@@ -160,13 +160,13 @@ updateWeather ::
   Post (RespOr Text ())
 ```
 
-also we have a plugin that filters out non aunthorized calls:
+Also we have a plugin that filters out non authorized calls:
 
 ```haskell
 withAuth :: Env -> Header "auth" AuthToken -> Plugin IO
 ```
 
-From its type-signature we can assume that authroization token
+From its type-signature we can assume that authorization token
 is passed in the header of the request.
 
 ## The structure of the server
@@ -181,9 +181,9 @@ Our app has several domains:
 
 * weather DB interface
 
-* process lifecycle: logging, startup, cleanup, etc
+* process life cycle: logging, startup, cleanup, etc
 
-So the server enironment has three parts:
+So the server environment has three parts:
 
 ```haskell
 data Env = Env
@@ -232,7 +232,7 @@ data Weather = Weather
 
 ### Process domain
 
-For the application process we keep all server lifecycle tools
+For the application process we keep all server life cycle tools
 which are not related to business logic domain. It can be logging, metrics,
 startup and cleanup actions:
 
@@ -254,7 +254,7 @@ data Logger = Logger
 type LogFun = Value -> IO ()
 ```
 
-We log JSON-values. As a helper functions we create funcitions
+We log JSON-values. As a helper functions we create functions
 that can log anything which is convertible to JSON:
 
 ```haskell
@@ -268,7 +268,7 @@ logError :: (ToJSON a) => Env -> a -> IO ()
 logError env = env.proc.logger.error . toJSON
 ```
 
-### Using interfacs
+### Using interfaces
 
 It's interesting to note how all actions on shared state can be expressed
 as interfaces. We will declare the concrete mutable representation later
@@ -317,12 +317,12 @@ updateWeather env (Body updateData) = Send $ do
   ok <$> env.weather.update updateData
 ```
 
-we log the report and update the weather data.
+We log the report and update the weather data.
 
 ### The user domain
 
 Let's give the user access token and check that token is valid.
-Let's allocate a new token in the hanlder `requestAuthToken`:
+Let's allocate a new token in the handler `requestAuthToken`:
 
 ```haskell
 requestAuthToken :: Env -> Body User -> Post (RespOr Text AuthToken)
@@ -348,7 +348,7 @@ We check that user is valid and if the user is valid
 we give user a token and also set the expiration for it. 
 We will expire it 10 minutes after registration.
 The expiration is concurrent process that is forked from the thread 
-that hnadles the request. If user has no rights to use our service we report error.
+that handles the request. If user has no rights to use our service we report error.
 
 Let's check for authorization tokens. Ideally we would like to add
 this action to all handlers of our application. We would like to keep
@@ -369,7 +369,7 @@ withAuth env (Header token) = processResponse $ \getResp -> do
     errMessage = "Token is invalid"
 ```
 
-we have covered in depth how to implement it in the chapter on Plugins
+We have covered in depth how to implement it in the chapter on Plugins
 so this code should look familiar to us.
 
 
@@ -454,7 +454,7 @@ addLogPrefix :: Json.Value -> Json.Value
 addLogPrefix val = Json.object ["log" .= val]
 ```
 
-we can start the application and try it out with swagger.
+We can start the application and try it out with swagger.
 
 ## Exercises
 
@@ -474,7 +474,7 @@ You can find the complete code of the example in the [`mig` repo](https://github
 
 * implement interface that connects application to some real DB.
   The code for the server should stay the same and only initialization
-  of interface should change. Use one of the DB libraries for haskell: `hasql`, `postgresql-simple`
+  of interface should change. Use one of the DB libraries for Haskell: `hasql`, `postgresql-simple`
 
 ## Summary 
 

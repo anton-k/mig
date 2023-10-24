@@ -324,7 +324,7 @@ data ClientConfig = ClientConfig
   }
 ```
 
-The class to strip away request input newtype wrappers:
+The class to strip away request input `newtype` wrappers:
 
 ```haskell
 class FromClient a where
@@ -338,14 +338,14 @@ Query "a" Int -> Capture "b" Text -> Get Client (Resp Json Text)
 ```
 
 
-to types:
+To types:
 
 ```haskell
 Int -> Text -> Client' (RespOr Json BL.ByteString Text)
 ```
 
 
-Where `Client'` is a monad which encapsulates the ClientConfig as reader:
+Where `Client'` is a monad which encapsulates the `ClientConfig` as reader:
 
 ```haskell
 newtype Client' a = Client' (ReaderT ClientConfig IO a)
@@ -359,7 +359,7 @@ getRespOrValue :: RespOr media BL.ByteString a -> Either BL.ByteString a
 
 To unwrap `Resp` from response.
 
-## Other utils
+## Other utilities
 
 ### deriving helpers
 
@@ -382,10 +382,10 @@ mapDerive fun [''Foo, ''Bar]  -- maps deriving over several types
 We need to activate `TemplateHaskell`, `StandaloneDeriving`, `DerivingStrategies`, `DeriveGeneric` extensions to use it.
 
 Also note that for this to work all types should be in scope. 
-So it better to define derivings at the bottom of the module which is dedicated to types.
+So it better to define drivings at the bottom of the module which is dedicated to types.
 
 Also type should not have generic arguments for deriving to work.
-If it does we have to declare the types manyally. For example:
+If it does we have to declare the types manually. For example:
 
 ```haskell
 data Timed a = Timed

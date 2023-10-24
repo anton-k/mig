@@ -23,7 +23,7 @@ applyPlugin :: forall f. (ToPlugin f) =>
   f -> Server (MonadOf f) -> Server (MonadOf f)
 ```
 
-There is also infix operatore for application `($:)`.
+There is also infix operator for application `($:)`.
 
 The class `ToPlugin` contains all types that can be converted to plugin.
 Here we use the same trick as with `ToServer` class to be able to read type-safe parts of the request
@@ -40,7 +40,7 @@ Recursive steps for inputs
 
 > if `f` is `ToPlugin` then `(Query name queryType -> f)` is `ToPlugin` too
 
-and so on for other types of request input (query params, headers, captures, request bodies).
+And so on for other types of request input (query parameters, headers, captures, request bodies).
 See the full list of instances in the module `Mig.Core.Class.Plugin`.
 
 ## Examples
@@ -59,7 +59,7 @@ Let's imagine that we have a function
 logInfo :: Text -> IO ()
 ```
 
-We can query the path with `PathInfo` newtype:
+We can query the path with `PathInfo` `newtype`:
 
 ```haskell
 newtype PathInfo = PathInfo [Text]
@@ -69,7 +69,7 @@ And we have a rule for  `ToPlugin` class:
 
 > if `f` is `ToPlugin` then `(PathInfo -> ToPlugin f)` is `ToPlugin`
 
-so we can create a plugin function:
+So we can create a plugin function:
 
 ```haskell
 logRoutes :: Plugin IO
@@ -82,13 +82,13 @@ logRoutes = toPlugin $ \(PathInfo pathItems) -> prependServerAction $ do
 ```
 
 We use function `prependServerAction` that creates a `Plugin`
-from actino which is performed prior to call to server function:
+from action which is performed prior to call to server function:
 
 ```haskell
 prependServerAction :: MonadIO m => m () -> Plugin m
 ```
 
-also there are similar functions in the module: `appendServerAction` and `processResponse`.
+Also there are similar functions in the module: `appendServerAction` and `processResponse`.
 
 ### Allow only secure routes
 
@@ -120,7 +120,7 @@ newtype IsSecure = IsSecure Bool
 
 So we pass through the response with identity if connection is secure
 and we block the execution by returning `Nothing` if connection is secure.
-The cool part of it is that due to Haskell's laziness there is no performance overhead and underlying
+The cool part of it is that due to laziness there is no performance overhead and underlying
 route is not going to be performed if connection is insecure.
 
 ### Authorization with plugin
@@ -149,7 +149,7 @@ getToken :: Body UserCreds -> Post (Resp AuthToken)
 ```
 
 We would like to block invalid sessions for all routes of our site.
-We can create it in similiar way as `whenSecure`:
+We can create it in similar way as `whenSecure`:
 
 ```haskell
 isValid :: AuthToken -> IO Bool
@@ -173,5 +173,5 @@ for all routes which are part of the server to which we apply the plugin.
 ## Summary
 
 In this chapter we have learned on plugins. They provide a tool to apply
-transformation to all routes in the server. Which can be useful for logging, authrization
+transformation to all routes in the server. Which can be useful for logging, authorization
 and adding common behavior to all routes.
