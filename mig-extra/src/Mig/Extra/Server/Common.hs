@@ -120,6 +120,7 @@ import Mig.Core hiding (
 
 import Control.Monad.IO.Class as X
 import Data.Aeson as X (FromJSON (..), ToJSON (..))
+import Data.Default as X
 import Data.OpenApi as X (OpenApi, ToParamSchema (..), ToSchema (..))
 import Data.Text as X (Text)
 import GHC.Generics as X (Generic)
