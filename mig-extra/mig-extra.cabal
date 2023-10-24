@@ -59,6 +59,7 @@ library
     , bytestring
     , case-insensitive
     , containers
+    , data-default
     , exceptions
     , extra
     , http-api-data

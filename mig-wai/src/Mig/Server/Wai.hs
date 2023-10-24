@@ -34,10 +34,14 @@ data ServerConfig = ServerConfig
   }
 
 instance Default ServerConfig where
-  def = ServerConfig Nothing Nothing TreeFinder
+  def = ServerConfig Nothing Nothing PlainFinder
 
 -- | Algorithm to find route handlers by path
-data FindRouteType = TreeFinder | PlainFinder
+data FindRouteType
+  = -- | converts api to tree-like structure (prefer it for servers with many routes)
+    TreeFinder
+  | -- | no optimization (prefer it for small servers)
+    PlainFinder
 
 toApplication :: ServerConfig -> Server IO -> Wai.Application
 toApplication config = case config.cache of

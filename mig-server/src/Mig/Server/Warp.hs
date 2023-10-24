@@ -7,15 +7,14 @@ module Mig.Server.Warp (
   CacheConfig (..),
 ) where
 
+import Data.Default
 import Mig.Core
 import Mig.Core.Server.Cache
 import Mig.Server.Wai
 import Network.Wai.Handler.Warp qualified as Warp
 
 runServer :: Int -> Server IO -> IO ()
-runServer port server = Warp.run port (toApplication config server)
-  where
-    config = ServerConfig{maxBodySize = Nothing, cache = Nothing, findRoute = TreeFinder}
+runServer port server = Warp.run port (toApplication def server)
 
 runServer' :: ServerConfig -> Int -> Server IO -> IO ()
 runServer' config port server = Warp.run port (toApplication config server)

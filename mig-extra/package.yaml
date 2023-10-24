@@ -31,6 +31,7 @@ default-extensions:
 
 dependencies:
 - base >= 4.7 && < 5
+- data-default
 - mig
 - http-api-data
 - blaze-html
