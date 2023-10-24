@@ -3,7 +3,7 @@
 We have seen many examples of JSON applications. But we can send data in other formats too.
 Most common forma t for human-readable information for HTTP applications
 is HTML. Any site that we visit sends HTML pages to us. Let's create a simple
-site that shos blog posts and quotes and we can add new blog posts to it.
+site that shows blog posts and quotes and we can add new blog posts to it.
 Complete code for example is in the [`mig` repo](https://github.com/anton-k/mig/tree/main/examples/mig-example-apps/Html)
 We will cover the most interesting parts of the application.
 
@@ -11,10 +11,10 @@ As in previous example we are going to use IO-based server.
 The common actions that change internal state of the site or query useful data
 are expressed as collection of interfaces. All handlers accept interfaces as first argument.
 
-The structure of the application is similiar to the weather forecast example.
+The structure of the application is similar to the weather forecast example.
 The modules with their purpose:
 
-* `Types` - types that cover fdomain of our application
+* `Types` - types that cover domain of our application
 * `Server` - defines server API and handlers
 * `Main` - runs the server
 * `View` - renders types as HTML-pages
@@ -29,7 +29,7 @@ As we define server based on `IO` and `HTML` we will use the module `Mig.Html.IO
 Note that there is a difference in types from `JSON` brother of that module.
 We will not see the `Resp` type in the signatures of the handlers.
 
-Becuase for `HTML` the type synonyms to `Send` fix the output of `Send`-type
+Because for `HTML` the type synonyms to `Send` fix the output of `Send`-type
 so that it always has value wrapped in `Resp`:
 
 ```haskell
@@ -37,7 +37,7 @@ type Get a = Send GET IO (Resp a)
 ```
 
 The `Resp`-type is built in the type because for HTML we almost never need the `RespOr`
-with different type of erorrs. Our errors are going to be HTML-pages to as the result.
+with different type of errors. Our errors are going to be HTML-pages to as the result.
 So we report errors to user in HTML-pages.
 
 ## Run a server
@@ -73,7 +73,7 @@ server _ = mempty
 ## Define server routes
 
 Let's define the server and its routes.
-For our blogpost site we are going to show the pages:
+For our blog post site we are going to show the pages:
 
 * main page with list of blog posts and greeting
 
@@ -108,7 +108,7 @@ server site =
 The site serves several sub-servers:
 
 * `readServer` - pages that fetch content for us
-* `writeServer` - pages to update the content. to save new blog post
+* `writeServer` - pages to update the content. To save new blog post
 * `defaultPage` - main page of the app
 * `staticFiles` with `addFavicon` - 
       serves static files and adds icon for our site that is shown in the tab of the browser
@@ -130,7 +130,7 @@ handleGreeting :: Site -> Get (Page Greeting)
 It links two routes to the `handleGreeting` handler. We serve two routs: the route
 of the site and default route for main page "/index.html".
 
-for now we can think of `Page` as main template of our site which contains
+For now we can think of `Page` as main template of our site which contains
 some value that is renderable to HTML. Renderer converts the value to HTML
 and injects it to the site's template.
 
@@ -210,7 +210,7 @@ staticFiels :: MonadIO m => [(FilePath, ByteString)] -> Server m
 
 The list of pairs contains pair of `(path-to-file, byte-string-content-of-the-file)`.
 It is convenient to use it with function `embedRecursiveDir`  which
-embeds all files from directory to haskell executable. It comes with linrary `file-embed-lzma`.
+embeds all files from directory to Haskell executable. It comes with library `file-embed-lzma`.
 We use it like this:
 
 ```haskell
@@ -223,7 +223,7 @@ resourceFiles = $(embedRecursiveDir "Html/resources")
 For our site we use `milligram.css` framework for styling and couple of
 pictures.
 
-Also let's dicuss `addFavicon` function:
+Also let's discuss `addFavicon` function:
 
 ```haskell
 addFavicon = addPathLink "favicon.ico" "static/lambda-logo.png"
@@ -270,7 +270,7 @@ Let's define the types.
 
 ## Domain model of the blog site
 
-We are going to show Blog posts. and we have a form to input a new content to the site.
+We are going to show Blog posts. And we have a form to input a new content to the site.
 We can define the types for domain as follows:
 
 ```haskell
@@ -316,8 +316,8 @@ data SubmitBlogPost = SubmitBlogPost
   deriving (Generic, FromForm, ToSchema)
 ```
 
-We need to define certian instances to be able to send the data over HTTP wires.
-The types come from standard libraries for web development in haskell: `openapi3`, `http-api-data`, `aeson`.
+We need to define certain instances to be able to send the data over HTTP wires.
+The types come from standard libraries for web development in Haskell: `openapi3`, `http-api-data`, `aeson`.
 
 ## Interfaces for the site
 
@@ -375,7 +375,7 @@ handleBlogPost site (Optional mBlogId) = Send $
 
 We have an optional query parameter that contains `id` of the blog post.
 If `id` is missing we return some random blog post.
-If there is no blog post that corresponds to id we return error with page not foud status.
+If there is no blog post that corresponds to id we return error with page not found status.
 
 Let's read the random quote:
 
@@ -405,7 +405,7 @@ handleWriteForm _site =
 As we can see we just return the tag of the page that encodes
 the content with form. We will define the HTML-form in the rendering module `View.hs`.
 
-Let's define the logic to save the submited data to application:
+Let's define the logic to save the submitted data to application:
 
 ```haskell
 

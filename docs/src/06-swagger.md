@@ -102,7 +102,7 @@ setSummary :: Text -> Server m -> Server m
 addTag :: Text -> Server m -> Server m
 ```
 
-We can apply thos functions at definition of the route.
+We can apply those functions at definition of the route.
 Also we can describe the inputs for the route:
 
 ```haskell

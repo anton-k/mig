@@ -90,7 +90,7 @@ to the handler. Which is specified in the `server` function the route handler
 is never touched by the execution path. So it is ok to use recursive definition.
 We can also pass `undefined`.
 
-After that we can call a client funtion:
+After that we can call a client function:
 
 ```haskell
 import Data.ByteString.Lazy qualified as BL
@@ -186,9 +186,9 @@ routeA
 ... = toClient
 ```
 
-Here we rely on the haskell ability to pattern match on the constructors.
-In haskell we can use not only single variables on the left side but also 
-we can use a constructor. So this is a valid haskell expression:
+Here we rely on the Haskell ability to pattern match on the constructors.
+In Haskell we can use not only single variables on the left side but also 
+we can use a constructor. So this is a valid Haskell expression:
 
 ```haskell
 ints :: [Int]
@@ -213,22 +213,22 @@ Also we can write this definition with just a tuple:
     (getClient, putClient) = toClient (server counterClient)
 ```
 
-## FromClient class
+## `FromClient` class
 
 Often we do not need the request input wrappers on the level of Http-client.
-Ww would like to get the function:
+We would like to get the function:
 
 ```haskell
 putClient :: Int -> IO (Either ByteString ())
 ```
 
-instead of 
+Instead of 
 
 ```haskell
 putClient :: Capture "arg" Int -> IO (Either ByteString ())
 ```
 
-For that we have a class which can strip away all newtype wrappers:
+For that we have a class which can strip away all `newtype` wrappers:
 
 ```haskell
 class FromClient a where
@@ -261,8 +261,8 @@ We can run the `client'` with function:
 runClient' :: ClientConfig -> Client' a -> IO a
 ```
 
-So with `FromClass` we can unwrap all newtype arguments from wrappers
-and get ClientConfig encapsulated in the reader monad.
+So with `FromClass` we can unwrap all `newtype` arguments from wrappers
+and get `ClientConfig` encapsulated in the reader monad.
 
 ## The structure of the client
 
@@ -292,7 +292,7 @@ appClient = Routes {..}
 ```
 
 When we got the client we can simplify definition 
-by stripping away all newtype-wrappers:
+by stripping away all `newtype`-wrappers:
 
 ```haskell
 runAuth :: Arg1 -> Arg2 -> ClientOr AuthId

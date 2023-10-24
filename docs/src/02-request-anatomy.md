@@ -21,16 +21,16 @@ type Get a = Send GET IO a
 type Post a = Send POST IO a
 ```
 
-also it provides more specific response type:
+Also it provides more specific response type:
 
 ```haskell
 newtype Resp a = Resp (Core.Resp Json a)
 ```
 
 For the next example we are going to build JSON-application again.
-So instea of more general `Mig` we will use `Mig.Json.IO`.
+So instead of more general `Mig` we will use `Mig.Json.IO`.
 
-Also there are similiar modules for:
+Also there are similar modules for:
 
 * `IO`-based servers
 * `Html` servers with generic monad
@@ -49,10 +49,10 @@ There is one reason why we do not do that for JSON. But we will study it later.
 
 ## Http request
 
-In previous example we could query by static path. Let's do something more funcy
+In previous example we could query by static path. Let's do something more fancy
 and provide the input for the handler.
 
-we have several types of inputs in HTTP:
+We have several types of inputs in HTTP:
 
 * query parameters. We can see them in the path `"api/get/route?queryName=queryValue"`
 
@@ -62,10 +62,10 @@ we have several types of inputs in HTTP:
 * header parameters. They are in HTTP-request headers. For example header that 
   reports media-type of the request body: "Content-Type: application/json"
 
-* request body. It is avalue packed into HTTP-request. It can be JSON or text or raw string
+* request body. It is a value packed into HTTP-request. It can be JSON or text or raw string
    or XML. All sorts of things can be used as request bodies.
 
-To use any of HTTP inputs in the handler we use special newtype wrappers 
+To use any of HTTP inputs in the handler we use special `newtype` wrappers 
 as arguments to the handler functions. 
 
 ### Query parameter example
@@ -83,9 +83,9 @@ Note that we have imported `Mig.IO.Json` and our types are more
 specific and have fewer arguments. All types are dedicated to `IO` and `Json`.
 So we can write `Get (Resp Text)` instead of `Get IO (Resp Json Text)`.
 
-Interesting part of the handler is that qrgument: `Query "who" Text`.
+Interesting part of the handler is that argument: `Query "who" Text`.
 On the API level it creates expectation for a required query parameter in the path.
-The `Query` is a simple newtype wrapper:
+The `Query` is a simple `newtype` wrapper:
 
 ```haskell
 newtype Query name value = Query value
@@ -99,12 +99,12 @@ server = "api/v1/hello" /. hello
 ```
 
 There is no change because function `(/.)` is overloaded by second argument.
-and it accepts all sorts of inputs. One of them states:
+And it accepts all sorts of inputs. One of them states:
 
 > if value `a` is convertible to server
 > then `Query name value -> a` is also convertible to server
 
-and by this magic as all haskell functions are curried we can use any number of
+And by this magic as all Haskell functions are curried we can use any number of
 queries in the handler. For example if we want to greet two persons we can write:
 
 ```haskell
@@ -124,7 +124,7 @@ add (Query a) (Query b) = Send $
 
 ### The rest of the inputs
 
-All other input parameters work in the same way as a `Query`. we have a newtype wrapper
+All other input parameters work in the same way as a `Query`. We have a `newtype` wrapper
 for the value and type denotes all useful info for API description of the handler.
 
 Let's for example query numbers for addition as capture parameters:
@@ -136,13 +136,13 @@ add (Query a) (Query b) = Send $
 ```
 
 It will expect the path to be `"api/v1/add/2/4"`. 
-Other wrappers look very similiar:
+Other wrappers look very similar:
 
 * `Header name value` - for required headers
 * `OptionalHeader name value` - for optional headers
 * `Capture name value` - for path captures
 * `Optional name value` - for optional queries
-* `QueryFlag` - for booleab query that can be missing in the path (and then it is `false`)
+* `QueryFlag` - for boolean query that can be missing in the path (and then it is `false`)
 * `Body media value` - for request body
 
 
@@ -163,7 +163,7 @@ newtype AuthToken = AuthToken Text
   deriving newtype (FromHttpApiData, Eq, Ord, ToParamSchema)
 ```
 
-We can derive them for `newtype` wrappers. Aftr that we can use `AuthToken` as value 
+We can derive them for `newtype` wrappers. After that we can use `AuthToken` as value 
 to get from query parameter. For more info on how to derive those instances see the docs for the libraries.
 It's easy to do. We can derive `Generic` for the data type and derive `ToParamSchema` with it.
 
@@ -172,7 +172,7 @@ The same instances we need for all parameters-like inputs: queries, headers, cap
 ### Nuances for Capture
 
 The capture is interesting because it can be anywhere in the path.
-for the example we havn't altered the server and our example:
+For the example we haven't altered the server and our example:
 
 ```haskell
 add :: Query "a" Int -> Query "b" Int -> Get (Resp Int)
@@ -231,7 +231,7 @@ In the core mig library the type `Body` has two type arguments. But as we use Js
 the first argument for `Mig.Json.IO` as for `Mig.Json` is always `Json`-tag.
 So those modules provide special case alternative for type `Body`. But in the `mig`
 library it uses the same idea as we saw in the query parameter. It is just a 
-newtype wrapper for the value.
+`newtype` wrapper for the value.
 
 To be able to use it as input for the handler we have to provide instances for
 several types:
@@ -239,7 +239,7 @@ several types:
 * `FromJSON` from `aeson` library to parse value as JSON from byte string
 * `ToSchema` from `openapi3` library to describe it in the API-schema
 
-both of the types can be easily derived with `Generic` instance (from the module GHC.Generics).
+Both of the types can be easily derived with `Generic` instance (from the module GHC.Generics).
 First we derive instance of the `Generic` and then we can derive both `FromJSON` and `ToSchema`:
 
 ```haskell
@@ -250,8 +250,8 @@ data AddInput = AddInput
   deriving (Generic, FromJSON, ToSchema)
 ```
 
-also there are many libraries on hackage to 
-create custom derivings for those classes: `deriving-aeson`, `aeson-deriving` and many others.
+Also there are many libraries on Hackage to 
+create custom drivings for those classes: `deriving-aeson`, `aeson-deriving` and many others.
 
 So to use JSON request body we can define our own type, derive proper classes and
 we are done.
@@ -368,7 +368,7 @@ curl -X 'GET' \
 
 ## Adding some goodies to the servers
 
-There are some useful addons that make development of the servers
+There are some useful add-ons that make development of the servers
 much more pleasant. Let's discuss couple of them.
 
 ### Add swagger
@@ -377,7 +377,7 @@ Making `curl` request can quickly become hard to manage as
 our servers become more complicated. There is OpenAPI standard 
 that defines how to describe HTTP-server API. Also it provides
 Swagger. It is a tool to make it easy to check how server behaves.
-It pprovides an HTTP-client for the server which allows us to 
+It provides an HTTP-client for the server which allows us to 
 query server routes.
 
 Let's add a swagger to our server. Just add this line:
@@ -401,12 +401,12 @@ withSwagger :: SwaggerConfig m -> Server m -> Server m
 ```
 
 We will study the `ServerConfig` in details in one of the next chapters
-but for now the default value whcih is set with `def` from library `data-default`
+but for now the default value which is set with `def` from library `data-default`
 is fine.
 
 ### Add simple logs to the server
 
-We can look at the request and trsponse data with tracing functions
+We can look at the request and response data with tracing functions
 which come from library `mig-extra` from the module `Mig.Extra.Plugin.Trace`:
 
 ```haskell
@@ -432,7 +432,7 @@ applyPlugin :: Plugin m -> Server m -> Server m
 ```
 
 We show simplified signatures here. The real ones are overloaded by the first argument.
-but we will dicuss plugins in depth in the separate chapter. For now it's
+But we will discuss plugins in depth in the separate chapter. For now it's
 ok to assume that those functions are defined in that simplified way.
 
 So let's look at the data that goes through our server:
@@ -473,13 +473,13 @@ log:
   type: http-response
 ```
 
-This isan easy way to add addhock logs to the application.
+This is an easy way to add add hock logs to the application.
 Note that those logs are not aware of concurrency and will 
 report intermingled messages on concurrent queries.
 
-We can add real loggs with more generic versions of the functions
+We can add real logs with more generic versions of the functions
 which accept callback and we can pass the logger function defined in terms
-of one of the standard haskell logging libraries, say `katip` or `fast-logger`:
+of one of the standard Haskell logging libraries, say `katip` or `fast-logger`:
 
 ```haskell
 import Data.Aeson as Json
@@ -490,8 +490,8 @@ logHttpBy :: (Json.Value -> m ()) -> Verbosity -> Plugin m
 ## Summary
 
 We have learned how various parts of the requests can be queries
-with newtype wrappers. There are only handful of them.
-we can query
+with `newtype` wrappers. There are only handful of them.
+We can query
 
 * `Query name value` - for required queries
 * `Body media value` - for request body
@@ -499,13 +499,13 @@ we can query
 * `Header name value` - for required headers
 * `OptionalHeader name value` - for optional headers
 * `Capture name value` - for path captures
-* `QueryFlag` - for booleab query that can be missing in the path (and then it is `false`)
+* `QueryFlag` - for boolean query that can be missing in the path (and then it is `false`)
 
 We have learned to use specialized versions for servers which operate
 only in terms of `IO` or `Json`. We can import the module `Mig.Json.IO`
-and our signatures would bcome more simple and specific.
+and our signatures would become more simple and specific.
 
-we have learned how by ony-liners we can add to the server some useful features:
+We have learned how by one-liners we can add to the server some useful features:
 
 * swagger: `(withSwagger def server)` 
     For calls to the server in the UI  
