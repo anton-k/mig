@@ -66,7 +66,7 @@ dependencies:
   - aeson
   - random
   - time
-  - pretty-show
+  - pretty-simple
   - openapi3
   - safe
   - containers

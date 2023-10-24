@@ -1,6 +1,7 @@
 -- | Converts mig server to WAI-application.
 module Mig.Server.Wai (
   ServerConfig (..),
+  FindRouteType (..),
   Kilobytes,
   toApplication,
 ) where
@@ -8,6 +9,7 @@ module Mig.Server.Wai (
 import Control.Monad.Catch
 import Data.ByteString qualified as B
 import Data.ByteString.Lazy qualified as BL
+import Data.Default
 import Data.Foldable
 import Data.IORef
 import Data.Map.Strict qualified as Map
@@ -28,17 +30,30 @@ data ServerConfig = ServerConfig
   { maxBodySize :: Maybe Kilobytes
   -- ^ limit the request body size. By default it is unlimited.
   , cache :: Maybe CacheConfig
+  , findRoute :: FindRouteType
   }
+
+instance Default ServerConfig where
+  def = ServerConfig Nothing Nothing TreeFinder
+
+-- | Algorithm to find route handlers by path
+data FindRouteType = TreeFinder | PlainFinder
 
 toApplication :: ServerConfig -> Server IO -> Wai.Application
 toApplication config = case config.cache of
-  Just cacheConfig -> toApplicationWithCache cacheConfig config
-  Nothing -> toApplicationNoCache config
+  Just cacheConfig ->
+    case config.findRoute of
+      TreeFinder -> toApplicationWithCache cacheConfig config treeApiStrategy
+      PlainFinder -> toApplicationWithCache cacheConfig config plainApiStrategy
+  Nothing ->
+    case config.findRoute of
+      TreeFinder -> toApplicationNoCache config treeApiStrategy
+      PlainFinder -> toApplicationNoCache config plainApiStrategy
 
 -- | Convert server to WAI-application
-toApplicationNoCache :: ServerConfig -> Server IO -> Wai.Application
-toApplicationNoCache config server req procResponse = do
-  mResp <- handleError onErr (fromServer server) =<< fromRequest config.maxBodySize req
+toApplicationNoCache :: ServerConfig -> FindRoute nf IO -> Server IO -> Wai.Application
+toApplicationNoCache config findRoute server req procResponse = do
+  mResp <- handleError onErr (fromServer findRoute server) =<< fromRequest config.maxBodySize req
   procResponse $ toWaiResponse $ fromMaybe noResult mResp
   where
     noResult = badRequest @Text ("Server produces nothing" :: Text)
@@ -47,10 +62,10 @@ toApplicationNoCache config server req procResponse = do
     onErr err = const $ pure $ Just $ badRequest @Text $ "Error: Exception has happened: " <> toText (show err)
 
 -- | Convert server to WAI-application
-toApplicationWithCache :: CacheConfig -> ServerConfig -> Server IO -> Wai.Application
-toApplicationWithCache cacheConfig config server req procResponse = do
+toApplicationWithCache :: CacheConfig -> ServerConfig -> FindRoute nf IO -> Server IO -> Wai.Application
+toApplicationWithCache cacheConfig config findRoute server req procResponse = do
   cache <- newRouteCache cacheConfig
-  mResp <- handleError onErr (fromServerWithCache cache server) =<< fromRequest config.maxBodySize req
+  mResp <- handleError onErr (fromServerWithCache findRoute cache server) =<< fromRequest config.maxBodySize req
   procResponse $ toWaiResponse $ fromMaybe noResult mResp
   where
     noResult = badRequest @Text ("Server produces nothing" :: Text)

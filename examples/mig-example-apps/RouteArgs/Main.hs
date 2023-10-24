@@ -13,7 +13,7 @@ import Mig.Json.IO
 main :: IO ()
 main = do
   putStrLn ("The route args server listens on port: " <> show port)
-  runServer port (withSwagger def routeArgs)
+  runServer port routeArgs
   where
     port = 8085
 

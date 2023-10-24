@@ -111,6 +111,7 @@ module Mig (
   runServer,
   runServer',
   ServerConfig (..),
+  FindRouteType (..),
   CacheConfig (..),
   toApplication,
 

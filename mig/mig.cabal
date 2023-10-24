@@ -37,6 +37,7 @@ library
   exposed-modules:
     Mig.Core
     Mig.Core.Api
+    Mig.Core.Api.NormalForm.TreeApi
     Mig.Core.Class
     Mig.Core.Class.MediaType
     Mig.Core.Class.Monad
