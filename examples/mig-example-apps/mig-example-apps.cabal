@@ -76,7 +76,7 @@ executable counter-client-mig-example-app
     , mig-swagger-ui
     , mtl
     , openapi3
-    , pretty-show
+    , pretty-simple
     , random
     , safe
     , text
@@ -127,7 +127,7 @@ executable counter-mig-example-app
     , mig-swagger-ui
     , mtl
     , openapi3
-    , pretty-show
+    , pretty-simple
     , random
     , safe
     , text
@@ -178,7 +178,7 @@ executable hello-world-client-mig-example-app
     , mig-server
     , mig-swagger-ui
     , openapi3
-    , pretty-show
+    , pretty-simple
     , random
     , safe
     , text
@@ -228,7 +228,7 @@ executable hello-world-mig-example-app
     , mig-server
     , mig-swagger-ui
     , openapi3
-    , pretty-show
+    , pretty-simple
     , random
     , safe
     , text
@@ -291,7 +291,7 @@ executable html-mig-example-app
     , mig-server
     , mig-swagger-ui
     , openapi3
-    , pretty-show
+    , pretty-simple
     , random
     , safe
     , text
@@ -351,7 +351,7 @@ executable json-api-mig-example-app
     , mig-server
     , mig-swagger-ui
     , openapi3
-    , pretty-show
+    , pretty-simple
     , random
     , safe
     , text
@@ -403,7 +403,7 @@ executable route-args-client-mig-example-app
     , mig-server
     , mig-swagger-ui
     , openapi3
-    , pretty-show
+    , pretty-simple
     , random
     , safe
     , text
@@ -453,7 +453,7 @@ executable route-args-mig-example-app
     , mig-server
     , mig-swagger-ui
     , openapi3
-    , pretty-show
+    , pretty-simple
     , random
     , safe
     , text

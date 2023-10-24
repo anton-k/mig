@@ -1,7 +1,7 @@
 .PHONY: build test run docs
 
 build:
-	stack build mig
+	stack build 
 
 test:
 	stack test

@@ -14,7 +14,7 @@ import Network.Wai.Handler.Warp qualified as Warp
 runServer :: Int -> Server IO -> IO ()
 runServer port server = Warp.run port (toApplication config server)
   where
-    config = ServerConfig{maxBodySize = Nothing, cache = Nothing}
+    config = ServerConfig{maxBodySize = Nothing, cache = Nothing, findRoute = TreeFinder}
 
 runServer' :: ServerConfig -> Int -> Server IO -> IO ()
 runServer' config port server = Warp.run port (toApplication config server)

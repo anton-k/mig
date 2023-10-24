@@ -3,6 +3,9 @@
 -- | Server definition
 module Mig.Core.Server (
   Server (..),
+  FindRoute,
+  treeApiStrategy,
+  plainApiStrategy,
   mapServerFun,
   mapResponse,
   fromServer,
@@ -38,6 +41,7 @@ import Web.HttpApiData
 
 import Mig.Core.Api (Api, fromNormalApi, toNormalApi)
 import Mig.Core.Api qualified as Api
+import Mig.Core.Api.NormalForm.TreeApi qualified as TreeApi
 import Mig.Core.Class.MediaType
 import Mig.Core.Class.Response (IsResp (..), Resp (..))
 import Mig.Core.Class.Route
@@ -100,20 +104,41 @@ mapServerFun f (Server server) = Server $ fmap (\x -> Route x.info (f x.run)) se
 mapResponse :: (Functor m) => (Response -> Response) -> Server m -> Server m
 mapResponse f = mapServerFun $ \fun -> fmap (fmap f) . fun
 
+data FindRoute nf m = FindRoute
+  { toNormalForm :: Api (Route m) -> nf (Route m)
+  , getPath :: [Text] -> nf (Route m) -> Maybe (Route m, Api.CaptureMap)
+  }
+
+-- | Use TreeApi normal form
+treeApiStrategy :: FindRoute TreeApi.TreeApi m
+treeApiStrategy =
+  FindRoute
+    { toNormalForm = TreeApi.toTreeApi
+    , getPath = TreeApi.getPath
+    }
+
+-- | Use plain api type
+plainApiStrategy :: FindRoute Api.Api m
+plainApiStrategy =
+  FindRoute
+    { toNormalForm = id
+    , getPath = Api.getPath
+    }
+
 {-| Converts server to server function. Server function can be used to implement low-level handlers
 in various server-libraries.
 -}
-fromServer :: (Monad m) => Server m -> ServerFun m
-fromServer (Server server) = \req -> do
+fromServer :: forall m nf. (Monad m) => FindRoute nf m -> Server m -> ServerFun m
+fromServer strategy (Server server) = \req -> do
   case getRoute req of
     Just (routes, captureMap) -> routes.run req{capture = captureMap}
     Nothing -> pure Nothing
   where
-    serverNormal = toNormalApi (fillCaptures server)
+    serverNormal = fmap strategy.toNormalForm $ toNormalApi (fillCaptures server)
 
     getRoute req = do
       api <- fromNormalApi req.method (getMediaType "Accept" req) (getMediaType "Content-Type" req) serverNormal
-      Api.getPath req.path api
+      strategy.getPath req.path api
 
     getMediaType name req = fromMaybe "*/*" $ Map.lookup name req.headers
 
@@ -121,19 +146,19 @@ fromServer (Server server) = \req -> do
 in various server-libraries. This function also uses LRU-cache to cache fetching of
 the routes
 -}
-fromServerWithCache :: forall m. (MonadIO m) => RouteCache m -> Server m -> ServerFun m
-fromServerWithCache cache (Server server) = \req -> do
+fromServerWithCache :: forall m nf. (MonadIO m) => FindRoute nf m -> RouteCache m -> Server m -> ServerFun m
+fromServerWithCache strategy cache (Server server) = \req -> do
   mRoute <- liftIO $ withCache cache getRouteCache (getCacheKey req)
   case mRoute of
     Just (CacheValue captureMap routes) -> routes.run req{capture = captureMap}
     Nothing -> pure Nothing
   where
-    serverNormal = toNormalApi (fillCaptures server)
+    serverNormal = fmap strategy.toNormalForm $ toNormalApi (fillCaptures server)
 
     getRouteCache :: CacheKey -> Maybe (CacheValue m)
     getRouteCache key = do
       api <- fromNormalApi key.method key.outputType key.inputType serverNormal
-      uncurry (flip CacheValue) <$> Api.getPath key.path api
+      uncurry (flip CacheValue) <$> strategy.getPath key.path api
 
 getCacheKey :: Request -> CacheKey
 getCacheKey req =

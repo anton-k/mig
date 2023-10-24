@@ -67,7 +67,7 @@ filterApi check = \case
     rec = filterApi check
 
 -- | converts API to efficient representation to fetch the route handlers by path
-toNormalApi :: forall m. Api (Route.Route m) -> ApiNormal (Route.Route m)
+toNormalApi :: forall m. Api (Route.Route m) -> ApiNormal (Api (Route.Route m))
 toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (toMethodMap api)
   where
     filterEmpty :: Map key (Api val) -> Map key (Api val)
@@ -105,14 +105,14 @@ toNormalApi api = ApiNormal $ fmap (fmap toInputMediaMap . toOutputMediaMap) (to
         filterAnyCases = filter (("*/*" /=) . fst)
 
 -- | Read sub-api by HTTP method, accept-type and content-type
-fromNormalApi :: Method -> ByteString -> ByteString -> ApiNormal a -> Maybe (Api a)
+fromNormalApi :: Method -> ByteString -> ByteString -> ApiNormal a -> Maybe a
 fromNormalApi method outputAccept inputContentType (ApiNormal methodMap) = do
   OutputMediaMap outputMediaMap <- Map.lookup method methodMap
   InputMediaMap inputMediaMap <- lookupMediaMapBy mapAcceptMedia outputMediaMap outputAccept
   lookupMediaMapBy mapContentMedia inputMediaMap inputContentType
 
 -- | Efficient representation of API to fetch routes
-newtype ApiNormal a = ApiNormal (MethodMap (OutputMediaMap (InputMediaMap (Api a))))
+newtype ApiNormal a = ApiNormal (MethodMap (OutputMediaMap (InputMediaMap a)))
   deriving (Show, Eq, Functor)
 
 -- | Mthod map

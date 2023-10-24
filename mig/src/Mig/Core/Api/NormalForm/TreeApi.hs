@@ -12,8 +12,9 @@ import Data.List qualified as List
 import Data.List.Extra qualified as List
 import Data.Map.Strict (Map)
 import Data.Map.Strict qualified as Map
-import Data.Maybe (mapMaybe)
+import Data.Maybe (isNothing, mapMaybe)
 import Data.Text (Text)
+import Data.Text qualified as Text
 
 import Mig.Core.Api (Api (..), Path (..), PathItem (..))
 
@@ -23,22 +24,24 @@ data TreeApi a
   = WithStaticPath [Text] (TreeApi a)
   | WithCapturePath [Text] (TreeApi a)
   | SwitchApi (Maybe a) (Map Text (TreeApi a)) (Maybe (CaptureCase a))
+  deriving (Eq, Show, Functor)
 
 data CaptureCase a = CaptureCase
   { name :: Text
   , api :: TreeApi a
   }
+  deriving (Eq, Show, Functor)
 
 -- | Get a route by path, also extracts capture map
-getPath :: [Text] -> TreeApi a -> Maybe (CaptureMap, a)
-getPath = go mempty
+getPath :: [Text] -> TreeApi a -> Maybe (a, CaptureMap)
+getPath mainPath = go mempty (filter (not . Text.null) mainPath)
   where
-    go :: CaptureMap -> [Text] -> TreeApi a -> Maybe (CaptureMap, a)
+    go :: CaptureMap -> [Text] -> TreeApi a -> Maybe (a, CaptureMap)
     go !captures !path !api =
       case path of
         [] ->
           case api of
-            SwitchApi (Just result) _ _ -> Just (captures, result)
+            SwitchApi (Just result) _ _ -> Just (result, captures)
             _ -> Nothing
         headPath : tailPath ->
           case api of
@@ -81,15 +84,26 @@ accumCapture !captures !names !path =
 -- convert to normal form
 
 toTreeApi :: Api a -> TreeApi a
-toTreeApi = \case
-  Empty -> SwitchApi Nothing mempty Nothing
-  WithPath path subApi -> case fromPathPrefix path of
-    Nothing -> toTreeApi subApi
-    Just prefix -> case prefix of
-      StaticPrefix ps rest -> WithStaticPath ps (toTreeApi $ WithPath rest subApi)
-      CapturePrefix ps rest -> WithCapturePath ps (toTreeApi $ WithPath rest subApi)
-  HandleRoute a -> SwitchApi (Just a) mempty Nothing
-  Append a b -> fromAlts $ orderAppends (collectAppends a <> collectAppends b)
+toTreeApi =
+  joinPaths . \case
+    Empty -> SwitchApi Nothing mempty Nothing
+    WithPath path subApi -> case fromPathPrefix path of
+      Nothing -> toTreeApi subApi
+      Just prefix -> case prefix of
+        StaticPrefix ps rest -> WithStaticPath ps (toTreeApi $ WithPath rest subApi)
+        CapturePrefix ps rest -> WithCapturePath ps (toTreeApi $ WithPath rest subApi)
+    HandleRoute a -> SwitchApi (Just a) mempty Nothing
+    Append a b -> fromAlts $ orderAppends (collectAppends a <> collectAppends b)
+
+joinPaths :: TreeApi a -> TreeApi a
+joinPaths = \case
+  SwitchApi mRoute alts mCapture -> SwitchApi mRoute (fmap joinPaths alts) (fmap joinCapturePaths mCapture)
+  WithStaticPath pathA (WithStaticPath pathB subApi) -> joinPaths (WithStaticPath (pathA ++ pathB) subApi)
+  WithCapturePath namesA (WithCapturePath namesB subApi) -> joinPaths (WithCapturePath (namesA ++ namesB) subApi)
+  WithStaticPath path subApi -> WithStaticPath path (joinPaths subApi)
+  WithCapturePath names subApi -> WithCapturePath names (joinPaths subApi)
+  where
+    joinCapturePaths x = x{api = joinPaths x.api}
 
 data Alts a = Alts
   { appends :: [(Text, Api a)]
@@ -136,9 +150,24 @@ orderAppends items =
 
 fromAlts :: Alts a -> TreeApi a
 fromAlts alts =
-  SwitchApi alts.route (fmap toTreeApi $ Map.fromList alts.appends) (fmap toCaptureCase alts.capture)
+  case getStaticSingleton of
+    Just (path, subApi) -> WithStaticPath [path] (toTreeApi subApi)
+    Nothing ->
+      case getCaptureSingleton of
+        Just (names, subApi) -> WithCapturePath [names] (toTreeApi subApi)
+        Nothing -> SwitchApi alts.route (fmap toTreeApi $ Map.fromList alts.appends) (fmap toCaptureCase alts.capture)
   where
     toCaptureCase (name, api) = CaptureCase name (toTreeApi api)
+
+    getStaticSingleton =
+      case alts.appends of
+        [(path, subApi)] | isNothing alts.route && isNothing alts.capture -> Just (path, subApi)
+        _ -> Nothing
+
+    getCaptureSingleton =
+      case alts.capture of
+        Just (name, subApi) | isNothing alts.route && null alts.appends -> Just (name, subApi)
+        _ -> Nothing
 
 data PathPrefix
   = StaticPrefix [Text] Path
