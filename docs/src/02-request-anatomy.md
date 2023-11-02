@@ -75,7 +75,7 @@ by the name:
 
 ```haskell
 hello :: Query "who" Text -> Get (Resp Text)
-hello (Query name) = Send $
+hello (Query name) =
   pure $ ok $ "Hello " <> name 
 ```
 
@@ -109,7 +109,7 @@ queries in the handler. For example if we want to greet two persons we can write
 
 ```haskell
 hello :: Query "personA" Text -> Query "personB" Text -> Get (Resp Text)
-hello (Query nameA) (Query nameB) = Send $
+hello (Query nameA) (Query nameB) = 
   pure $ ok $ "Hello " <> nameA <> " and " <> nameB   
 ```
 
@@ -118,7 +118,7 @@ For example let's add two numbers:
 
 ```haskell
 add :: Query "a" Int -> Query "b" Int -> Get (Resp Int)
-add (Query a) (Query b) = Send $
+add (Query a) (Query b) = 
   pure $ ok (a + b)
 ```
 
@@ -131,7 +131,7 @@ Let's for example query numbers for addition as capture parameters:
 
 ```haskell
 add :: Capture "a" Int -> Capture "b" Int -> Get (Resp Int)
-add (Query a) (Query b) = Send $
+add (Query a) (Query b) = 
   pure $ ok (a + b)
 ```
 
@@ -176,7 +176,7 @@ For the example we haven't altered the server and our example:
 
 ```haskell
 add :: Query "a" Int -> Query "b" Int -> Get (Resp Int)
-add (Query a) (Query b) = Send $
+add (Query a) (Query b) =
   pure $ ok (a + b)
 
 server = "api/v1/add" /. add
@@ -223,7 +223,7 @@ data AddInput = AddInput
 
 -- | Using JSON as body request
 handleAddJson :: Body AddInput -> Post (Resp Int)
-handleAddJson (Body (AddInput a b)) = Send $ 
+handleAddJson (Body (AddInput a b)) =  
   pure $ ok $ a + b
 ```
 
@@ -291,7 +291,7 @@ server =
 
 -- | Simple getter
 helloWorld :: Get (Resp Text)
-helloWorld = Send $ do
+helloWorld = do
   pure $ ok "Hello world!"
 
 newtype TraceId = TraceId Text
@@ -301,12 +301,12 @@ newtype TraceId = TraceId Text
 and using conditional output status
 -}
 handleSucc :: Header "Trace-Id" TraceId -> Query "value" Int -> Get (Resp Int)
-handleSucc (Header _traceId) (Query n) = Send $ do
+handleSucc (Header _traceId) (Query n) = 
   pure $ ok (succ n)
 
 -- | Using optional query parameters.
 handleSuccOpt :: Optional "value" Int -> Get (Resp Int)
-handleSuccOpt (Optional n) = Send $ do
+handleSuccOpt (Optional n) =
   pure $ case n of
     Just val -> ok (succ val)
     Nothing -> ok 0 
@@ -314,12 +314,12 @@ handleSuccOpt (Optional n) = Send $ do
 {-| Using several query parameters
 -}
 handleAdd :: Query "a" Int -> Query "b" Int -> Get (Resp Int)
-handleAdd (Query a) (Query b) = Send $ do
+handleAdd (Query a) (Query b) = 
   pure $ ok $ a + b
 
 -- | Using query flag if flag is false returns 0
 handleAddIf :: Query "a" Int -> Query "b" Int -> QueryFlag "perform" -> Get (Resp Int)
-handleAddIf (Query a) (Query b) (QueryFlag addFlag) = Send $ do
+handleAddIf (Query a) (Query b) (QueryFlag addFlag) = do
   pure $
     ok $
       if addFlag
@@ -332,7 +332,7 @@ captured in URL. For example:
 > http://localhost:8085/hello/api/mul/3/100
 -}
 handleMul :: Capture "a" Int -> Capture "b" Int -> Get (Resp Int)
-handleMul (Capture a) (Capture b) = Send $ do
+handleMul (Capture a) (Capture b) = do
   pure $ ok (a * b)
 
 data AddInput = AddInput
@@ -343,7 +343,7 @@ data AddInput = AddInput
 
 -- | Using JSON as input
 handleAddJson :: Body AddInput -> Post (Resp Int)
-handleAddJson (Body (AddInput a b)) = Send $ do
+handleAddJson (Body (AddInput a b)) = 
   pure $ ok $ a + b
 ```
 

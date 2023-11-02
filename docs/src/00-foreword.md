@@ -10,8 +10,6 @@ The main features are:
 
 * easy to use. It has simple design on purpose
 
-* it defines no custom server monads. I promise you
-
 * expressive DSL to compose servers
 
 * type-safe route handlers and conversions
@@ -40,7 +38,7 @@ server = "api/v1/hello" /. hello
 
 -- | The handler definition as a function
 hello :: Get (Resp Text)
-hello = Send $ pure $ ok "Hello World"
+hello = pure $ ok "Hello World"
 ```
 
 

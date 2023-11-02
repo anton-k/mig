@@ -46,7 +46,7 @@ routeArgs =
 
 -- | Simple getter
 helloWorld :: Get (Resp Text)
-helloWorld = Send $ do
+helloWorld = do
   pure $ ok "Hello world!"
 
 newtype TraceId = TraceId Text
@@ -56,7 +56,7 @@ newtype TraceId = TraceId Text
 and using conditional output status
 -}
 handleSucc :: Header "Trace-Id" TraceId -> Query "value" Int -> Get (Resp Int)
-handleSucc (Header traceId) (Query n) = Send $ do
+handleSucc (Header traceId) (Query n) = do
   pure $ setHeader "Trace-Id" traceId $ setStatus st $ ok (succ n)
   where
     st
@@ -65,7 +65,7 @@ handleSucc (Header traceId) (Query n) = Send $ do
 
 -- | Using optional query parameters and error as RespOr.
 handleSuccOpt :: Optional "value" Int -> Get (RespOr Text Int)
-handleSuccOpt (Optional n) = Send $ do
+handleSuccOpt (Optional n) = do
   pure $ case n of
     Just val -> ok (succ val)
     Nothing -> bad status500 "error: no input"
@@ -75,14 +75,14 @@ Note that function can have any number of arguments.
 We encode the input type with proper type-wrapper.
 -}
 handleAdd :: Query "a" Int -> Query "b" Int -> Get (Resp Int)
-handleAdd (Query a) (Query b) = Send $ do
+handleAdd (Query a) (Query b) = do
   pure $ addHeaders headers $ ok $ a + b
   where
     headers = [("args", "a, b")]
 
 -- | Using query flag if flag is false returns 0
 handleAddIf :: Query "a" Int -> Query "b" Int -> QueryFlag "perform" -> Get (Resp Int)
-handleAddIf (Query a) (Query b) (QueryFlag addFlag) = Send $ do
+handleAddIf (Query a) (Query b) (QueryFlag addFlag) = do
   pure $
     ok $
       if addFlag
@@ -95,7 +95,7 @@ captured in URL. For example:
 > http://localhost:8085/hello/api/mul/3/100
 -}
 handleMul :: Capture "a" Int -> Capture "b" Int -> Get (Resp Int)
-handleMul (Capture a) (Capture b) = Send $ do
+handleMul (Capture a) (Capture b) = do
   pure $ ok (a * b)
 
 data AddInput = AddInput
@@ -106,13 +106,12 @@ data AddInput = AddInput
 
 -- | Using JSON as input
 handleAddJson :: Body AddInput -> Post (Resp Int)
-handleAddJson (Body (AddInput a b)) = Send $ do
+handleAddJson (Body (AddInput a b)) = do
   pure $ ok $ a + b
 
 handleSquareRoot :: Body Float -> Post (RespOr Text Float)
 handleSquareRoot (Body arg) =
-  Send $
-    pure $
-      if arg >= 0
-        then ok (sqrt arg)
-        else bad badRequest400 "Argument for square root should be non-negative"
+  pure $
+    if arg >= 0
+      then ok (sqrt arg)
+      else bad badRequest400 "Argument for square root should be non-negative"

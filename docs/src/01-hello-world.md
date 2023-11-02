@@ -104,6 +104,8 @@ We have type synonyms for all HTTP-methods (`Get`, `Post`, `Put` etc).
 
 It's interesting to know that library mig does not use any custom monads for operation. 
 Instead it runs on top of monad provided by the user. Usually it would be `IO` or `Reader` over `IO`.
+Also for convenience `Send` is also `Monad`, `MonadTrans` and `MonadIO`.
+So we can omit `Send` constructor in many cases.
 
 ### HTTP-response type
 
@@ -143,7 +145,7 @@ Let's complete the example and define a handler which returns static text:
 
 ```haskell
 hello :: Get IO (Resp Json)
-hello = Send $ pure $ ok "Hello World!"
+hello = pure $ ok "Hello World!"
 ```
 
 We have several wrappers here:
@@ -193,7 +195,7 @@ server :: Server IO
 server = "api/v1/hello" /. hello
 
 hello :: Get IO (Resp Json Text)
-hello = Send $ pure $ ok "Hello World!"
+hello = pure $ ok "Hello World!"
 ```
 
 If we run the code we can test it with `curl` in command line:
@@ -210,7 +212,7 @@ Let's define another handler to say `bye`:
 
 ```haskell
 bye :: Get IO (Resp Json)
-bye = Send $ pure $ ok "Goodbye"
+bye = pure $ ok "Goodbye"
 ```
 
 We can add it to the server with monoid method as `Server m` is a `Monoid`:

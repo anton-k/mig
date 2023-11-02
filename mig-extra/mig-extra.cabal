@@ -67,5 +67,6 @@ library
     , template-haskell
     , text
     , time
+    , transformers
     , yaml
   default-language: GHC2021

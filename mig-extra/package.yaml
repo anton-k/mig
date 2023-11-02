@@ -49,6 +49,7 @@ dependencies:
 - exceptions
 - mig-client
 - template-haskell
+- transformers
 
 ghc-options:
 - -Wall

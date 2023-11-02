@@ -134,7 +134,7 @@ server =
   "square-root" /. squareRoot
 
 squareRoot :: Body Float -> Post (RespOr Text Float)
-squareRoot (Body arg) = Send $ pure $
+squareRoot (Body arg) = pure $
   if arg >= 0 
     then ok (sqrt arg)
     else bad badRequest400 "Argument for square root should be non-negative"
@@ -161,7 +161,7 @@ trace id from request to the response. Let's do it with `addHeaders`:
 
 ```haskell
 passTrace :: Header "trace-id" Text -> Post (Resp ())
-passTrace (Header traceId) = Send $ 
+passTrace (Header traceId) =  
   pure $ addHeaders [("trace-id", toHeader traceId)] $ ok ()
 ```
 
