@@ -1,4 +1,4 @@
-cabal-version:      1.12
+cabal-version: 1.12
 
 -- This file has been generated from package.yaml by hpack version 0.35.2.
 --
@@ -16,42 +16,38 @@ maintainer:         anton.kholomiov@gmail.com
 copyright:          2023 Anton Kholomiov
 license:            BSD3
 build-type:         Simple
-extra-source-files: README.md
+extra-source-files:
+    README.md
 
 source-repository head
-  type:     git
+  type: git
   location: https://github.com/anton-k/mig
 
 library
   exposed-modules:
-    Mig.Extra.Derive
-    Mig.Extra.Plugin.Auth
-    Mig.Extra.Plugin.Exception
-    Mig.Extra.Plugin.Trace
-    Mig.Extra.Server.Common
-    Mig.Extra.Server.Html
-    Mig.Extra.Server.Html.IO
-    Mig.Extra.Server.IO
-    Mig.Extra.Server.Json
-    Mig.Extra.Server.Json.IO
-
-  other-modules:      Paths_mig_extra
-  hs-source-dirs:     src
+      Mig.Extra.Derive
+      Mig.Extra.Plugin.Auth
+      Mig.Extra.Plugin.Exception
+      Mig.Extra.Plugin.Trace
+      Mig.Extra.Server.Common
+      Mig.Extra.Server.Html
+      Mig.Extra.Server.Html.IO
+      Mig.Extra.Server.IO
+      Mig.Extra.Server.Json
+      Mig.Extra.Server.Json.IO
+  other-modules:
+      Paths_mig_extra
+  hs-source-dirs:
+      src
   default-extensions:
-    DataKinds
-    DerivingStrategies
-    DuplicateRecordFields
-    LambdaCase
-    OverloadedRecordDot
-    OverloadedStrings
-    TypeFamilies
-
-  ghc-options:
-    -Wall -Wcompat -Widentities -Wincomplete-record-updates
-    -Wincomplete-uni-patterns -Wmissing-export-lists
-    -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
-    -Wunused-packages
-
+      DerivingStrategies
+      TypeFamilies
+      DataKinds
+      OverloadedRecordDot
+      OverloadedStrings
+      DuplicateRecordFields
+      LambdaCase
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wunused-packages
   build-depends:
       aeson
     , base >=4.7 && <5
@@ -71,6 +67,6 @@ library
     , template-haskell
     , text
     , time
+    , transformers
     , yaml
-
-  default-language:   GHC2021
+  default-language: GHC2021

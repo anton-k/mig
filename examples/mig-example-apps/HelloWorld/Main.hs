@@ -25,4 +25,4 @@ server = "api/v1/hello" /. hello
 
 -- | Handler takes no inputs and marked as Get HTTP-request that returns Text response as Json.
 hello :: Get IO (Resp Json Text)
-hello = Send $ pure $ ok "Hello World!"
+hello = pure $ ok "Hello World!"

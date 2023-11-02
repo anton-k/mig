@@ -48,6 +48,7 @@ dependencies:
 - insert-ordered-containers
 - lens
 - lrucache
+- transformers
 
 default-extensions:
   - OverloadedStrings

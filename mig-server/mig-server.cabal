@@ -108,5 +108,6 @@ library
     , mig-wai
     , openapi3
     , text
+    , transformers
     , warp
   default-language: GHC2021

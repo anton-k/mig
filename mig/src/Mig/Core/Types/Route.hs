@@ -36,6 +36,8 @@ module Mig.Core.Types.Route (
   TRACE,
 ) where
 
+import Control.Monad.IO.Class
+import Control.Monad.Trans.Class
 import Data.Text (Text)
 import GHC.TypeLits
 import Network.HTTP.Types.Method
@@ -125,6 +127,10 @@ The repsonse value is usually one of two cases:
 See the class @IsResp@ for more details on response types.
 -}
 newtype Send method m a = Send {unSend :: m a}
+  deriving newtype (Functor, Applicative, Monad, MonadIO)
+
+instance MonadTrans (Send method) where
+  lift = Send
 
 -- | type-level GET-method tag
 data GET
