@@ -37,24 +37,23 @@ description:        With library mig we can build lightweight and composable ser
                     > -- | Init simple hello world server whith two routes:
                     > server :: Server IO
                     > server =
-                    >   "api" /. "v1" /.
-                    >     mconcat
+                    >   "api/v1" /.
                     >       [ "hello" /. hello
                     >       , "bye" /. bye
                     >       ]
                     >
                     > -- | Handler takes no inputs and marked as Get HTTP-request that returns Text.
                     > hello :: Get (Resp Text)
-                    > hello = Get $ pure $ ok "Hello World"
+                    > hello = pure $ ok "Hello World"
                     >
                     > -- | Handle with URL-param query and json body input as Post HTTP-request that returns Text.
                     > bye :: Query "name" Text -> Body Text -> Post (Resp Text)
-                    > bye (Query name) (Body greeting) = Post $
+                    > bye (Query name) (Body greeting) =
                     >   pure $ ok $ "Bye to " <> name <> " " <> greeting
                     .
                     Please see:
                     .
-                    * quick start guide at <https://github.com/anton-k/mig#readme>
+                    * quick start guide at <https://anton-k.github.io/mig/>
                     .
                     * examples directory for more fun servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
 category:           Web

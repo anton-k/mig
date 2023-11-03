@@ -88,3 +88,28 @@ library
     , text
     , transformers
   default-language: GHC2021
+
+test-suite mig-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Test.Api
+  hs-source-dirs:
+      test
+  default-extensions:
+      OverloadedStrings
+      TypeFamilies
+      OverloadedRecordDot
+      DuplicateRecordFields
+      LambdaCase
+      DerivingStrategies
+      StrictData
+      AllowAmbiguousTypes
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , hspec
+    , mig
+    , text
+  default-language: GHC2021
