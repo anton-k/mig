@@ -93,7 +93,7 @@ test-suite mig-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Test.Api
+      Test.Api Test.Server.Hello
   hs-source-dirs:
       test
   default-extensions:
@@ -107,9 +107,11 @@ test-suite mig-test
       AllowAmbiguousTypes
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
     , containers
     , hspec
+    , http-types
     , mig
     , text
   default-language: GHC2021

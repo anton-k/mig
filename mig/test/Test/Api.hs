@@ -6,7 +6,7 @@ import Mig.Core.Api
 import Test.Hspec
 
 spec :: Spec
-spec = describe "Api tests" $ do
+spec = describe "api" $ do
   checkRoutes
   checkCaptures
   checkFlatApi

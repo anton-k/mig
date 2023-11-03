@@ -1,7 +1,10 @@
 import Test.Api qualified as Api
+import Test.Server.Hello qualified as Server.Hello
 
 import Test.Hspec
 
 main :: IO ()
 main =
-  hspec $ Api.spec
+  hspec $ do
+    Api.spec
+    Server.Hello.spec
