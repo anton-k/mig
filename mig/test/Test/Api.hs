@@ -11,6 +11,9 @@ spec = describe "api" $ do
   checkCaptures
   checkFlatApi
 
+notFound :: (Show a, Eq a) => Maybe a -> Expectation
+notFound a = a `shouldBe` Nothing
+
 -- static routes
 
 checkRoutes :: Spec
@@ -18,12 +21,15 @@ checkRoutes = do
   it "enter route (positive cases)" $ do
     getPath ["api", "v1", "hello"] helloApi `shouldBe` Just ("hello", mempty)
     getPath ["api", "v1", "bye"] helloApi `shouldBe` Just ("bye", mempty)
-  it "enter route (negative cases)" $ do
-    getPath ["api", "v1"] helloApi `shouldBe` Nothing
-    getPath [] helloApi `shouldBe` Nothing
-    getPath ["api", "v1", "hello", "there"] helloApi `shouldBe` Nothing
-    getPath ["api", "v1"] (mempty @(Api Text)) `shouldBe` Nothing
-    getPath [] (mempty @(Api Text)) `shouldBe` Nothing
+  it "enter route (negative cases)" $
+    mapM_
+      notFound
+      [ getPath ["api", "v1"] helloApi
+      , getPath [] helloApi
+      , getPath ["api", "v1", "hello", "there"] helloApi
+      , getPath ["api", "v1"] (mempty @(Api Text))
+      , getPath [] (mempty @(Api Text))
+      ]
 
 helloApi :: Api Text
 helloApi =
@@ -32,16 +38,6 @@ helloApi =
       [ WithPath "hello" (HandleRoute "hello")
       , WithPath "bye" (HandleRoute "bye")
       ]
-
--- flat api
-
-checkFlatApi :: Spec
-checkFlatApi =
-  it "flat api" $
-    flatApi helloApi
-      `shouldBe` [ ("api/v1/hello", "hello")
-                 , ("api/v1/bye", "bye")
-                 ]
 
 -- captures
 
@@ -53,10 +49,13 @@ checkCaptures = do
     getPath ["api", "capture2", "hello", "bye"] captureApi
       `shouldBe` Just ("capture2", Map.fromList [("name1", "hello"), ("name2", "bye")])
 
-  it "captures (negative cases)" $ do
-    getPath ["api", "capture1"] captureApi `shouldBe` Nothing
-    getPath ["api", "capture2", "hello"] captureApi `shouldBe` Nothing
-    getPath ["api", "capture2", "hello", "bye", "error"] captureApi `shouldBe` Nothing
+  it "captures (negative cases)" $
+    mapM_
+      (notFound . flip getPath captureApi)
+      [ ["api", "capture1"]
+      , ["api", "capture2", "hello"]
+      , ["api", "capture2", "hello", "bye", "error"]
+      ]
 
 captureApi :: Api Text
 captureApi =
@@ -65,3 +64,13 @@ captureApi =
       [ WithPath ("capture1" <> Path [CapturePath "name1"]) (HandleRoute "capture1")
       , WithPath ("capture2" <> Path [CapturePath "name1", CapturePath "name2"]) (HandleRoute "capture2")
       ]
+
+-- flat api
+
+checkFlatApi :: Spec
+checkFlatApi =
+  it "flat api" $
+    flatApi helloApi
+      `shouldBe` [ ("api/v1/hello", "hello")
+                 , ("api/v1/bye", "bye")
+                 ]

@@ -7,4 +7,5 @@ main :: IO ()
 main =
   hspec $ do
     Api.spec
-    Server.Hello.spec
+    describe "server" $ do
+      Server.Hello.spec

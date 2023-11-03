@@ -27,7 +27,7 @@ handleBye = pure $ ok "bye"
 -- tests
 
 -- we use low-level representation of server as a function: Request -> m (Maybe Response)
--- to check server properties without wpawning a full server environment
+-- to check server properties without launching in a full server environment
 spec :: Spec
 spec = describe "hello world server" $ do
   describe "plain route finder" $ specBy plainApiStrategy
