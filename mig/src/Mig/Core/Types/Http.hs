@@ -6,6 +6,7 @@ module Mig.Core.Types.Http (
   Request (..),
   Response (..),
   ResponseBody (..),
+  HeaderMap,
   QueryMap,
   ToText (..),
 
@@ -46,6 +47,7 @@ data Response = Response
   , body :: ResponseBody
   -- ^ response body
   }
+  deriving (Show, Eq)
 
 -- | Response with no content
 noContentResponse :: Status -> Response
@@ -56,6 +58,7 @@ data ResponseBody
   = RawResp MediaType BL.ByteString
   | FileResp FilePath
   | StreamResp
+  deriving (Show, Eq)
 
 -- | Http request
 data Request = Request

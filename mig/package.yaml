@@ -28,28 +28,6 @@ description: |
   .
   * examples directory for more fun servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
 
-dependencies:
-- base >= 4.7 && < 5
-- aeson
-- text
-- http-types
-- blaze-html
-- bytestring
-- containers
-- mtl
-- exceptions
-- http-api-data
-- http-media
-- case-insensitive
-- safe
-- openapi3
-- filepath
-- extra
-- insert-ordered-containers
-- lens
-- lrucache
-- transformers
-
 default-extensions:
   - OverloadedStrings
   - TypeFamilies
@@ -77,3 +55,45 @@ ghc-options:
 
 library:
   source-dirs: src
+  dependencies:
+  - base >= 4.7 && < 5
+  - aeson
+  - text
+  - http-types
+  - blaze-html
+  - bytestring
+  - containers
+  - mtl
+  - exceptions
+  - http-api-data
+  - http-media
+  - case-insensitive
+  - safe
+  - openapi3
+  - filepath
+  - extra
+  - insert-ordered-containers
+  - lens
+  - lrucache
+  - transformers
+
+tests:
+  mig-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - aeson
+    - base >= 4.7 && < 5
+    - containers
+    - mig
+    - hspec
+    - text
+    - http-types
+    - mtl
+    - openapi3
+    - http-api-data
+    - bytestring
