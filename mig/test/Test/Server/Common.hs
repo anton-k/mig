@@ -1,6 +1,7 @@
 module Test.Server.Common (
   emptyReq,
   jsonResp,
+  parseResp,
 ) where
 
 import Data.Aeson qualified as Json
@@ -28,3 +29,8 @@ jsonResp a =
     , headers = [("Content-Type", "application/json")]
     , body = RawResp "application/json" (Json.encode a)
     }
+
+parseResp :: (Json.FromJSON a) => Response -> Maybe a
+parseResp resp = case resp.body of
+  RawResp "application/json" bsResp -> Json.decode bsResp
+  _ -> Nothing

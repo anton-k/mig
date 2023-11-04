@@ -4,7 +4,6 @@
 module Test.Server.Counter (spec) where
 
 import Control.Monad.Reader
-import Data.Aeson qualified as Json
 import Data.IORef
 import Data.Maybe
 import Data.Text qualified as Text
@@ -75,7 +74,7 @@ script f inputs = do
   runApp env $ catMaybes <$> mapM go inputs
   where
     go :: Int -> App (Maybe Int)
-    go n = fmap (parseInt =<<) $ do
+    go n = fmap (parseResp =<<) $ do
       mRes <- f (putReq n)
       if (isJust mRes)
         then f getReq
@@ -90,8 +89,3 @@ script f inputs = do
 
     getReq :: Request
     getReq = emptyReq{path = ["counter", "get"]}
-
-    parseInt :: Response -> Maybe Int
-    parseInt resp = case resp.body of
-      RawResp "application/json" bsResp -> Json.decode bsResp
-      _ -> Nothing

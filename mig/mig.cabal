@@ -115,10 +115,13 @@ test-suite mig-test
   build-depends:
       aeson
     , base >=4.7 && <5
+    , bytestring
     , containers
     , hspec
+    , http-api-data
     , http-types
     , mig
     , mtl
+    , openapi3
     , text
   default-language: GHC2021

@@ -94,4 +94,6 @@ tests:
     - text
     - http-types
     - mtl
-
+    - openapi3
+    - http-api-data
+    - bytestring

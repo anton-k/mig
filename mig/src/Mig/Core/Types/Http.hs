@@ -6,6 +6,7 @@ module Mig.Core.Types.Http (
   Request (..),
   Response (..),
   ResponseBody (..),
+  HeaderMap,
   QueryMap,
   ToText (..),
 
