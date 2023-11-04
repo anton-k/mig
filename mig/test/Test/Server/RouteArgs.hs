@@ -202,7 +202,7 @@ specBy finder = do
       describe "query" $ do
         it "one query" $ shouldReq @Int queryReq (Just 2)
         it "missing query" $ shouldReq @Int (queryReq{query = mempty}) Nothing
-        it "two queries" $ shouldReq (twoQueryReq 2 3) (Just $ toAddResult 2 3)
+        it "two queries" $ shouldReq @Text (twoQueryReq 2 3) (Just $ toAddResult 2 3)
 
     queryReq :: Request
     queryReq =
