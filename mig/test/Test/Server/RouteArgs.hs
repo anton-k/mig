@@ -84,9 +84,16 @@ handleSuccHeaderOpt (OptionalHeader n) = do
 Note that function can have any number of arguments.
 We encode the input type with proper type-wrapper.
 -}
-handleAdd :: Query "a" Int -> Query "b" Int -> Get IO (Resp Json Int)
+handleAdd :: Query "a" Int -> Query "b" Int -> Get IO (Resp Json Text)
 handleAdd (Query a) (Query b) = do
-  pure $ ok $ a + b
+  pure $ ok $ toAddResult a b
+
+toAddResult :: Int -> Int -> Text
+toAddResult a b =
+  Text.unwords ["Addition of", intToText a, "and", intToText b, "is", intToText $ a + b]
+
+intToText :: Int -> Text
+intToText = Text.pack . show
 
 -- | Using query flag if flag is false returns 0
 handleAddIf :: Query "a" Int -> Query "b" Int -> QueryFlag "perform" -> Get IO (Resp Json Int)
@@ -102,9 +109,14 @@ captured in URL. For example:
 
 > http://localhost:8085/hello/api/mul/3/100
 -}
-handleMul :: Capture "a" Int -> Capture "b" Int -> Get IO (Resp Json Int)
+handleMul :: Capture "a" Int -> Capture "b" Int -> Get IO (Resp Json Text)
 handleMul (Capture a) (Capture b) = do
-  pure $ ok (a * b)
+  pure $ ok $ toMulResult a b
+
+toMulResult :: Int -> Int -> Text
+toMulResult a b =
+  Text.unwords
+    ["Multiplication of", intToText a, "and", intToText b, "is", intToText $ a * b]
 
 data AddInput = AddInput
   { a :: Int
@@ -190,7 +202,7 @@ specBy finder = do
       describe "query" $ do
         it "one query" $ shouldReq @Int queryReq (Just 2)
         it "missing query" $ shouldReq @Int (queryReq{query = mempty}) Nothing
-        it "two queries" $ shouldReq @Int (twoQueryReq 2 2) (Just 4)
+        it "two queries" $ shouldReq (twoQueryReq 2 3) (Just $ toAddResult 2 3)
 
     queryReq :: Request
     queryReq =
@@ -273,10 +285,10 @@ specBy finder = do
     checkCapture :: Spec
     checkCapture =
       describe "capture" $ do
-        it "positive case" $ shouldReq @Int (captureReq [2, 3]) (Just 6)
-        it "not enough  captures" $ shouldReq @Int ((captureReq [2]){capture = mempty}) Nothing
-        it "too many captures" $ shouldReq @Int ((captureReq [2, 3, 4]){capture = mempty}) Nothing
-        it "missing captures" $ shouldReq @Int ((captureReq []){capture = mempty}) Nothing
+        it "positive case" $ shouldReq @Text (captureReq [2, 3]) (Just (toMulResult 2 3))
+        it "not enough  captures" $ shouldReq @Text ((captureReq [2]){capture = mempty}) Nothing
+        it "too many captures" $ shouldReq @Text ((captureReq [2, 3, 4]){capture = mempty}) Nothing
+        it "missing captures" $ shouldReq @Text ((captureReq []){capture = mempty}) Nothing
 
     captureReq :: [Int] -> Request
     captureReq args =
