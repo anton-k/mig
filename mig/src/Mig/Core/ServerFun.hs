@@ -5,7 +5,8 @@ The server is a function from @Request@ to @Response@.
 
 To use the mig library with some server library like wai/warp we need
 to provide conversion of type @ServerFun@ to the representarion of the given library.
-We can convert mig server to @ServerFun@ with function @toServerFun@.
+We can convert mig server to @ServerFun@ with function @fromServer@.
+The @Maybe@ type in the result encodes missing routes.
 -}
 module Mig.Core.ServerFun (
   ServerFun,
@@ -20,7 +21,7 @@ module Mig.Core.ServerFun (
   withOptionalHeader,
   withPathInfo,
   withFullPathInfo,
-  handleError,
+  handleServerError,
 ) where
 
 import Control.Monad
@@ -151,10 +152,11 @@ withPathInfo act = \req -> act req.path req
 withFullPathInfo :: (Text -> ServerFun m) -> ServerFun m
 withFullPathInfo act = \req -> act (toFullPath req) req
 
+-- | Runs response getter action and returns it for any input request
 sendResponse :: (Functor m) => m Response -> ServerFun m
 sendResponse act = const $ fmap Just act
 
 -- | Handle errors
-handleError :: (Exception a, MonadCatch m) => (a -> ServerFun m) -> ServerFun m -> ServerFun m
-handleError handler act = \req ->
+handleServerError :: (Exception a, MonadCatch m) => (a -> ServerFun m) -> ServerFun m -> ServerFun m
+handleServerError handler act = \req ->
   (act req) `catch` (\err -> handler err req)

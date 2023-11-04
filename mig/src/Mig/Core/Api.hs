@@ -10,6 +10,7 @@ module Mig.Core.Api (
   CaptureMap,
   flatApi,
   fromFlatApi,
+  MethodMap,
   OutputMediaMap (..),
   InputMediaMap (..),
   MediaMap (..),

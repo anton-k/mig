@@ -5,6 +5,7 @@ license:             BSD3
 author:              "Anton Kholomiov"
 maintainer:          "anton.kholomiov@gmail.com"
 copyright:           "2023 Anton Kholomiov"
+license-file:        LICENSE
 
 extra-source-files:
 - README.md
@@ -17,16 +18,18 @@ category:            Web
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
 description: |
-  Core for the mig server library.
+  The Core for the mig server library.
   With library mig we can build lightweight and composable servers.
   There are only couple of combinators to assemble servers from parts.
   It supports generic handler functions as servant does. But strives to use more
   simple model for API. It does not go to describing Server API at type level which
   leads to simpler error messages.
   .
-  * quick start guide at <https://github.com/anton-k/mig#readme>
+  * quick start guide at <https://anton-k.github.io/mig/>
   .
-  * examples directory for more fun servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
+  * examples directory for more servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
+  .
+  * reference for the main functions: <https://anton-k.github.io/mig/09-reference.html>
 
 default-extensions:
   - OverloadedStrings

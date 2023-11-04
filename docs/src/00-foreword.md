@@ -53,10 +53,19 @@ With cabal we can install it from Hackage:
 cabal install mig-server --lib
 ```
 
-With stack we can link to the repo in extra-deps
+With stack we can link to the repo in `extra-deps` (put it in your `stack.yaml`):
 
-```
-TODO: example here
+```yaml
+extra-deps:
+  - git: https://github.com/anton-k/mig
+    commit: <some-commit-of-the-mig-libray>
+    subdirs:
+      - mig
+      - mig-extra
+      - mig-client
+      - mig-wai
+      - mig-swagger-ui
+      - mig-server
 ```
 
 ## Structure of the library

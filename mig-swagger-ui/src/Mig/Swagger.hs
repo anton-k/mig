@@ -53,6 +53,9 @@ data DefaultInfo = DefaultInfo
   , version :: Text
   }
 
+{-| Adds most common used info to OpenApi schema. Use this function
+in the @mapSchema@ field of the @SwaggerConfig@.
+-}
 addDefaultInfo :: DefaultInfo -> OpenApi -> OpenApi
 addDefaultInfo appInfo =
   OA.info

@@ -7,16 +7,18 @@ cabal-version: 1.12
 name:               mig
 version:            0.2.0.0
 synopsis:           Build lightweight and composable servers
-description:        Core for the mig server library.
+description:        The Core for the mig server library.
                     With library mig we can build lightweight and composable servers.
                     There are only couple of combinators to assemble servers from parts.
                     It supports generic handler functions as servant does. But strives to use more
                     simple model for API. It does not go to describing Server API at type level which
                     leads to simpler error messages.
                     .
-                    * quick start guide at <https://github.com/anton-k/mig#readme>
+                    * quick start guide at <https://anton-k.github.io/mig/>
                     .
-                    * examples directory for more fun servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
+                    * examples directory for more servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
+                    .
+                    * reference for the main functions: <https://anton-k.github.io/mig/09-reference.html>
 category:           Web
 homepage:           https://github.com/anton-k/mig#readme
 bug-reports:        https://github.com/anton-k/mig/issues
@@ -24,6 +26,7 @@ author:             Anton Kholomiov
 maintainer:         anton.kholomiov@gmail.com
 copyright:          2023 Anton Kholomiov
 license:            BSD3
+license-file:       LICENSE
 build-type:         Simple
 extra-source-files:
     README.md

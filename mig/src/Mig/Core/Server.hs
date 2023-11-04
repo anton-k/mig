@@ -3,7 +3,7 @@
 -- | Server definition
 module Mig.Core.Server (
   Server (..),
-  FindRoute,
+  FindRoute (..),
   treeApiStrategy,
   plainApiStrategy,
   mapServerFun,
@@ -59,11 +59,10 @@ Example:
 
 > server :: Server IO
 > server =
->   "api" /. "v1" /.
->      mconcat
->        [ "foo" /. handleFoo
->        , "bar" /. handleBar
->        ]
+>   "api/v1" /.
+>      [ "foo" /. handleFoo
+>      , "bar" /. handleBar
+>      ]
 >
 > handleFoo :: Query "name" Int -> Get IO (Resp Json Text)
 > handleBar :: Post Json IO Text
@@ -84,12 +83,12 @@ and other request types.
 To distinguish by HTTP-method we use corresponding constructors: Get, Post, Put, etc.
 Let's discuss the structure of the constructor. Let's take Get for example:
 
-> type Get ty m a = Send GET ty m a
-> newtype Send ty m a = Send (m a)
+> type Get m a = Send GET m a
+> newtype Send method m a = Send (m a)
 
  Let's look at the arguments of he type
 
-* @ty@ - media-type of the response. it can be: Text, Html, Json, OctetStream, AnyMedia, FormUrlEncoded
+* @method@ - type tag of the HTTP-method (GET, POST, PUT, DELETE, etc.)
 * @m@ - underlying server monad
 * @a@ - response type. It should be convertible to the type of the response (see @IsResp@ class).
 -}
@@ -104,12 +103,17 @@ mapServerFun f (Server server) = Server $ fmap (\x -> Route x.info (f x.run)) se
 mapResponse :: (Functor m) => (Response -> Response) -> Server m -> Server m
 mapResponse f = mapServerFun $ \fun -> fmap (fmap f) . fun
 
-data FindRoute nf m = FindRoute
-  { toNormalForm :: Api (Route m) -> nf (Route m)
-  , getPath :: [Text] -> nf (Route m) -> Maybe (Route m, Api.CaptureMap)
+{-| API route finder strategy. The API can be transformed to some normal form
+for faster route lookup. So far we have two normal forms.
+One is plain Api type as it is. And another one is tree-structure
+where path switches are encoded with Map's.
+-}
+data FindRoute normalForm m = FindRoute
+  { toNormalForm :: Api (Route m) -> normalForm (Route m)
+  , getPath :: [Text] -> normalForm (Route m) -> Maybe (Route m, Api.CaptureMap)
   }
 
--- | Use TreeApi normal form
+-- | Use TreeApi normal form. Path switches are encoded as Maps.
 treeApiStrategy :: FindRoute TreeApi.TreeApi m
 treeApiStrategy =
   FindRoute
@@ -117,7 +121,7 @@ treeApiStrategy =
     , getPath = TreeApi.getPath
     }
 
--- | Use plain api type
+-- | Use plain api type. Just Api type as it is.
 plainApiStrategy :: FindRoute Api.Api m
 plainApiStrategy =
   FindRoute
@@ -128,7 +132,7 @@ plainApiStrategy =
 {-| Converts server to server function. Server function can be used to implement low-level handlers
 in various server-libraries.
 -}
-fromServer :: forall m nf. (Monad m) => FindRoute nf m -> Server m -> ServerFun m
+fromServer :: forall m normalForm. (Monad m) => FindRoute normalForm m -> Server m -> ServerFun m
 fromServer strategy (Server server) = \req -> do
   case getRoute req of
     Just (routes, captureMap) -> routes.run req{capture = captureMap}
@@ -146,7 +150,7 @@ fromServer strategy (Server server) = \req -> do
 in various server-libraries. This function also uses LRU-cache to cache fetching of
 the routes
 -}
-fromServerWithCache :: forall m nf. (MonadIO m) => FindRoute nf m -> RouteCache m -> Server m -> ServerFun m
+fromServerWithCache :: forall m normalForm. (MonadIO m) => FindRoute normalForm m -> RouteCache m -> Server m -> ServerFun m
 fromServerWithCache strategy cache (Server server) = \req -> do
   mRoute <- liftIO $ withCache cache getRouteCache (getCacheKey req)
   case mRoute of
@@ -411,8 +415,9 @@ filterPath :: (Api.Path -> Bool) -> Server m -> Server m
 filterPath cond (Server a) =
   Server (Api.fromFlatApi $ filter (cond . fst) $ Api.flatApi a)
 
+-- | Returns a list of all paths in the server
 getServerPaths :: Server m -> [Api.Path]
-getServerPaths (Server a) = fmap fst $ Api.flatApi a
+getServerPaths (Server a) = fmap fst $ Api.flatApi (fillCaptures a)
 
 {-| Links one route of the server to another
 so that every call to first path is redirected to the second path

@@ -1,6 +1,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 
--- | Creation of routes from functions
+{-| Creation of routes from functions. A route is a handler function
+for single path of the server.
+-}
 module Mig.Core.Class.Route (
   Route (..),
   ToRoute (..),

@@ -56,6 +56,8 @@ description:        With library mig we can build lightweight and composable ser
                     * quick start guide at <https://anton-k.github.io/mig/>
                     .
                     * examples directory for more fun servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
+                    .
+                    * reference for the main functions: <https://anton-k.github.io/mig/09-reference.html>
 category:           Web
 homepage:           https://github.com/anton-k/mig#readme
 bug-reports:        https://github.com/anton-k/mig/issues
@@ -101,10 +103,10 @@ library
     , data-default
     , http-api-data
     , http-types
-    , mig
-    , mig-extra
-    , mig-swagger-ui
-    , mig-wai
+    , mig >=0.2
+    , mig-extra >=0.1
+    , mig-swagger-ui >=0.1
+    , mig-wai >=0.1
     , openapi3
     , text
     , transformers

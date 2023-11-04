@@ -30,7 +30,9 @@ data ServerConfig = ServerConfig
   { maxBodySize :: Maybe Kilobytes
   -- ^ limit the request body size. By default it is unlimited.
   , cache :: Maybe CacheConfig
+  -- ^ LRU cache if needed (default is no cache)
   , findRoute :: FindRouteType
+  -- ^ API normal form and find route strategy (default is plain api finder)
   }
 
 instance Default ServerConfig where
@@ -43,6 +45,11 @@ data FindRouteType
   | -- | no optimization (prefer it for small servers)
     PlainFinder
 
+{-| Converts mig server to WAI-application.
+Note that only IO-based servers are supported. To use custom monad
+we can use @hoistServer@ function which renders monad to IO based or
+the class @HasServer@ which defines such transformatio for several useful cases.
+-}
 toApplication :: ServerConfig -> Server IO -> Wai.Application
 toApplication config = case config.cache of
   Just cacheConfig ->
@@ -57,7 +64,7 @@ toApplication config = case config.cache of
 -- | Convert server to WAI-application
 toApplicationNoCache :: ServerConfig -> FindRoute nf IO -> Server IO -> Wai.Application
 toApplicationNoCache config findRoute server req procResponse = do
-  mResp <- handleError onErr (fromServer findRoute server) =<< fromRequest config.maxBodySize req
+  mResp <- handleServerError onErr (fromServer findRoute server) =<< fromRequest config.maxBodySize req
   procResponse $ toWaiResponse $ fromMaybe noResult mResp
   where
     noResult = badRequest @Text ("Server produces nothing" :: Text)
@@ -69,7 +76,7 @@ toApplicationNoCache config findRoute server req procResponse = do
 toApplicationWithCache :: CacheConfig -> ServerConfig -> FindRoute nf IO -> Server IO -> Wai.Application
 toApplicationWithCache cacheConfig config findRoute server req procResponse = do
   cache <- newRouteCache cacheConfig
-  mResp <- handleError onErr (fromServerWithCache findRoute cache server) =<< fromRequest config.maxBodySize req
+  mResp <- handleServerError onErr (fromServerWithCache findRoute cache server) =<< fromRequest config.maxBodySize req
   procResponse $ toWaiResponse $ fromMaybe noResult mResp
   where
     noResult = badRequest @Text ("Server produces nothing" :: Text)

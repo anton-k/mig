@@ -7,21 +7,22 @@ cabal-version: 1.12
 name:               mig-wai
 version:            0.1.0.0
 synopsis:           Render mig-servers as wai-applications
-description:        Please see the README on GitHub at <https://github.com/githubuser/mig-wai#readme>
+description:        Library to render mig-servers as WAI-applications.
 category:           Web
-homepage:           https://github.com/githubuser/mig-wai#readme
-bug-reports:        https://github.com/githubuser/mig-wai/issues
-author:             Author name here
-maintainer:         example@example.com
-copyright:          2023 Author name here
+homepage:           https://github.com/anton-k/mig#readme
+bug-reports:        https://github.com/anton-k/mig/issues
+author:             Anton Kholomiov
+maintainer:         anton.kholomiov@gmail.com
+copyright:          2023 Anton Kholomiov
 license:            BSD3
+license-file:       LICENSE
 build-type:         Simple
 extra-source-files:
     README.md
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/mig-wai
+  location: https://github.com/anton-k/mig
 
 library
   exposed-modules:
@@ -42,7 +43,7 @@ library
     , containers
     , data-default
     , exceptions
-    , mig
+    , mig >=0.2
     , text
     , wai
   default-language: GHC2021

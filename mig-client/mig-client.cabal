@@ -16,6 +16,7 @@ author:             Anton Kholomiov
 maintainer:         anton.kholomiov@gmail.com
 copyright:          2023 Anton Kholomiov
 license:            BSD3
+license-file:       LICENSE
 build-type:         Simple
 extra-source-files:
     README.md
@@ -49,7 +50,7 @@ library
     , http-client
     , http-media
     , http-types
-    , mig
+    , mig >=0.2
     , mtl
     , text
   default-language: GHC2021

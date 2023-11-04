@@ -12,9 +12,7 @@ The main features are:
 
 * expressive DSL to compose servers
 
-* type-safe handlers
-
-* handlers are encoded with generic haskell functions
+* type-safe handlers which are encoded with generic haskell functions
 
 * built on top of WAI and warp server libraries.
 
@@ -31,26 +29,27 @@ Example of hello world server. To run example use library @mig-server@ which is 
 > -- replies on a single route
 > server :: Server IO
 > server =
->   "api" /. "v1" /.
->     mconcat
+>   "api/v1" /.
 >       [ "hello" /. hello
 >       , "bye" /. bye
 >       ]
 >
 > -- | Handler takes no inputs and marked as Get HTTP-request that returns Text.
 > hello :: Get (Resp Text)
-> hello = Get $ pure $ ok "Hello World"
+> hello = pure $ ok "Hello World"
 >
-> -- | Handle with URL-param query and json body input as Post HTTP-request that returns Text.
-> bye :: Query "name" Text -> Body ByeRequest -> Post (Resp Text)
-> bye (Query name) (Body req) = Post $
->   pure $ ok $ "Bye to " <> name <> " " <> req.greeting
+> -- | Handle with URL-param query and capture as Get HTTP-request that returns Text.
+> bye :: Query "name" Text -> Capture "suffix" -> Post (Resp Text)
+> bye (Query name) (Capture suffix) =
+>   pure $ ok $ "Bye to " <> name <> " " <> suffix
 
 References:
 
-* quick start guide at <https://github.com/anton-k/mig#readme>
+* quick start guide at <https://anton-k.github.io/mig/>
 
-* examples directory for more fun servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
+* examples directory for more servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
+
+* reference for the main functions: <https://anton-k.github.io/mig/09-reference.html>
 -}
 module Mig.Core (
   module X,
