@@ -5,6 +5,7 @@ license:             BSD3
 author:              "Anton Kholomiov"
 maintainer:          "anton.kholomiov@gmail.com"
 copyright:           "2023 Anton Kholomiov"
+license-file:        LICENSE
 
 extra-source-files:
 - README.md
@@ -27,7 +28,7 @@ dependencies:
 - bytestring
 - containers
 - http-api-data
-- mig
+- mig >= 0.2
 - http-client
 - http-media
 - mtl

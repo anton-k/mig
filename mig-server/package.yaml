@@ -5,6 +5,7 @@ license:             BSD3
 author:              "Anton Kholomiov"
 maintainer:          "anton.kholomiov@gmail.com"
 copyright:           "2023 Anton Kholomiov"
+license-file:        LICENSE
 
 extra-source-files:
 - README.md
@@ -66,6 +67,8 @@ description: |
   * quick start guide at <https://anton-k.github.io/mig/>
   .
   * examples directory for more fun servers: at <https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#readme>
+  .
+  * reference for the main functions: <https://anton-k.github.io/mig/09-reference.html>
 
 language: GHC2021
 
@@ -81,16 +84,16 @@ default-extensions:
 dependencies:
 - aeson
 - base >= 4.7 && < 5
-- mig
-- mig-extra
-- mig-wai
+- mig >= 0.2
+- mig-extra >= 0.1
+- mig-wai >= 0.1
 - http-types
 - text
 - http-api-data
 - openapi3
 - blaze-html
 - warp
-- mig-swagger-ui
+- mig-swagger-ui >= 0.1
 - data-default
 - transformers
 

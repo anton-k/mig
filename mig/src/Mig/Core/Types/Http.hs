@@ -1,6 +1,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 
--- | Core types and functions
+-- | Core types and functions for HTTP
 module Mig.Core.Types.Http (
   -- * types
   Request (..),

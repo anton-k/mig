@@ -5,6 +5,7 @@ license:             BSD3
 author:              "Anton Kholomiov"
 maintainer:          "anton.kholomiov@gmail.com"
 copyright:           "2023 Anton Kholomiov"
+license-file:        LICENSE
 
 extra-source-files:
 - README.md
@@ -32,7 +33,7 @@ default-extensions:
 dependencies:
 - base >= 4.7 && < 5
 - data-default
-- mig
+- mig >= 0.2
 - http-api-data
 - blaze-html
 - http-types

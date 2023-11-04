@@ -3,8 +3,9 @@ version:             0.1.0.0
 github:              "anton-k/mig"
 license:             BSD3
 author:              "Anton Kholomiov"
-maintainer:          "example@example.com"
+maintainer:          "anton.kholomiov@gmail.com"
 copyright:           "2023 Anton Kholomiov"
+license-file:        LICENSE
 
 # Metadata used when publishing your package
 synopsis:            Swagger servers for mig library
@@ -13,7 +14,11 @@ category:            Web
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Swagger servers for mig library
+description: |
+  Appends swagger servers for mig servers.
+  Example of the usage. This code adds swagger server which is serverd on path "swagger-ui" to our server
+  .
+  > withSwagger def server
 
 language:
   GHC2021
@@ -30,7 +35,7 @@ dependencies:
 - bytestring
 - text
 - lens
-- mig
+- mig >= 0.2
 - file-embed-lzma
 - blaze-html
 - blaze-markup

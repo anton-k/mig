@@ -1,9 +1,11 @@
 {-| Debug utils for server. Simple logger for HTTP requests and responses
-Also we can use real logging functions with ***By versions.
-Simple variants are only for manual testing. It prints to stdout
+Also we can use real logging functions with ***By versions of the logger functions.
+Simple variants are only for local testing. It prints to stdout
 with no ordering of the concurrent prints.
 
-It can be useful for fast setup of debug for your application.
+It can be useful for fast setup of debug for your application. Example of the usage:
+
+> applyPlugin (logHttp V2) server
 -}
 module Mig.Extra.Plugin.Trace (
   logReq,

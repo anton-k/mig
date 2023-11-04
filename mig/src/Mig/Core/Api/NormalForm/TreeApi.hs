@@ -20,12 +20,18 @@ import Mig.Core.Api (Api (..), Path (..), PathItem (..))
 
 type CaptureMap = Map Text Text
 
+{-| This form of API encodes path switch points as Map's so
+it does not retraverse the routes and can find the right
+branch on switch. In the plain api it tries the routes one by one
+until it finds the right one.
+-}
 data TreeApi a
   = WithStaticPath [Text] (TreeApi a)
   | WithCapturePath [Text] (TreeApi a)
   | SwitchApi (Maybe a) (Map Text (TreeApi a)) (Maybe (CaptureCase a))
   deriving (Eq, Show, Functor)
 
+-- | Capture case alternative
 data CaptureCase a = CaptureCase
   { name :: Text
   , api :: TreeApi a
@@ -81,8 +87,8 @@ accumCapture !captures !names !path =
         [] -> Nothing
 
 -------------------------------------------------------------------------------------
--- convert to normal form
 
+-- | Converts api to tree normal form
 toTreeApi :: Api a -> TreeApi a
 toTreeApi =
   joinPaths . \case
