@@ -1,28 +1,6 @@
 # TODO
 
-Next release due: start of November.
-Also see isssue for the new features to implement. 
 Features, improvements and open problems for releases:
-
-### Curent: v2
-
-* add TH for deriving of all classes by type: `IsParam`, `IsBody`, `IsParaBody`, `IsReaderServer`
-   * deriveParam ''Type
-   * deriveBody ''Type
-* try out Response as generic type a (without Resp) for special case of Json servers (use overlappable)
-* support for LRU cache for routes (research on efficient route/api representation)
-
-## v2.2
-
-add client support
-
-* write docs page on clients
-
-* add client examples
-  * generate client for JsonExample
-  * make example for client and server from the same definition: use Counter as example
-  * reuse JsonApi and hello-world
-  * client from scratch (without defined server) to test client-only apps
 
 ## v3
 
