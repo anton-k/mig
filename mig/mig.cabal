@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:               mig
-version:            0.2.0.0
+version:            0.2.0.1
 synopsis:           Build lightweight and composable servers
 description:        The Core for the mig server library.
                     With library mig we can build lightweight and composable servers.
@@ -68,6 +68,7 @@ library
       DerivingStrategies
       StrictData
       AllowAmbiguousTypes
+      DataKinds
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wunused-packages
   build-depends:
       aeson
@@ -114,6 +115,7 @@ test-suite mig-test
       DerivingStrategies
       StrictData
       AllowAmbiguousTypes
+      DataKinds
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson

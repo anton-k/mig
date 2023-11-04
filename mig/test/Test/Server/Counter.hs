@@ -1,5 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-
 -- | Test case for ReaderT based server
 module Test.Server.Counter (spec) where
 
