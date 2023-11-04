@@ -10,13 +10,15 @@ import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BL
 import Data.Map.Strict qualified as Map
 import Data.OpenApi (ToParamSchema, ToSchema)
+import Data.String
 import Data.Text (Text)
 import Data.Text qualified as Text
 import GHC.Generics (Generic)
 import Mig.Core
 import Mig.Core qualified as Request (Request (..))
+import Mig.Core qualified as Response (Response (..))
 import Network.HTTP.Types.Method (Method, methodGet, methodPost)
-import Network.HTTP.Types.Status (badRequest400, ok200, status400, status500)
+import Network.HTTP.Types.Status (badRequest400, status201)
 import Test.Hspec
 import Test.Server.Common
 import Web.HttpApiData (FromHttpApiData (..), ToHttpApiData (..))
@@ -43,6 +45,12 @@ server =
          "add-json" /. handleAddJson
        , -- return error
          "square-root" /. handleSquareRoot
+       , "response"
+          /. [ "status" /. handleStatus
+             , "header" /. handleHeader
+             , "error1" /. handleError1
+             , "error2" /. handleError2
+             ]
        ]
 
 {-| Using several inputs: header argument and required query
@@ -116,6 +124,24 @@ handleSquareRoot (Body arg) =
       then ok (sqrt arg)
       else bad badRequest400 sqrtError
 
+handleStatus :: Get IO (Resp Json Text)
+handleStatus = pure $ setStatus status201 $ ok "Status is 201"
+
+handleHeader :: Capture "name" Text -> Capture "value" Text -> Get IO (Resp Json Text)
+handleHeader (Capture name) (Capture value) =
+  pure $ setHeader (fromString $ Text.unpack name) value $ ok "Set custom header"
+
+handleError1 :: Get IO (Resp Json Text)
+handleError1 = pure $ bad badRequest400 badRequestError
+
+handleError2 :: Capture "value" Int -> Get IO (RespOr Json Text Int)
+handleError2 (Capture n)
+  | n > 0 = pure $ ok n
+  | otherwise = pure $ bad badRequest400 badRequestError
+
+badRequestError :: Text
+badRequestError = "Error: bad request"
+
 sqrtError :: Text
 sqrtError = "Argument for square root should be non-negative"
 
@@ -139,6 +165,10 @@ specBy finder = do
     checkQueryFlag
     checkCapture
     checkBody
+  describe "response" $ do
+    checkStatus
+    checkHeaders
+    checkErrors
   where
     serverFun :: ServerFun IO
     serverFun = fromServer finder server
@@ -149,6 +179,9 @@ specBy finder = do
 
     toQuery :: forall a. (Json.ToJSON a) => ByteString -> a -> QueryMap
     toQuery name val = Map.singleton name (Just $ BL.toStrict $ Json.encode @a val)
+
+    jsonHeaders :: HeaderMap
+    jsonHeaders = Map.fromList [("accept", "application/json"), ("content-type", "application/json")]
 
     -- queries
 
@@ -288,5 +321,63 @@ specBy finder = do
         , Request.headers = jsonHeaders
         }
 
-    jsonHeaders :: HeaderMap
-    jsonHeaders = Map.fromList [("accept", "application/json"), ("content-type", "application/json")]
+    -- response status
+
+    checkStatus :: Spec
+    checkStatus =
+      describe "status" $ do
+        it "can set result status" $
+          (fmap (.status) <$> serverFun statusReq) `shouldReturn` Just status201
+        it "can set error status" $
+          (fmap (.status) <$> serverFun (sqrtBodyReq (-1))) `shouldReturn` Just badRequest400
+
+    statusReq :: Request
+    statusReq =
+      emptyReq
+        { path = ["api", "response", "status"]
+        }
+
+    -- response headers
+
+    checkHeaders :: Spec
+    checkHeaders =
+      describe "headers" $
+        it "can set headers" $
+          shouldHeader "foo" "bar"
+      where
+        shouldHeader name value =
+          fmap (any (== header) . Response.headers) <$> serverFun (customHeaderReq name value)
+            `shouldReturn` Just True
+          where
+            header = (fromString $ Text.unpack name, fromString $ Text.unpack value)
+
+    customHeaderReq :: Text -> Text -> Request
+    customHeaderReq name value =
+      emptyReq
+        { path = ["api", "response", "header", name, value]
+        }
+
+    -- response errors
+
+    checkErrors :: Spec
+    checkErrors =
+      describe "custom errors" $ do
+        it "error has the same type as result" $
+          shouldBadReq (customErrorReq ["error1"])
+        it "error has different type" $
+          shouldBadReq (customErrorReq ["error2", "0"])
+        it "no error on positive input" $
+          shouldReq @Int (customErrorReq ["error2", "1"]) (Just 1)
+      where
+        shouldBadReq req =
+          fmap (maybe False isBadReq) (serverFun req) `shouldReturn` True
+
+        isBadReq resp =
+          resp.status == badRequest400
+            && parseResp @Text resp == Just badRequestError
+
+    customErrorReq :: [Text] -> Request
+    customErrorReq args =
+      emptyReq
+        { path = ["api", "response"] <> args
+        }

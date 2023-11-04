@@ -4,7 +4,7 @@ build:
 	stack build 
 
 test:
-	stack test mig
+	stack test 
 
 run:
 	stack run
