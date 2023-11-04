@@ -93,7 +93,13 @@ test-suite mig-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Test.Api Test.Server.Hello
+      Test.Api
+      Test.Server
+      Test.Server.Common
+      Test.Server.Counter
+      Test.Server.Hello
+      Test.Server.RouteArgs
+      Paths_mig
   hs-source-dirs:
       test
   default-extensions:
@@ -113,5 +119,6 @@ test-suite mig-test
     , hspec
     , http-types
     , mig
+    , mtl
     , text
   default-language: GHC2021
