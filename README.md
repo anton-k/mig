@@ -1,4 +1,4 @@
-# Mig - library to write composable and lightweight servers
+# [Mig](https://anton-k.github.io/mig/) - library to write composable and lightweight servers
 
 [![build](https://github.com/anton-k/mig/actions/workflows/compile-and-test.yml/badge.svg)](https://github.com/anton-k/mig/actions/workflows/compile-and-test.yml)
 
