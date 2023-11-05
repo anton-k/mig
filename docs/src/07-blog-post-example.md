@@ -44,7 +44,7 @@ So we report errors to user in HTML-pages.
 
 Let's define a function that will start an empty server:
 
-```
+```haskell
 module Main (
   main,
 ) where
