@@ -62,7 +62,7 @@ Let's be more specific and study our example.
 The type of the handler is `Get IO (Resp Text)`
 In our case we get:
 
-```
+```haskell
 (/.) :: Path -> Get IO (Resp Text) -> Server IO
 ```
 
@@ -72,7 +72,7 @@ The type-level function `MonadOf` knows how to extract `IO` from `Get IO (Resp T
 
 Let's study the signature of the `hello` handler: 
 
-```
+```haskell
 hello :: Get IO (Resp Json Text)
           |  |    |     |    |
           |  |    |     |    +-- response body converted to byte string

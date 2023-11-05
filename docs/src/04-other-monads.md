@@ -101,7 +101,7 @@ and trying things out with swagger.
 
 Note that we use bind operator:
 
-```
+```haskell
   runServer port =<< renderServer server env
 ```
 
