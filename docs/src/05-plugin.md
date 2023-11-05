@@ -1,6 +1,8 @@
 # Plugins
 
 A plugin is a transformation which is applied to all routes in the server.
+Also often it is called a middleware. But here we use a bit shorter name for it
+and call it a `Plugin`.
 It is a pair of functions which transform API-description and server function:
 
 ```haskell
@@ -59,24 +61,24 @@ Let's imagine that we have a function
 logInfo :: Text -> IO ()
 ```
 
-We can query the path with `PathInfo` `newtype`:
+We can query the path with `FullPathInfo` `newtype`:
 
 ```haskell
-newtype PathInfo = PathInfo [Text]
+newtype FullPathInfo = FullPathInfo Text
 ```
 
 And we have a rule for  `ToPlugin` class:
 
-> if `f` is `ToPlugin` then `(PathInfo -> ToPlugin f)` is `ToPlugin`
+> if `f` is `ToPlugin` then `(FullPathInfo -> ToPlugin f)` is `ToPlugin`
 
 So we can create a plugin function:
 
 ```haskell
 logRoutes :: Plugin IO
-logRoutes = toPlugin $ \(PathInfo pathItems) -> prependServerAction $ do
+logRoutes = toPlugin $ \(FullPathInfo path) -> prependServerAction $ do
   now <- getCurrentTime 
   logInfo $ mconcat
-    [ "Call route: ", Text.intercalata "/" pathItems 
+    [ "Call route: ", path 
     , " at ", Text.pack (show now)
     ]
 ```
@@ -127,11 +129,11 @@ route is not going to be performed if connection is insecure.
 
 Let's use this schema for authorization to site. 
 There is a route that provides authorized users with session tokens.
-User can pass credentials as request body over secure connection
+A user can pass credentials as request body over secure connection
 and get session token in response which is valid for some time. 
 
-With that token user can access the rest of the application.
-User can pass token as special header. And we check in the application
+With that token the user can access the rest of the application.
+The user can pass token as a special header. And we check in the application
 that token is valid.
 
 Imagine that we have a type for a session token:

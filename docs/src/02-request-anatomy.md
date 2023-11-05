@@ -60,7 +60,7 @@ We have several types of inputs in HTTP:
    right into it: `api/get/route/someCaptureValueA/someCaptureValueB`
 
 * header parameters. They are in HTTP-request headers. For example header that 
-  reports media-type of the request body: "Content-Type: application/json"
+  reports media-type of the request body: `"Content-Type: application/json"`
 
 * request body. It is a value packed into HTTP-request. It can be JSON or text or raw string
    or XML. All sorts of things can be used as request bodies.
@@ -377,7 +377,7 @@ Making `curl` request can quickly become hard to manage as
 our servers become more complicated. There is OpenAPI standard 
 that defines how to describe HTTP-server API. Also it provides
 Swagger. It is a tool to make it easy to check how server behaves.
-It provides an HTTP-client for the server which allows us to 
+It provides an HTTP-client for the server usable from the browser as plain web-page which allows us to 
 query server routes.
 
 Let's add a swagger to our server. Just add this line:
@@ -400,7 +400,7 @@ We can add swagger to any server with function:
 withSwagger :: SwaggerConfig m -> Server m -> Server m
 ```
 
-We will study the `ServerConfig` in details in one of the next chapters
+We will study the `SwaggerConfig` in details in one of the next chapters
 but for now the default value which is set with `def` from library `data-default`
 is fine.
 
@@ -410,7 +410,7 @@ We can look at the request and response data with tracing functions
 which come from library `mig-extra` from the module `Mig.Extra.Plugin.Trace`:
 
 ```haskell
-data Verbosity = V0 | V1  | V2 | V3
+data Verbosity = V0 | V1 | V2 | V3
 
 -- log http requests and responses
 logHttp :: Verbosity -> Plugin m

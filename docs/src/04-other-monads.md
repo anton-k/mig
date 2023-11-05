@@ -10,6 +10,18 @@ only three types of monads are supported for `Servers`:
 
 So the library is limited in monad choice but all of the cases
 can cover everything you need from the server. 
+
+Also we can use any monad which is convertible to `IO` with function:
+
+```haskell
+hoistServer :: forall a . (m a -> n a) -> Server m -> Server n
+```
+
+The reason why we would like to convert to `IO` because warp server
+convertion function `runServer` works only for the type `Server IO`.
+So we can use any monad but we would like to convert to `IO` at the very and
+to be able to run our server with warp.
+
 I personally prefer to just use `IO` and pass environment around
 to handlers. This process can be automated with `ReaderT` monad.
 Let's study how to use `ReaderT` with the server.
@@ -89,7 +101,7 @@ main :: IO ()
 main = do
   env <- initEnv 
   putStrLn ("The counter server listens on port: " <> show port)
-  runServer port . withSwagger def =<< renderServer server env
+  runServer port $ withSwagger def $ renderServer server env
   where
     port = 8085
 
@@ -99,18 +111,12 @@ server :: Server App
 Here we also add the swagger to the server for easy testing
 and trying things out with swagger.
 
-Note that we use bind operator:
-
-```haskell
-  runServer port =<< renderServer server env
-```
-
 ### Server with Reader monad
 
 Our server has two routes:
 
-* get - to query current state
-* put - to add some integer to the state
+* `get` - to query current state
+* `put` - to add some integer to the state
 
 ```haskell
 server :: Server App
@@ -144,7 +150,7 @@ Let's define the `put` handler:
 ```haskell
 -- | Put handler. It logs the call and updates 
 -- the state with integer which is read from URL
-handlePut :: Capture "arg" Int -> Get App (Resp ())
+handlePut :: Capture "arg" Int -> Post App (Resp ())
 handlePut (Capture val) = Send $ do
   logInfo $ "Call put with: " <> show val
   ref <- asks (.current)
@@ -156,10 +162,33 @@ So we have completed the definition and we can run the app and try it out.
 You can find the complete code of the example in the [`mig` repo](https://github.com/anton-k/mig/blob/main/examples/mig-example-apps/Counter/Main.hs).
 
 
+## Using custom monad
+
+We have studied how to use `ReaderT IO` and `newtype`-wrappers on top of it
+as monads for our server. To use any other monad we need to have the function:
+
+```haskell
+runAsIO :: MyMonad a -> IO a
+```
+
+For custom monad `MyMonad`. If there is such a function we can use function:
+
+```haskell
+hoistServer :: forall a . (m a -> n a) -> Server m -> Server n
+```
+
+Prior to call to `runServer` and run the server which is based on our custom monad:
+
+```haskell
+main :: IO ()
+main = runServer 8085 (hoistServer runAsIO server)
+
+server :: Server MyMonad
+server = ...
+```
+
 ## Summary 
 
 In this chapter we have learned how to use Reader-monad with `mig` library.
 We can define our custom wrapper for `ReaderT+IO` and derive instance 
 of `HasServer` and we are ready to go.
-
-

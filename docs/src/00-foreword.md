@@ -1,26 +1,21 @@
 # Mig by example
 
-Mig is a lightweight and easy to use library to build servers in Haskell.
-It is sort of servant for Simple/Boring Haskell.
+Mig is a lightweight and easy to use library to build HTTP servers and clients in Haskell.
+It is kind of servant for Simple/Boring Haskell.
 This book is an example driven guide to the library.
+The name `mig` (pronounced as meeg) is a russian word for "instant moment".
 
-The main features are:
+The main features of the mig library are:
 
 * lightweight library
-
 * easy to use. It has simple design on purpose
-
 * expressive DSL to compose servers
-
 * type-safe route handlers and conversions
-
 * handlers are encoded with generic Haskell functions
-
 * built on top of WAI and warp server libraries.
-
 * provides Swagger to your server with one-line of code
-
 * relies on standard classes to compose servers. The server is a monoid 
+* we can build HTTP-clients from the server definition
 
 Example of hello world server:
 
@@ -96,9 +91,9 @@ But it is akin to servant in usage of type-safe conversions and type-level safet
 
 ### servant
 
-The mig uses the same ideas of type-safe handlers which a re based on generic Haskell functions.
+The mig uses the same ideas of type-safe handlers which are based on generic Haskell functions.
 The main difference is that in servant the whole server is described as type. 
-Which leads to type-safety and ability to derive API schema, from the type.
+Which leads to type-safety and ability to derive API schema from the type.
 
 But downside of it is fancy big types and very advanced concepts that user needs to know
 in order to use the library. Also one drawback to me is when things go wrong and you get
@@ -115,8 +110,8 @@ Using type-level description of the routes provide the same benefits as in serva
 
 * safe type check of the conversions of low level request and response elements
 * usage of generic Haskell functions as handlers
-
 * declarative design of the servers
+* composition of servers from small sub-servers
 
 In the mig API is a value that is derived from the server at run-time. 
 It allows us to build clients and OpenApi swagger too.
@@ -127,9 +122,12 @@ something more simple.
 ### scotty
 
 The scotty is also in domain of simple, easy to use solutions. 
-so why did I wrote mig and haven't used the scotty instead?
+So why did I wrote mig and haven't used the scotty instead?
 Scotty features more imperative approach where you write handlers as 
 expression for Scotty library monad. But it does not looks so well as in servant's case to me.
 It is harder to assemble servers from parts. And I really like the idea of type-safe
 conversions of various parts of request and response. 
 
+So the scotty is simple enough but for me it lacks some servant features
+such as composability of the servers (nice tree structure of the API)
+and type-safe conversions of various parts of request and response.
