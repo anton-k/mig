@@ -1,5 +1,5 @@
 name:                mig-extra
-version:             0.1.0.0
+version:             0.1.0.1
 github:              "anton-k/mig"
 license:             BSD3
 author:              "Anton Kholomiov"
@@ -33,7 +33,7 @@ default-extensions:
 dependencies:
 - base >= 4.7 && < 5
 - data-default
-- mig >= 0.2
+- mig >= 0.2.0.1
 - http-api-data
 - blaze-html
 - http-types

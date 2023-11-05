@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:               mig-server
-version:            0.1.0.0
+version:            0.1.0.1
 synopsis:           Build lightweight and composable servers
 description:        With library mig we can build lightweight and composable servers.
                     There are only couple of combinators to assemble servers from parts.
@@ -103,10 +103,10 @@ library
     , data-default
     , http-api-data
     , http-types
-    , mig >=0.2
-    , mig-extra >=0.1
+    , mig >=0.2.0.1
+    , mig-extra >=0.1.0.1
     , mig-swagger-ui >=0.1
-    , mig-wai >=0.1
+    , mig-wai >=0.1.0.1
     , openapi3
     , text
     , transformers

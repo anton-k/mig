@@ -1,5 +1,5 @@
 name:                mig-swagger-ui
-version:             0.1.0.0
+version:             0.1.0.1
 github:              "anton-k/mig"
 license:             BSD3
 author:              "Anton Kholomiov"
@@ -35,7 +35,7 @@ dependencies:
 - bytestring
 - text
 - lens
-- mig >= 0.2
+- mig >= 0.2.0.1
 - file-embed-lzma
 - blaze-html
 - blaze-markup

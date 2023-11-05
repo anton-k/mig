@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:               mig-extra
-version:            0.1.0.0
+version:            0.1.0.1
 synopsis:           Extra utils for Mig core library
 description:        Extra utils for mig server library
 category:           Web
@@ -62,7 +62,7 @@ library
     , http-api-data
     , http-media
     , http-types
-    , mig >=0.2
+    , mig >=0.2.0.1
     , mig-client
     , openapi3
     , template-haskell
