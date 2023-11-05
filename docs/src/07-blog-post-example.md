@@ -1,7 +1,7 @@
 # HTML example: Blog site
 
 We have seen many examples of JSON applications. But we can send data in other formats too.
-Most common forma t for human-readable information for HTTP applications
+Most common format for human-readable information for HTTP applications
 is HTML. Any site that we visit sends HTML pages to us. Let's create a simple
 site that shows blog posts and quotes and we can add new blog posts to it.
 Complete code for example is in the [`mig` repo](https://github.com/anton-k/mig/tree/main/examples/mig-example-apps/Html)
@@ -44,7 +44,7 @@ So we report errors to user in HTML-pages.
 
 Let's define a function that will start an empty server:
 
-```
+```haskell
 module Main (
   main,
 ) where

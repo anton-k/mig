@@ -40,7 +40,7 @@ Also there are similar modules for:
 
 Servers for HTML take one step further and remove `Resp` from the equation:
 
-```
+```haskell
 type Get a = Send GET IO (Resp Html a)
 type Post a = Send POST IO (Resp Html a)
 ```

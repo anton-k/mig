@@ -1,5 +1,5 @@
 name:                mig-wai
-version:             0.1.0.0
+version:             0.1.0.1
 github:              "anton-k/mig"
 license:             BSD3
 author:              "Anton Kholomiov"
@@ -31,7 +31,7 @@ dependencies:
 - base >= 4.7 && < 5
 - bytestring
 - containers
-- mig >= 0.2
+- mig >= 0.2.0.1
 - text
 - wai
 - exceptions

@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:               mig-client
-version:            0.1.0.0
+version:            0.1.0.1
 synopsis:           Build http-clients from API definition for mig servers
 description:        With this library we can build client functions for HTTP-applications
                     from the same code as server definition.
@@ -50,7 +50,7 @@ library
     , http-client
     , http-media
     , http-types
-    , mig >=0.2
+    , mig >=0.2.0.1
     , mtl
     , text
   default-language: GHC2021

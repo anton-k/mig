@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:               mig-wai
-version:            0.1.0.0
+version:            0.1.0.1
 synopsis:           Render mig-servers as wai-applications
 description:        Library to render mig-servers as WAI-applications.
 category:           Web
@@ -43,7 +43,7 @@ library
     , containers
     , data-default
     , exceptions
-    , mig >=0.2
+    , mig >=0.2.0.1
     , text
     , wai
   default-language: GHC2021

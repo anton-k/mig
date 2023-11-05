@@ -1,5 +1,5 @@
 name:                mig-server
-version:             0.1.0.0
+version:             0.1.0.1
 github:              "anton-k/mig"
 license:             BSD3
 author:              "Anton Kholomiov"
@@ -84,9 +84,9 @@ default-extensions:
 dependencies:
 - aeson
 - base >= 4.7 && < 5
-- mig >= 0.2
-- mig-extra >= 0.1
-- mig-wai >= 0.1
+- mig >= 0.2.0.1
+- mig-extra >= 0.1.0.1
+- mig-wai >= 0.1.0.1
 - http-types
 - text
 - http-api-data

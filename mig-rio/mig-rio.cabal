@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:               mig-rio
-version:            0.1.0.0
+version:            0.1.0.1
 synopsis:           Utils to use RIO with mig library
 description:        Utils to use mig with rio library
 category:           Web
@@ -35,6 +35,6 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wunused-packages
   build-depends:
       base >=4.7 && <5
-    , mig-server
+    , mig-server >=0.1.0.1
     , rio
   default-language: GHC2021

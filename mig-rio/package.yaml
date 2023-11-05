@@ -1,5 +1,5 @@
 name:                mig-rio
-version:             0.1.0.0
+version:             0.1.0.1
 github:              "anton-k/mig"
 license:             BSD3
 author:              "Anton Kholomiov"
@@ -25,7 +25,7 @@ default-extensions:
 
 dependencies:
 - base >= 4.7 && < 5
-- mig-server
+- mig-server >= 0.1.0.1
 - rio
 
 ghc-options:
