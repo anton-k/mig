@@ -2,7 +2,7 @@
 
 Let's build hello world application. 
 We are going to build simple JSON API server with single route which replies
-with constant text to request
+with constant text to request.
 
 We have installed the library `mig-server`. Let's import the main module.
 It brings into the scope all main functions of the library:
@@ -24,6 +24,9 @@ hello = undefined
 ```
 
 So we serve single route with path `"api/v1/hello"`.
+This example relies on extension `OverloadedStrings` to convert
+string literals to values of `Path` type. Usually I add it in the cabal file of
+the project.
 Let's cover the types first.
 
 ### The server type
@@ -36,7 +39,8 @@ newtype Server m = Server (Api (Route m))
 ```
 
 The `Api` type is a value to describe the API schema and `Route` contains
-useful info on the type of the route (method, description of the inputs and outputs).
+useful info on the type of the route (method, description of the inputs and outputs)
+and how to run the handler function.
 The server is parametrized by some monad type. For this example we use `IO`-monad.
 It means that all our handlers are going to return `IO`-values.
 
@@ -45,7 +49,7 @@ It means that all our handlers are going to return `IO`-values.
 To bind path "api/v1/hello" to handler `hello` we use function `(/.)`. Let's look at it's type signature:
 
 ```haskell
-(/.) :: (ToServer a) => Path -> a -> Server (MonadOf a)
+(/.) :: ToServer a => Path -> a -> Server (MonadOf a)
 ```
 
 It expects the `Path` which has instance of class `IsString` that is why we can
@@ -56,7 +60,7 @@ We have special class called `ToServer` which can convert many different types t
 The output type is a bit tricky: `Server (MonadOf a)`.
 The `MonadOf` is a type function which can extract `m` from `(Server m)`.
 Or for example it can extract `m` from the function `request -> m response`.
-So the `MonadOf` is a way to get underlying server monad from any value.
+So the `MonadOf` is a way to get underlying server monad from any type.
 
 Let's be more specific and study our example. 
 The type of the handler is `Get IO (Resp Text)`
@@ -77,8 +81,8 @@ hello :: Get IO (Resp Json Text)
           |  |    |     |    |
           |  |    |     |    +-- response body converted to byte string
           |  |    |     |
-          |  |    |     +---- codec to convert it 
-          |  |    |           (the media-type route uses for response body)
+          |  |    |     +---- codec to convert result to response body 
+          |  |    |           (the media-type which the route uses for response body)
           |  |    |
           |  |    +---- type of response which holds HTTP-response info with result
           |  |
@@ -99,7 +103,7 @@ The type `Send` is just a wrapper on top of monadic value:
 newtype Send method m a = Send (m a)
 ```
 
-It encodes HTTP-method on type level. This is useful to aggregate value for API-schema of our server.
+It encodes HTTP-method on type level as so called phantom type. This is useful to aggregate value for API-schema of our server.
 We have type synonyms for all HTTP-methods (`Get`, `Post`, `Put` etc).
 
 It's interesting to know that library mig does not use any custom monads for operation. 
@@ -145,7 +149,7 @@ Let's complete the example and define a handler which returns static text:
 
 ```haskell
 hello :: Get IO (Resp Json)
-hello = pure $ ok "Hello World!"
+hello = Send $ pure $ ok "Hello World!"
 ```
 
 We have several wrappers here:
@@ -153,6 +157,14 @@ We have several wrappers here:
 * `ok` - converts text value to http-response `Resp Json Text`
 * `pure` - converts pure value  to IO-based value
 * `Send` - send converts monadic value to server. It adds information on HTTP-method of the return type.
+
+As `Send` is also monad if `m` is a monad we can write this definition
+a bit shorter and omit the `Send` constructor:
+
+```haskell
+hello :: Get IO (Resp Json)
+hello = pure $ ok "Hello World!"
+```
 
 ### Run a server
 
@@ -312,6 +324,17 @@ server =
       ]
 ```
 
+Also for example with paths for alternatives in the list we can omit `toServer` too:
+
+```haskell
+server = 
+  "api/v1" /.
+      [ "hello" /. hello
+      , "bye" /. bye
+      ]
+```
+
+
 ### The path type
 
 Let's discuss the `Path` type.
@@ -331,8 +354,8 @@ data PathItem
 ```
 
 The static path item is a rigid entity with exact match to string.
-We used it in all our examples so far. 
-but capture is wild-card that is going to be used as input to the handler.
+We have used it in all our examples so far. 
+But capture is wild-card which is going to be used as input to the handler.
 
 To construct only rigid paths we can use strings:
 
@@ -341,13 +364,13 @@ To construct only rigid paths we can use strings:
 "foo/bar"
 ```
 
-To get captures we use `*`-wildcard:
+To specify captures we use `*`-wildcard:
 
 ```
 api/v2/*/get
 ```
 
-In the star request captures any text. There might be as many stars 
+In the star mark the request captures any text. There might be as many stars 
 in the path as you wish. But they should be supported by the handler. 
 We will touch upon that later.
 

@@ -54,7 +54,7 @@ type than the type of the result.
 
 ### Response type class `IsResp`
 
-To unify the output we have special type class called `IsResp` for
+To unify the output for both cases of `Resp` and `RespOr` we have special type class called `IsResp` for
 all types which can be converted to low-level HTTP-response type `Response`.
 
 Let's study this type class.
@@ -64,6 +64,7 @@ It has two associated types for the type of the body (`RespBody`) and type of th
 class IsResp a where
   type RespBody a :: Type
   type RespError a :: Type
+  type RespMedia a :: Type
 ```
 
 We can return successful result with method `ok`:
@@ -80,7 +81,7 @@ When things go bad we can report error with method `bad`:
   bad :: Status -> RespError a -> a
 ```
 
-Sometimes at rare cases we do not what to return any content from response.
+Sometimes we do not want to return any content from response.
 We can just report error status and leave the body empty:
 
 ```haskell
@@ -103,6 +104,14 @@ we would like set it explicitly. For that we have the method:
   setMedia :: MediaType -> a -> a
 ```
 
+Also we can set response status with function:
+
+```haskell
+  -- | Set the response status
+  setStatus :: Status -> a -> a
+```
+
+
 Also the core of the class is the method to convert value to low-level response:
 
 ```haskell
@@ -112,7 +121,7 @@ Also the core of the class is the method to convert value to low-level response:
 
 Both `Resp` and `RespOr` are instances of `IsResp` class and 
 we can `Send` as HTTP-response anything which has instance of `IsResp`.
-For now there are only three types. The third one is the low-level `Response`.
+For now there are only three types. The third one instance is the low-level `Response` type.
 
 ## Examples
 
@@ -124,7 +133,7 @@ and we use `RespOr` if handler can produce and error.
 We already have seen many usages of `Resp` type. Let's define something
 that can produce an error. Let's define server that calculates
 square root of the value. For negative numbers it is not defined in the 
-realm of real numbers. So let's define the handler that use `RespOr` type:
+domain of real numbers. So let's define the handler that use `RespOr` type:
 
 ```haskell
 import Mig.Json.IO
@@ -188,7 +197,7 @@ for successful response and all functions that need the status take it as argume
 
 ### How it works with server definition
 
-How we can use both of the types as responses: `Resp` and `RespOr`.
+How can we use both of the types as responses: `Resp` and `RespOr`?
 Recall that `/.` function is overloaded by the second argument and
 we have a rule for `ToServer` class that:
 
@@ -207,17 +216,26 @@ We have learned that there are only tow types to return from server handler:
 The need for the second type is to have different type of the error 
 and different for the result. If both error and result have the same 
 type then we can use `Resp`. This is common case for HTML servers when we
-return HTML-page as result. In case of error we would like to show the page too
-as in case of success. The difference would be in the HTTP-status of the response.
+return HTML-page as a result. In the case of error we would like to show the page too
+as in the case of success. The difference would be in the HTTP-status of the response.
 
 And this goes well with `IsResp` class as for `Resp media a` error type `RespError`
 equals to `a` as the value for `RespBody` too.
-
 Also we have learned various methods of the `IsResp` class and how they 
 can be useful in server definitions.
 
-With this chapter we have covered both requests and responses and which types the can 
-have. See the source code [`RouteArgs`](https://github.com/anton-k/mig/blob/main/examples/mig-example-apps/RouteArgs/Main.hs)
+See the source code [`RouteArgs`](https://github.com/anton-k/mig/blob/main/examples/mig-example-apps/RouteArgs/Main.hs)
 for examples on the topic that we have just studied.
 
+With this chapter we have covered both requests and responses and which types the can 
+have. 
+It covers all basics of the mig library. You are now well equipped to build
+HTTP-servers in Haskell. The rest of the tutorial covers more advanced features of the library:
+
+* how to use custom monads. So far we used only plain `IO`-monad
+* how to use plugins/middlewares to add common procedures to all handlers of the server
+* how to create HTTP-clients from servers
+* description of two more substantial examples
+    * JSON API application for weather forecast
+    * HTML example for blogpost site
 

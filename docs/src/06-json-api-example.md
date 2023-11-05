@@ -4,12 +4,12 @@ We have learned all we need to know about `mig` to be able to build something co
 Let's build a weather forecast application. The app has registered users
 which can request authorization tokens. With that token users can request for weather
 in specific city and on specific time and also they can update the weather data.
-For simplicity we omit user registration and defining roles for the user.
+For simplicity we omit user registration and defining roles for the users.
 
 ## Domain for our application
 
 Let's define main types for our application in the module `Types.hs`.
-We will import `Mig.Json.IO` to bring in scope some classes and types
+We will import `Mig.Json.IO` to bring in the scope some classes and types
 common for HTTP-servers:
 
 ```haskell
@@ -35,7 +35,7 @@ newtype AuthToken = AuthToken Text
     (ToJSON, FromJSON, FromHttpApiData, Eq, Ord, Show, ToParamSchema, ToSchema)
 ```
 
-We need instances to pass the data over HTTP wires.
+We need the instances to pass the data over HTTP wires.
 
 ### Domain of weather
 
@@ -86,7 +86,7 @@ That is our domain for the weather application.
 
 ## Lets define a server
 
-We are going to build JSON HTTP application. For that we will use module `Mig.Json.IO`
+We are going to build JSON HTTP application. For that we will use the module `Mig.Json.IO`
 which provides handy types specified to our domain.
 We expect our application to have shared context `Env` which we pass to all handlers.
 
@@ -399,7 +399,7 @@ So this is all we need to start the server.
 
 For the purpose of the example we will create a mock application.
 A bit more detailed implementation is in the source code of the `mig` library.
-See example `JsonApi`.
+See example [`JsonApi`](https://github.com/anton-k/mig/tree/main/examples/mig-example-apps/JsonApi).
 
 
 ## Mock application
@@ -479,4 +479,4 @@ You can find the complete code of the example in the [`mig` repo](https://github
 ## Summary 
 
 In this chapter we have defined a more substantial example of JSON HTTP application
-and saw how we can apply various concepts in practice.
+and applied various concepts in practice.

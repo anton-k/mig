@@ -2,7 +2,7 @@
 
 The Swagger is a powerful tool to try out your servers.
 It provides easy to use Web UI to call routes in the server.
-We already saw know how to augment server with swagger.
+We already have seen how to augment server with swagger.
 It is just a line of code:
 
 ```haskell
@@ -106,9 +106,10 @@ We can apply those functions at definition of the route.
 Also we can describe the inputs for the route:
 
 ```haskell
-{-| Appends descriptiton for the inputs. It passes pairs for @(input-name, input-description)@.
-special name request-body is dedicated to request body input
-nd raw-input is dedicated to raw input
+{-| Appends descriptiton for the inputs. It passes pairs for
+@(input-name, input-description)@. Special name request-body 
+is dedicated to request body input nd raw-input is dedicated 
+to raw input
 -}
 describeInputs :: [(Text, Text)] -> Server m -> Server m
 ```
