@@ -36,6 +36,7 @@ bye :: Query "user" Text -> Get (Resp Text)
 bye (Query name) = pure $ ok ("Goodbye " <> name)
 ```
 
+We can test the server with curl or with swagger-ui if it's run localy on the url [http://localhost:8085/swagger-ui](http://localhost:8085/swagger-ui).
 For more examples see the [directory](https://github.com/anton-k/mig/tree/main/examples/mig-example-apps). 
 
 ### Comparison to Scotty and Servant
