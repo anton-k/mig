@@ -3,7 +3,7 @@
 [![build](https://github.com/anton-k/mig/actions/workflows/compile-and-test.yml/badge.svg)](https://github.com/anton-k/mig/actions/workflows/compile-and-test.yml)
 [![Version on Hackage](https://img.shields.io/hackage/v/mig-server.svg)](https://hackage.haskell.org/package/mig-server)
 [![docs - tutorial](https://img.shields.io/badge/docs-Tutorial-2ea44f)](https://anton-k.github.io/mig/)
-[![docs - examples](https://img.shields.io/badge/docs-Examples-2ea44f)]([https://anton-k.github.io/mig/](https://github.com/anton-k/mig/tree/main/examples/mig-example-apps))
+[![docs - examples](https://img.shields.io/badge/docs-Examples-2ea44f)](https://github.com/anton-k/mig/tree/main/examples/mig-example-apps#mig-example-apps)
 
 The Mig is a library to build lightweight composable servers.
 The main strength is ability to build servers from parts
