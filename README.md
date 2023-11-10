@@ -4,7 +4,7 @@
 
 The Mig is a library to build lightweight composable servers.
 The main strength is ability to build servers from parts
-and flexible DSL which features only small amount of functions.
+and flexible and type-safe DSL which features only small amount of functions.
 The name `mig` (pronounced as meeg) is a russian word for "instant moment".
 
 ### Hello world server example
