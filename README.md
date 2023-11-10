@@ -4,7 +4,41 @@
 
 The Mig is a library to build lightweight composable servers.
 The main strength is ability to build servers from parts
-and flexible DSL which features only small amount of functions.
+and flexible and type-safe DSL which features only small amount of functions.
+The name `mig` (pronounced as meeg) is a russian word for "instant moment".
+
+### Hello world server example
+
+With the library [`mig-server`](https://hackage.haskell.org/package/mig-server) installed we can define 
+a simple server with two routes:
+
+```haskell
+import Mig.Json.IO
+
+-- | Starts server on port 8085.
+main :: IO ()
+main = runServer 8085 (withSwagger def server)
+
+-- | The server definition
+server :: Server IO
+server = 
+  "api/v1" /. 
+    [ "hello" /. hello
+    , "bye" /. bye
+    ]
+
+-- | The handler definition as a function
+hello :: Get (Resp Text)
+hello = pure $ ok "Hello World"
+
+-- | The handler definition as a function with a query parameter to ask for user name
+bye :: Query "user" Text -> Get (Resp Text)
+bye (Query name) = pure $ ok ("Goodbye " <> name)
+```
+
+For more examples see the [directory](https://github.com/anton-k/mig/tree/main/examples/mig-example-apps). 
+
+### Comparison to Scotty and Servant
 
 I like [scotty](https://hackage.haskell.org/package/scotty) for being very 
 simple and [servant](https://hackage.haskell.org/package/servant-server) for being composable, type-safe 
@@ -14,11 +48,7 @@ But sometimes scotty feels too imperative and lacks servant's composability.
 And servant with type-level magic and huge errors can feel to complicated.
 So I wanted to create something in the middle. Something composable and simple 
 at the same time.
-The name `mig` (pronounced as meeg) is a russian word for "instant moment".
 
-* Quick start guide: [tutorial](https://anton-k.github.io/mig/)
-* Summary of the main functions: [refs](https://anton-k.github.io/mig/09-reference.html)
-* How to contribute: [guide](https://anton-k.github.io/mig/10-how-to-contribute.html)
 
 ### Structure of the repo
 
@@ -41,3 +71,11 @@ An overview of the mig repo:
 * `docs` - tutorial for the library and reference of the main functions. It is build with `mdbook` and deployed on github pages.
 
 See [`Makefile`](https://github.com/anton-k/mig/blob/main/Makefile) for main commands to work with repo in dev mode.
+
+### Tutorial and other links
+
+* Quick start guide: [tutorial](https://anton-k.github.io/mig/)
+* Summary of the main functions: [refs](https://anton-k.github.io/mig/09-reference.html)
+* How to contribute: [guide](https://anton-k.github.io/mig/10-how-to-contribute.html)
+* Examples: [examples directory](https://github.com/anton-k/mig/tree/main/examples/mig-example-apps)
+
