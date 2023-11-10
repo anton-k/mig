@@ -1,6 +1,7 @@
 # [Mig](https://anton-k.github.io/mig/) - library to write composable and lightweight servers
 
 [![build](https://github.com/anton-k/mig/actions/workflows/compile-and-test.yml/badge.svg)](https://github.com/anton-k/mig/actions/workflows/compile-and-test.yml)
+[![Version on Hackage](https://img.shields.io/hackage/v/mig-server.svg)](https://hackage.haskell.org/package/mig-server)
 
 The Mig is a library to build lightweight composable servers.
 The main strength is ability to build servers from parts
