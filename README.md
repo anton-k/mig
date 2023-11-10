@@ -13,6 +13,8 @@ With the library [`mig-server`](https://hackage.haskell.org/package/mig-server) 
 a simple server with two routes:
 
 ```haskell
+{-# Language OverloadedStrings #-}
+
 import Mig.Json.IO
 
 -- | Starts server on port 8085.
@@ -31,7 +33,7 @@ server =
 hello :: Get (Resp Text)
 hello = pure $ ok "Hello World"
 
--- | The handler definition as a function with a query parameter to ask for user name
+-- | The handler definition as a function with a query parameter to ask for the user name
 bye :: Query "user" Text -> Get (Resp Text)
 bye (Query name) = pure $ ok ("Goodbye " <> name)
 ```

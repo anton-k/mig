@@ -19,8 +19,9 @@ The main features of the mig library are:
 
 Example of hello world server:
 
-
 ```haskell
+{-# Language OverloadedStrings #-}
+
 import Mig.Json.IO
 
 -- | Starts server on port 8085.
@@ -29,13 +30,20 @@ main = runServer 8085 server
 
 -- | The server definition
 server :: Server IO
-server = "api/v1/hello" /. hello
+server = 
+  "api/v1" /. 
+    [ "hello" /. hello
+    , "bye" /. bye
+    ]
 
 -- | The handler definition as a function
 hello :: Get (Resp Text)
 hello = pure $ ok "Hello World"
-```
 
+-- | The handler with a query parameter to ask for the user name
+bye :: Query "user" Text -> Get (Resp Text)
+bye (Query name) = pure $ ok ("Goodbye " <> name)
+```
 
 ## How to install library
 
