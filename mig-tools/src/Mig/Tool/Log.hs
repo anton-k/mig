@@ -9,10 +9,9 @@ module Mig.Tool.Log (
   trackLogTime,
 
   -- * functions
-  logInfo,
-  logWarn,
-  logError,
-  logDebug,
+  LogFuns (..),
+  logFuns,
+  logByLevel,
 
   -- * augment interfaces with logger
   logQuery,
@@ -24,9 +23,12 @@ module Mig.Tool.Log (
 ) where
 
 import Control.Monad
+import Data.Aeson (ToJSON)
 import Data.Aeson qualified as Json
 import Data.Aeson.Types qualified as Json
+import Data.String
 import Data.Text (Text)
+import Data.Text qualified as Text
 import Data.Time
 import Mig.Tool.Base
 
@@ -42,6 +44,9 @@ instance Json.ToJSON LogLevel where
 
 newtype LogNamespace = LogNamespace [Text]
   deriving newtype (Semigroup, Monoid, Show, Eq, Json.ToJSON)
+
+instance IsString LogNamespace where
+  fromString = LogNamespace . Text.splitOn "." . fromString
 
 data LogItem = LogItem
   { level :: LogLevel
@@ -98,24 +103,28 @@ logByLevel level logger message = do
       , message = Json.toJSON message
       }
 
-logInfo :: (Json.ToJSON a) => Log -> a -> IO ()
-logInfo = logByLevel LogInfo
+data LogFuns = LogFuns
+  { logInfo :: forall a. (ToJSON a) => a -> IO ()
+  , logDebug :: forall a. (ToJSON a) => a -> IO ()
+  , logWarn :: forall a. (ToJSON a) => a -> IO ()
+  , logError :: forall a. (ToJSON a) => a -> IO ()
+  }
 
-logDebug :: (Json.ToJSON a) => Log -> a -> IO ()
-logDebug = logByLevel LogDebug
-
-logWarn :: (Json.ToJSON a) => Log -> a -> IO ()
-logWarn = logByLevel LogWarn
-
-logError :: (Json.ToJSON a) => Log -> a -> IO ()
-logError = logByLevel LogError
+logFuns :: Log -> LogFuns
+logFuns log =
+  LogFuns
+    { logInfo = logByLevel LogInfo log
+    , logDebug = logByLevel LogDebug log
+    , logWarn = logByLevel LogWarn log
+    , logError = logByLevel LogError log
+    }
 
 -------------------------------------------------------------------------------------
 -- add logger to interface
 
 logSet :: (Json.ToJSON a) => Log -> Text -> Set a -> Set a
 logSet env name (Set act) = Set $ \a -> do
-  logInfo env $
+  logByLevel LogInfo env $
     Json.object
       [ "call" Json..= name
       , "argument" Json..= a

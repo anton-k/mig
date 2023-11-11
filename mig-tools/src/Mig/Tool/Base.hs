@@ -58,7 +58,7 @@ newtype GetOr err a = GetOr
 
 instance Applicative (GetOr err) where
   pure = GetOr . pure . pure
-  (<*>) (GetOr fa) (GetOr fb) = GetOr (liftA2 (<*>) fa fb)
+  (<*>) (GetOr fa) (GetOr fb) = GetOr ((<*>) <$> fa <*> fb)
 
 instance Monad (GetOr err) where
   (GetOr ma) >>= mf = GetOr $ do
