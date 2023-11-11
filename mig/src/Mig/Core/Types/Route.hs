@@ -95,7 +95,19 @@ It reads the value:
 -}
 newtype OptionalHeader (sym :: Symbol) a = OptionalHeader (Maybe a)
 
--- | Reads a cookie. It's an optional header with name "Cookie"
+{-| Reads a cookie. It's an optional header with name "Cookie".
+The cookie is URL-encoded and read with instnace of FromForm class.
+
+> data MyCookie = MyCookie
+>   { secret :: Text
+>   , count :: Int
+>   }
+>   deriving (Generic, FromForm)
+>
+> > "secret=lolkek&count=101"
+>
+> (Cookie (Just (MyCookie { secret = "lolkek", count = 101 }))) :: Cookie MyCookie
+-}
 newtype Cookie a = Cookie (Maybe a)
 
 {-| Reads current path info.

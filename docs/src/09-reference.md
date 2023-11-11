@@ -70,6 +70,9 @@ newtype Capture name value = Capture value
 -- boolean query flag parameter
 newtype QueryFlag name = QueryFlag Bool
 
+-- optional cookies (set in the header)
+newtype Cookie value = Cookie (Maybe value)
+
 -- Is connection made over SSL
 newtype IsSecure = IsSecure Bool
 
