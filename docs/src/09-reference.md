@@ -138,6 +138,21 @@ class IsResp a where
 
 setHeader :: (IsResp a, ToHttpApiData h) => HeaderName -> h -> a -> a
 
+-- | Set cookie as http header from form url encoded value
+setCookie :: (ToForm cookie, IsResp resp) => SetCookie cookie -> resp -> resp
+
+data SetCookie a = SetCookie
+  { cookie :: a
+  , expires :: Maybe UTCTime
+  , domain :: Maybe Text
+  , path :: Maybe Text
+  , secure :: Bool
+  , httpOnly :: Bool
+  }
+
+-- | Default cookie which sets only the cookie itself.
+defCookie :: a -> SetCookie a
+
 -- | Bad request. The @bad@ response with 400 status.
 badReq :: (IsResp a) => RespError a -> a
 
