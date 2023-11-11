@@ -6,6 +6,7 @@ import Data.IORef
 import Data.Maybe
 import Data.Text qualified as Text
 import Mig.Core
+import Mig.Core qualified as Request (Request (..))
 import Network.HTTP.Types.Method (methodPost)
 import Test.Hspec
 import Test.Server.Common
@@ -82,8 +83,8 @@ script f inputs = do
     putReq increment =
       emptyReq
         { method = methodPost
-        , path = ["counter", "put", Text.pack (show increment)]
+        , Request.path = ["counter", "put", Text.pack (show increment)]
         }
 
     getReq :: Request
-    getReq = emptyReq{path = ["counter", "get"]}
+    getReq = emptyReq{Request.path = ["counter", "get"]}
