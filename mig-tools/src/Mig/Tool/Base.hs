@@ -93,10 +93,12 @@ instance Functor React where
 filterReact :: (a -> Bool) -> React a -> React a
 filterReact f (React a) = React (a . filterSet f)
 
+{- todo
 accumReact :: (b -> a -> b) -> b -> React a -> React b
 accumReact go initVal (React x) = React $ \call -> do
   ref <- newIORef initVal
   call
+-}
 
 instance Semigroup (React a) where
   (<>) (React a) (React b) = React $ \f -> do
