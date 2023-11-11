@@ -53,7 +53,9 @@ import Control.Monad.IO.Class
 import Data.OpenApi (ToParamSchema (..), ToSchema (..))
 import Data.Proxy
 import Data.String
+import Data.Text (Text)
 import GHC.TypeLits
+import Web.FormUrlEncoded (FromForm)
 import Web.HttpApiData
 
 import Mig.Core.Class.MediaType
@@ -157,6 +159,11 @@ instance (FromHttpApiData a, ToParamSchema a, ToPlugin b, KnownSymbol sym) => To
 instance (FromHttpApiData a, ToParamSchema a, ToPlugin b, KnownSymbol sym) => ToPlugin (OptionalHeader sym a -> b) where
   toPluginInfo = addOptionalHeaderInfo @sym @a . toPluginInfo @b
   toPluginFun f = \fun -> withOptionalHeader (getName @sym) (\a -> toPluginFun (f (OptionalHeader a)) fun)
+
+-- cookie
+instance (FromForm a, ToPlugin b) => ToPlugin (Cookie a -> b) where
+  toPluginInfo = addOptionalHeaderInfo @"Cookie" @Text . toPluginInfo @b
+  toPluginFun f = \fun -> withCookie (\a -> toPluginFun (f (Cookie a)) fun)
 
 -- query
 instance (FromHttpApiData a, ToParamSchema a, ToPlugin b, KnownSymbol sym) => ToPlugin (Query sym a -> b) where

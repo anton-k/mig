@@ -195,6 +195,23 @@ setStatus :: IsResp a => Status -> a -> a
 Although we rarely need this function as `ok` sets the right status 
 for successful response and all functions that need the status take it as argument.
 
+Also we have functions to set cookies that are form url-encoded:
+
+```haskell
+setCookie :: (ToForm val, IsResp a) => SetCookie val -> a -> a
+
+-- sets cookie params
+data SetCookie 
+
+-- | Cookie setter with default params (only value)
+defCookie :: val -> SetCookie val
+defCookie = ...
+```
+
+For great explanation on how cookies work in HTTP you can read [an article](https://web.archive.org/web/20170122122852/https://www.nczonline.net/blog/2009/05/05/http-cookies-explained/).
+Under the hood it is just a http-header with name `SetCookie`.
+To read the cookie value use input request `newtype`-wrapper `Cookie`.
+
 ### How it works with server definition
 
 How can we use both of the types as responses: `Resp` and `RespOr`?

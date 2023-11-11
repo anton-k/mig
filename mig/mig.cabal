@@ -90,6 +90,7 @@ library
     , openapi3
     , safe
     , text
+    , time
     , transformers
   default-language: GHC2021
 

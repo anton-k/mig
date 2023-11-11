@@ -25,6 +25,9 @@ module Mig.Extra.Server.Common (
   notImplemented,
   redirect,
   setHeader,
+  setCookie,
+  SetCookie (..),
+  defCookie,
 
   -- ** methods
   Send (..),
@@ -48,6 +51,8 @@ module Mig.Extra.Server.Common (
   QueryFlag (..),
   Optional (..),
   Header (..),
+  OptionalHeader (..),
+  Cookie (..),
   PathInfo (..),
   FullPathInfo (..),
   RawRequest (..),
