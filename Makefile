@@ -1,7 +1,7 @@
 .PHONY: build test run docs
 
 build:
-	stack build mig-tools
+	stack build mig-fast-logger
 
 test:
 	stack test

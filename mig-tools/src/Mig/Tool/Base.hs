@@ -6,6 +6,7 @@ module Mig.Tool.Base (
   QueryOr (..),
   Get (..),
   Set (..),
+  filterSet,
   GetOr (..),
   Proc (..),
   module X,
@@ -32,6 +33,9 @@ newtype QueryOr a err b = QueryOr
 newtype Set a = Set
   { set :: a -> IO ()
   }
+
+filterSet :: (a -> Bool) -> Set a -> Set a
+filterSet f (Set g) = Set $ \a -> when (f a) (g a)
 
 instance Contravariant Set where
   contramap f (Set a) = Set (a . f)

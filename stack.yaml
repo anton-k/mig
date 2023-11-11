@@ -11,3 +11,4 @@ packages:
 - mig-wai
 - mig-rio
 - mig-tools
+- tools/mig-fast-logger

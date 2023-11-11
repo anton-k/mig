@@ -17,7 +17,6 @@ license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
-    CHANGELOG.md
 
 source-repository head
   type: git
@@ -42,6 +41,7 @@ library
       DerivingStrategies
       StrictData
       AllowAmbiguousTypes
+      DeriveAnyClass
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       aeson
@@ -49,6 +49,7 @@ library
     , bytestring
     , mtl
     , text
+    , time
   default-language: GHC2021
 
 test-suite mig-tools-test
@@ -68,6 +69,7 @@ test-suite mig-tools-test
       DerivingStrategies
       StrictData
       AllowAmbiguousTypes
+      DeriveAnyClass
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -76,4 +78,5 @@ test-suite mig-tools-test
     , mig-tools
     , mtl
     , text
+    , time
   default-language: GHC2021
