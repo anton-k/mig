@@ -206,14 +206,14 @@ specBy finder = do
     queryReq :: Request
     queryReq =
       emptyReq
-        { path = ["api", "succ", "query"]
+        { Request.path = ["api", "succ", "query"]
         , query = toQuery @Int "value" 1
         }
 
     twoQueryReq :: Int -> Int -> Request
     twoQueryReq a b =
       emptyReq
-        { path = ["api", "add"]
+        { Request.path = ["api", "add"]
         , query = toQuery "a" a <> toQuery "b" b
         }
 
@@ -228,7 +228,7 @@ specBy finder = do
     optionalQueryReq :: Request
     optionalQueryReq =
       emptyReq
-        { path = ["api", "succ", "optional"]
+        { Request.path = ["api", "succ", "optional"]
         , query = toQuery @Int "value" 1
         }
 
@@ -244,7 +244,7 @@ specBy finder = do
     queryFlagReq :: Maybe Bool -> Int -> Int -> Request
     queryFlagReq mFlag a b =
       emptyReq
-        { path = ["api", "add-if"]
+        { Request.path = ["api", "add-if"]
         , query = mconcat [toQuery "a" a, toQuery "b" b] <> maybe mempty (toQuery "perform") mFlag
         }
 
@@ -260,7 +260,7 @@ specBy finder = do
     headerReq :: Request
     headerReq =
       emptyReq
-        { path = ["api", "succ", "header"]
+        { Request.path = ["api", "succ", "header"]
         , Request.headers = Map.singleton "value" (BL.toStrict $ Json.encode @Int 1)
         }
 
@@ -275,7 +275,7 @@ specBy finder = do
     optionalHeaderReq :: Request
     optionalHeaderReq =
       emptyReq
-        { path = ["api", "succ", "optional-header"]
+        { Request.path = ["api", "succ", "optional-header"]
         , Request.headers = Map.singleton "value" (BL.toStrict $ Json.encode @Int 1)
         }
 
@@ -292,7 +292,7 @@ specBy finder = do
     captureReq :: [Int] -> Request
     captureReq args =
       emptyReq
-        { path = ["api", "mul"] <> fmap (Text.pack . show) args
+        { Request.path = ["api", "mul"] <> fmap (Text.pack . show) args
         }
 
     -- body
@@ -309,7 +309,7 @@ specBy finder = do
     bodyReq :: Method -> Int -> Int -> Request
     bodyReq reqMethod a b =
       emptyReq
-        { path = ["api", "add-json"]
+        { Request.path = ["api", "add-json"]
         , method = reqMethod
         , readBody = pure $ Right $ Json.encode $ AddInput a b
         , Request.headers = jsonHeaders
@@ -318,7 +318,7 @@ specBy finder = do
     noBodyReq :: Request
     noBodyReq =
       emptyReq
-        { path = ["api", "add-json"]
+        { Request.path = ["api", "add-json"]
         , method = methodPost
         , Request.headers = jsonHeaders
         }
@@ -326,7 +326,7 @@ specBy finder = do
     sqrtBodyReq :: Float -> Request
     sqrtBodyReq a =
       emptyReq
-        { path = ["api", "square-root"]
+        { Request.path = ["api", "square-root"]
         , method = methodPost
         , readBody = pure $ Right $ Json.encode a
         , Request.headers = jsonHeaders
@@ -345,7 +345,7 @@ specBy finder = do
     statusReq :: Request
     statusReq =
       emptyReq
-        { path = ["api", "response", "status"]
+        { Request.path = ["api", "response", "status"]
         }
 
     -- response headers
@@ -365,7 +365,7 @@ specBy finder = do
     customHeaderReq :: Text -> Text -> Request
     customHeaderReq name value =
       emptyReq
-        { path = ["api", "response", "header", name, value]
+        { Request.path = ["api", "response", "header", name, value]
         }
 
     -- response errors
@@ -390,5 +390,5 @@ specBy finder = do
     customErrorReq :: [Text] -> Request
     customErrorReq args =
       emptyReq
-        { path = ["api", "response"] <> args
+        { Request.path = ["api", "response"] <> args
         }

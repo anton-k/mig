@@ -55,10 +55,10 @@ specBy finder = do
         it "wrong output media type" $ do
           serverFun (helloReq{Request.headers = Map.fromList [("Accept", "text/html")]}) `shouldReturn` Nothing
 
-    helloReq = emptyReq{path = ["api", "v1", "hello"]}
+    helloReq = emptyReq{Request.path = ["api", "v1", "hello"]}
     helloResp = Just $ jsonResp @Text "hello"
 
-    byeReq = emptyReq{path = ["api", "v1", "bye"]}
+    byeReq = emptyReq{Request.path = ["api", "v1", "bye"]}
     byeResp = Just $ jsonResp @Text "bye"
 
-    wrongPathReq = emptyReq{path = ["api", "v2", "hello"]}
+    wrongPathReq = emptyReq{Request.path = ["api", "v2", "hello"]}
