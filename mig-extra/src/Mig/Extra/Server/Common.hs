@@ -25,6 +25,9 @@ module Mig.Extra.Server.Common (
   notImplemented,
   redirect,
   setHeader,
+  setCookie,
+  SetCookie (..),
+  defCookie,
 
   -- ** methods
   Send (..),

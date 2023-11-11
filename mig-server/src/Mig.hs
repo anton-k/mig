@@ -46,6 +46,9 @@ module Mig (
   notImplemented,
   redirect,
   setHeader,
+  setCookie,
+  SetCookie (..),
+  defCookie,
 
   -- ** methods
   Send (..),
