@@ -9,6 +9,8 @@ module Mig.Tool.Base (
   filterSet,
   GetOr (..),
   Proc (..),
+  React (..),
+  filterReact,
   module X,
 ) where
 
@@ -78,3 +80,29 @@ instance Semigroup Proc where
 
 instance Monoid Proc where
   mempty = Proc (pure ())
+
+{-| Process that runs forked background process which accepts a callback.
+It returns a procedure to close the process.
+-}
+newtype React a = React
+  {react :: Set a -> IO Proc}
+
+instance Functor React where
+  fmap f (React a) = React (a . contramap f)
+
+filterReact :: (a -> Bool) -> React a -> React a
+filterReact f (React a) = React (a . filterSet f)
+
+accumReact :: (b -> a -> b) -> b -> React a -> React b
+accumReact go initVal (React x) = React $ \call -> do
+  ref <- newIORef initVal
+  call
+
+instance Semigroup (React a) where
+  (<>) (React a) (React b) = React $ \f -> do
+    finA <- a f
+    finB <- b f
+    pure (finA <> finB)
+
+instance Monoid (React a) where
+  mempty = React (const $ pure mempty)
