@@ -8,17 +8,26 @@ module Mig.Core.Class.Response (
   notImplemented,
   redirect,
   setHeader,
+  SetCookie (..),
+  defCookie,
+  setCookie,
 ) where
 
 import Data.Bifunctor
+import Data.ByteString (ByteString)
 import Data.ByteString.Lazy qualified as BL
 import Data.Kind
+import Data.List qualified as List
+import Data.Maybe
 import Data.Text (Text)
+import Data.Text qualified as Text
 import Data.Text.Encoding qualified as Text
+import Data.Time
 import Network.HTTP.Media.RenderHeader (RenderHeader (..))
-import Network.HTTP.Types.Header (HeaderName, ResponseHeaders)
+import Network.HTTP.Types.Header (HeaderName, ResponseHeaders, hSetCookie)
 import Network.HTTP.Types.Status (Status, internalServerError500, notImplemented501, ok200, status302, status400)
 import Web.HttpApiData
+import Web.Internal.FormUrlEncoded
 
 import Mig.Core.Class.MediaType (AnyMedia, MediaType, ToMediaType (..), ToRespBody (..))
 import Mig.Core.Types.Http (Response, ResponseBody (..), noContentResponse)
@@ -191,3 +200,62 @@ notImplemented = bad notImplemented501
 -- | Redirect to url. It is @bad@ response with 302 status and set header of "Location" to a given URL.
 redirect :: (IsResp a) => Text -> a
 redirect url = addHeaders [("Location", Text.encodeUtf8 url)] $ noContent status302
+
+-- | Set cookie as http header from form url encoded value
+setCookie :: (ToForm cookie, IsResp resp) => SetCookie cookie -> resp -> resp
+setCookie cookie = addHeaders [(hSetCookie, renderSetCookie cookie)]
+
+{-| Set cookie params. For explanation see an article
+<https://web.archive.org/web/20170122122852/https://www.nczonline.net/blog/2009/05/05/http-cookies-explained/>
+-}
+data SetCookie a = SetCookie
+  { cookie :: a
+  , expires :: Maybe UTCTime
+  , domain :: Maybe Text
+  , path :: Maybe Text
+  , secure :: Bool
+  , httpOnly :: Bool
+  }
+  deriving (Show, Eq)
+
+renderSetCookie :: (ToForm a) => SetCookie a -> ByteString
+renderSetCookie value =
+  mconcat $
+    (BL.toStrict $ urlEncodeForm $ toForm value.cookie)
+      : addColons
+        ( catMaybes
+            [ param "expires" . fmtTime <$> value.expires
+            , param "domain" <$> value.domain
+            , param "path" <$> value.path
+            , flag "secure" value.secure
+            , flag "httpOnly" value.httpOnly
+            ]
+        )
+  where
+    addColons xs
+      | null xs = []
+      | otherwise = ";" : List.intersperse ";" xs
+
+    param name v = Text.encodeUtf8 $ name <> v
+
+    flag name = \case
+      True -> Just name
+      False -> Nothing
+
+    fmtTime :: UTCTime -> Text
+    fmtTime = Text.pack . formatTime defaultTimeLocale expiresFormat
+
+    expiresFormat :: String
+    expiresFormat = "%a, %d-%b-%Y %X GMT"
+
+-- | Default cookie which sets only the cookie itself.
+defCookie :: a -> SetCookie a
+defCookie val =
+  SetCookie
+    { cookie = val
+    , expires = Nothing
+    , domain = Nothing
+    , path = Nothing
+    , secure = False
+    , httpOnly = False
+    }

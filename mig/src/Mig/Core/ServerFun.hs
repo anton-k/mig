@@ -19,6 +19,7 @@ module Mig.Core.ServerFun (
   withCapture,
   withHeader,
   withOptionalHeader,
+  withCookie,
   withPathInfo,
   withFullPathInfo,
   handleServerError,
@@ -39,6 +40,7 @@ import Mig.Core.Class.MediaType
 import Mig.Core.Types
 import Network.HTTP.Types.Header (HeaderName)
 import Network.HTTP.Types.Status (status500)
+import Web.FormUrlEncoded (FromForm (..), urlDecodeForm)
 import Web.HttpApiData
 
 {-| Low-level representation of the server.
@@ -143,6 +145,14 @@ withOptionalHeader :: (FromHttpApiData a) => HeaderName -> (Maybe a -> ServerFun
 withOptionalHeader name act = withQueryBy getVal act
   where
     getVal req = eitherToMaybe . parseHeader =<< Map.lookup name req.headers
+
+withCookie :: forall a m. (FromForm a) => (Maybe a -> ServerFun m) -> ServerFun m
+withCookie act = withOptionalHeader @Text "Cookie" (act . (parseCookie =<<))
+  where
+    parseCookie :: Text -> Maybe a
+    parseCookie txt = do
+      form <- eitherToMaybe $ urlDecodeForm $ BL.fromStrict $ Text.encodeUtf8 txt
+      eitherToMaybe $ fromForm form
 
 -- | Reads full path (without qury parameters)
 withPathInfo :: ([Text] -> ServerFun m) -> ServerFun m

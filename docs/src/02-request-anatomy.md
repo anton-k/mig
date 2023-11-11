@@ -144,7 +144,7 @@ Other wrappers look very similar:
 * `Optional name value` - for optional queries
 * `QueryFlag` - for boolean query that can be missing in the path (and then it is `false`)
 * `Body media value` - for request body
-
+* `Cookie` - for cookie (set in the header)
 
 ### Using custom types as query parameters
 
@@ -498,6 +498,7 @@ We can query
 * `Optional name value` - for optional queries
 * `Header name value` - for required headers
 * `OptionalHeader name value` - for optional headers
+* `Cookie value` - for cookies (set in the header)
 * `Capture name value` - for path captures
 * `QueryFlag` - for boolean query that can be missing in the path (and then it is `false`)
 

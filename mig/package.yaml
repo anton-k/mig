@@ -80,6 +80,7 @@ library:
   - lens
   - lrucache
   - transformers
+  - time
 
 tests:
   mig-test:
