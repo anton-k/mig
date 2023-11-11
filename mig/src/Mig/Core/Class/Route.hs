@@ -13,12 +13,14 @@ import Control.Monad.IO.Class
 import Data.OpenApi (ToParamSchema (..), ToSchema (..))
 import Data.Proxy
 import Data.String
+import Data.Text (Text)
 import GHC.TypeLits
 import Mig.Core.Class.MediaType
 import Mig.Core.Class.Monad
 import Mig.Core.Class.Response (IsResp (..))
 import Mig.Core.ServerFun
 import Mig.Core.Types
+import Web.FormUrlEncoded (FromForm)
 import Web.HttpApiData
 
 {-| Values that represent routes.
@@ -87,6 +89,10 @@ instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToR
 instance (FromHttpApiData a, ToParamSchema a, ToRoute b, KnownSymbol sym) => ToRoute (OptionalHeader sym a -> b) where
   toRouteInfo = addOptionalHeaderInfo @sym @a . toRouteInfo @b
   toRouteFun f = withOptionalHeader (getName @sym) (toRouteFun . f . OptionalHeader)
+
+instance (FromForm a, ToRoute b) => ToRoute (Cookie a -> b) where
+  toRouteInfo = addOptionalHeaderInfo @"Cookie" @Text . toRouteInfo @b
+  toRouteFun f = withCookie (toRouteFun . f . Cookie)
 
 instance (ToRoute b) => ToRoute (PathInfo -> b) where
   toRouteInfo = toRouteInfo @b

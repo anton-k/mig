@@ -48,6 +48,8 @@ module Mig.Extra.Server.Common (
   QueryFlag (..),
   Optional (..),
   Header (..),
+  OptionalHeader (..),
+  Cookie (..),
   PathInfo (..),
   FullPathInfo (..),
   RawRequest (..),

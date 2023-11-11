@@ -8,6 +8,7 @@ module Mig.Core.Types.Route (
   Capture (..),
   Header (..),
   OptionalHeader (..),
+  Cookie (..),
   PathInfo (..),
   FullPathInfo (..),
   RawRequest (..),
@@ -93,6 +94,9 @@ It reads the value:
 > (OptionalHeader (Just bar)) :: OptionalHeader "foo" barType
 -}
 newtype OptionalHeader (sym :: Symbol) a = OptionalHeader (Maybe a)
+
+-- | Reads a cookie. It's an optional header with name "Cookie"
+newtype Cookie a = Cookie (Maybe a)
 
 {-| Reads current path info.
 

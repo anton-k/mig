@@ -77,6 +77,8 @@ module Mig (
   QueryFlag (..),
   Optional (..),
   Body (..),
+  OptionalHeader (..),
+  Cookie (..),
   Header (..),
   PathInfo (..),
   FullPathInfo (..),
