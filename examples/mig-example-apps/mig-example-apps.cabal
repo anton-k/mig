@@ -306,13 +306,14 @@ executable json-api-mig-example-app
     , bytestring
     , containers
     , derive-topdown
-    , fast-logger
     , http-types
     , mig
     , mig-client
     , mig-extra
+    , mig-fast-logger
     , mig-server
     , mig-swagger-ui
+    , mig-tools
     , openapi3
     , pretty-simple
     , random

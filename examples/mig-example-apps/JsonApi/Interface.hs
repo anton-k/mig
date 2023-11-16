@@ -1,17 +1,17 @@
 module Interface (
   Env (..),
-  LogFun,
   Proc (..),
-  Logger (..),
-  logInfo,
-  logDebug,
-  logError,
   Auth (..),
   Weather (..),
+  getLogger,
+  module X,
 ) where
 
-import Data.Aeson (ToJSON (..), Value)
+import Mig.Tool.Log as X (Log, LogFuns (..), LogNamespace, addLogNamespace, logFuns)
 import Types
+
+getLogger :: Env -> LogNamespace -> LogFuns
+getLogger env ns = logFuns (addLogNamespace ns env.proc.logger)
 
 -- | Site's environment. It contains all interfaces
 data Env = Env
@@ -24,25 +24,7 @@ data Env = Env
 data Proc = Proc
   { startup :: IO ()
   , cleanup :: IO ()
-  , logger :: Logger
-  }
-
-type LogFun = Value -> IO ()
-
-logInfo :: (ToJSON a) => Env -> a -> IO ()
-logInfo env = env.proc.logger.info . toJSON
-
-logDebug :: (ToJSON a) => Env -> a -> IO ()
-logDebug env = env.proc.logger.debug . toJSON
-
-logError :: (ToJSON a) => Env -> a -> IO ()
-logError env = env.proc.logger.error . toJSON
-
--- logger interface
-data Logger = Logger
-  { info :: LogFun
-  , debug :: LogFun
-  , error :: LogFun
+  , logger :: Log
   }
 
 -- authorization interface

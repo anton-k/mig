@@ -10,3 +10,6 @@ packages:
 - mig-swagger-ui
 - mig-wai
 - mig-rio
+- mig-tools
+- tools/mig-fast-logger
+- tools/mig-postgresql-simple

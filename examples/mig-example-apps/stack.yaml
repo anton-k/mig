@@ -11,3 +11,5 @@ extra-deps:
   - ../../mig-swagger-ui
   - ../../mig-wai
   - ../../mig-extra
+  - ../../mig-tools
+  - ../../tools/mig-fast-logger

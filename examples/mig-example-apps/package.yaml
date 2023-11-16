@@ -119,7 +119,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - containers
-    - fast-logger
+    - mig-tools
+    - mig-fast-logger
     - yaml
 
   counter-mig-example-app:

@@ -1,7 +1,7 @@
 .PHONY: build test run docs
 
 build:
-	stack build 
+	stack build mig-postgresql-simple
 
 test:
 	stack test

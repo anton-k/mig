@@ -32,7 +32,9 @@ server env =
         , "update" /. updateWeather env
         ]
 
-    withTrace = applyPlugin (Trace.logHttpBy (logInfo env) Trace.V2)
+    withTrace = applyPlugin (Trace.logHttpBy logInfo Trace.V2)
+
+    LogFuns{..} = getLogger env "http"
 
 -------------------------------------------------------------------------------------
 -- application handlers
@@ -44,26 +46,30 @@ getWeather ::
   Capture "day-interval" DayInterval ->
   Get (RespOr Text (Timed WeatherData))
 getWeather env (Capture location) (Capture fromDay) (Capture interval) = Send $ do
-  logInfo @Text env "get the weather forecast"
+  logInfo @Text "get the weather forecast"
   mResult <- env.weather.get location fromDay interval
   pure $ case mResult of
     Just result -> ok result
     Nothing -> bad status400 "No data"
+  where
+    LogFuns{..} = getLogger env "getWeather"
 
 updateWeather ::
   Env ->
   Body UpdateData ->
   Post (RespOr Text ())
 updateWeather env (Body updateData) = Send $ do
-  logInfo @Text env "update the weather data"
+  logInfo @Text "update the weather data"
   ok <$> env.weather.update updateData
+  where
+    LogFuns{..} = getLogger env "updateWeather"
 
 -------------------------------------------------------------------------------------
 -- authorization
 
 requestAuthToken :: Env -> Body User -> Post (RespOr Text AuthToken)
 requestAuthToken env (Body user) = Send $ do
-  logInfo env ("get new auth token for: " <> user.name)
+  logInfo ("get new auth token for: " <> user.name)
   isValid <- env.auth.validUser user
   if isValid
     then do
@@ -71,9 +77,11 @@ requestAuthToken env (Body user) = Send $ do
       void $ forkIO $ setExpireTimer token
       pure $ ok token
     else do
-      logError env $ Text.unwords ["User", user.name, "does not have access to the service"]
+      logError $ Text.unwords ["User", user.name, "does not have access to the service"]
       pure $ bad unauthorized401 "User is not valid"
   where
+    LogFuns{..} = getLogger env "requestAuthToken"
+
     setExpireTimer :: AuthToken -> IO ()
     setExpireTimer token = do
       threadDelay (1_000_000 * 60 * 10) -- 10 minutes
@@ -85,7 +93,8 @@ withAuth env (Header token) = processResponse $ \getResp -> do
   if isOk
     then getResp
     else do
-      logError env errMessage
+      logError errMessage
       pure $ Just (bad status500 $ Text.encodeUtf8 errMessage)
   where
     errMessage = "Token is invalid"
+    LogFuns{..} = getLogger env "auth"

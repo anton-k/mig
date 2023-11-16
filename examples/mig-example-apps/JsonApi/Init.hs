@@ -4,8 +4,6 @@ module Init (
 ) where
 
 import Control.Monad
-import Data.Aeson ((.=))
-import Data.Aeson qualified as Json
 import Data.IORef
 import Data.List qualified as List
 import Data.Map.Strict qualified as Map
@@ -13,8 +11,7 @@ import Data.Set qualified as Set
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Time
-import Data.Yaml qualified as Yaml
-import System.Log.FastLogger
+import Mig.Tool.Log.Fast qualified as Log
 import System.Random
 
 import Interface
@@ -38,18 +35,15 @@ initEnv port = do
 
 initProc :: Int -> IO Proc
 initProc port = do
-  (writeLog, closeLogger) <- newFastLogger (LogStdout defaultBufSize)
-  let logger = initLogger writeLog
-
-      logMessage :: Text -> IO ()
-      logMessage msg = logger.info $ Json.toJSON msg
+  logger <- Log.newLoggerStdout Log.LogYaml
+  let Log.LogFuns{..} = Log.logFuns logger
   pure $
     Proc
       { logger = logger
-      , startup = logMessage $ ("App starts on port: " <> Text.pack (show port))
+      , startup = logInfo @Text $ ("App starts on port: " <> Text.pack (show port))
       , cleanup = do
-          logMessage "App shutdown"
-          closeLogger
+          logInfo @Text "App shutdown"
+          logger.close.run
       }
 
 initAuth :: St -> Auth
@@ -81,30 +75,6 @@ toDaySpan day (DayInterval count) = List.unfoldr go (day, count)
     go (d, n)
       | n <= 0 = Nothing
       | otherwise = Just (succ d, (succ d, n - 1))
-
-initLogger :: (LogStr -> IO ()) -> Logger
-initLogger writeLog =
-  Logger
-    { error = logBy "ERROR"
-    , info = logBy "INFO"
-    , debug = logBy "DEBUG"
-    }
-  where
-    logBy :: Text -> LogFun
-    logBy level msg = do
-      now <- getCurrentTime
-      writeLog $
-        toLogStr $
-          (<> "\n") $
-            Yaml.encode $
-              Json.object
-                [ "log"
-                    .= Json.object
-                      [ "message" .= msg
-                      , "level" .= level
-                      , "time" .= now
-                      ]
-                ]
 
 initStateConfig :: IO InitSt
 initStateConfig = do
