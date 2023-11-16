@@ -1,23 +1,25 @@
 module Mig.Tool.Db (
   Db (..),
-  Sql (..),
-  SqlResult (..),
-  SqlRow,
-  logDb,
+  -- Sql (..),
+  -- SqlResult (..),
+  -- SqlRow,
+  -- logDb,
 ) where
 
-import Data.Aeson (ToJSON (..))
-import Data.ByteString (ByteString)
-import Data.Text qualified as Text
-import Data.Text.Encoding qualified as Text
+-- import Data.Aeson (ToJSON (..))
+-- import Data.ByteString (ByteString)
+-- import Data.Text qualified as Text
+-- import Data.Text.Encoding qualified as Text
 import Mig.Tool.Base
-import Mig.Tool.Log
 
-data Db = Db
-  { query :: Query Sql SqlResult
+-- import Mig.Tool.Log
+
+data Db conn = Db
+  { run :: forall a. (conn -> IO a) -> IO a
   , close :: Proc
   }
 
+{-
 -- | Adds logging to all DB functions
 logDb :: Log -> Db -> Db
 logDb logger db =
@@ -39,3 +41,4 @@ newtype SqlResult = SqlResult
   }
 
 type SqlRow = [ByteString]
+-}
