@@ -127,7 +127,9 @@ import Control.Monad.IO.Class as X
 import Control.Monad.Trans.Class as X
 import Data.Aeson as X (FromJSON (..), ToJSON (..))
 import Data.Default as X
+import Data.Maybe as X
 import Data.OpenApi as X (OpenApi, ToParamSchema (..), ToSchema (..))
+import Data.String as X
 import Data.Text as X (Text)
 import GHC.Generics as X (Generic)
 import Mig.Extra.Derive as X

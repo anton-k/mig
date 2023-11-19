@@ -21,7 +21,7 @@ main = do
 routeArgs :: Server IO
 routeArgs =
   withSwagger def $
-    withTrace $
+    Trace.withLogs $
       "api"
         /.
         -- no args, constnat output
@@ -41,8 +41,6 @@ routeArgs =
         , -- return error
           "square-root" /. handleSquareRoot
         ]
-  where
-    withTrace = applyPlugin (Trace.logHttp Trace.V2)
 
 -- | Simple getter
 helloWorld :: Get (Resp Text)
