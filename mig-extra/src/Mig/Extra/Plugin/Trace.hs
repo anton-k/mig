@@ -16,6 +16,8 @@ module Mig.Extra.Plugin.Trace (
   logHttpBy,
   ppReq,
   Verbosity (..),
+  withLogs,
+  withLogsBy,
 ) where
 
 import Control.Monad
@@ -56,6 +58,12 @@ ifLevel :: Verbosity -> Verbosity -> [a] -> [a]
 ifLevel current level vals
   | level <= current = vals
   | otherwise = []
+
+withLogs :: (MonadIO m) => Server m -> Server m
+withLogs = applyPlugin (logHttp V2)
+
+withLogsBy :: (MonadIO m) => (Json.Value -> m ()) -> Server m -> Server m
+withLogsBy toLogItem = applyPlugin (logHttpBy toLogItem V2)
 
 -------------------------------------------------------------------------------------
 -- through
