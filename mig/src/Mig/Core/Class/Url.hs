@@ -62,6 +62,7 @@ type family UrlOf a :: Type where
   UrlOf (a, b, c, d) = (UrlOf a, UrlOf b, UrlOf c, UrlOf d)
   UrlOf (a, b, c, d, e) = (UrlOf a, UrlOf b, UrlOf c, UrlOf d, UrlOf e)
   UrlOf (a, b, c, d, e, f) = (UrlOf a, UrlOf b, UrlOf c, UrlOf d, UrlOf e, UrlOf f)
+  UrlOf (a :| b) = UrlOf a :| UrlOf b
 
 {-| Converts server to safe url. We can use it to generate
 safe URL constructors to be used in HTML templates
