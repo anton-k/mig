@@ -41,6 +41,13 @@ module Mig.Extra.Server.Common (
   HEAD,
   TRACE,
 
+  -- ** safe URLs
+  UrlOf,
+  ToUrl (..),
+  Url (..),
+  renderUrl,
+  (:|) (..),
+
   -- ** path and query
 
   -- | Build API for routes with queries and captures.

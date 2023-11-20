@@ -47,6 +47,7 @@ library
       Mig.Core.Class.Response
       Mig.Core.Class.Route
       Mig.Core.Class.Server
+      Mig.Core.Class.Url
       Mig.Core.OpenApi
       Mig.Core.Server
       Mig.Core.Server.Cache
@@ -54,6 +55,7 @@ library
       Mig.Core.Types
       Mig.Core.Types.Http
       Mig.Core.Types.Info
+      Mig.Core.Types.Pair
       Mig.Core.Types.Route
   other-modules:
       Paths_mig

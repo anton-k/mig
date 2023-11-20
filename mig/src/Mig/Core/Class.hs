@@ -9,3 +9,4 @@ import Mig.Core.Class.Plugin as X
 import Mig.Core.Class.Response as X
 import Mig.Core.Class.Route as X
 import Mig.Core.Class.Server as X
+import Mig.Core.Class.Url as X
