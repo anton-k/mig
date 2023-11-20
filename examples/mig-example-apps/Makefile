@@ -7,7 +7,7 @@ test:
 	stack test
 
 run:
-	stack run html-mig-example-app
+	stack run html-template-mig-example-app
 	
 ## servers
 
@@ -25,6 +25,9 @@ run-json-api:
 
 run-html:
 	stack run html-mig-example-app
+
+run-html-template:
+	stack run html-template-mig-example-app
 
 ## clients
 

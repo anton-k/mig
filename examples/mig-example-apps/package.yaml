@@ -9,6 +9,7 @@ copyright:           "2023 Author name here"
 extra-source-files:
 - README.md
 - Html/resources/*
+- HtmlTemplate/resources/*
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -156,3 +157,18 @@ executables:
     - uuid
     - http-api-data
     - fast-logger
+
+  html-template-mig-example-app:
+    main:                Main.hs
+    source-dirs:         HtmlTemplate/src
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - blaze-html
+    - file-embed-lzma
+    - uuid
+    - http-api-data
+    - fast-logger
+

@@ -41,10 +41,10 @@ import Mig.Extra.Server.Common as X
 -- response
 
 newtype Resp a = Resp (Core.Resp Json a)
-  deriving newtype (IsResp, Functor)
+  deriving newtype (IsResp, Eq, Show, Functor)
 
 newtype RespOr err a = RespOr (Core.RespOr Json err a)
-  deriving newtype (IsResp, Functor)
+  deriving newtype (IsResp, Eq, Show, Functor)
 
 -- request
 

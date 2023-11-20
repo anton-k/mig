@@ -20,6 +20,9 @@ extra-source-files:
     Html/resources/haskell-logo.png
     Html/resources/lambda-logo.png
     Html/resources/milligram.min.css
+    HtmlTemplate/resources/haskell-logo.png
+    HtmlTemplate/resources/lambda-logo.png
+    HtmlTemplate/resources/milligram.min.css
 
 source-repository head
   type: git
@@ -225,6 +228,64 @@ executable html-mig-example-app
       Paths_mig_example_apps
   hs-source-dirs:
       Html/src
+  default-extensions:
+      ImportQualifiedPost
+      OverloadedStrings
+      TypeFamilies
+      OverloadedRecordDot
+      DuplicateRecordFields
+      LambdaCase
+      DerivingStrategies
+      DataKinds
+      StrictData
+      DeriveAnyClass
+      RecordWildCards
+      TemplateHaskell
+      StandaloneDeriving
+      DeriveGeneric
+      DeriveDataTypeable
+      GeneralizedNewtypeDeriving
+  ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , aeson-pretty
+    , base >=4.7 && <5
+    , blaze-html
+    , bytestring
+    , containers
+    , derive-topdown
+    , fast-logger
+    , file-embed-lzma
+    , http-api-data
+    , http-types
+    , mig
+    , mig-client
+    , mig-extra
+    , mig-server
+    , mig-swagger-ui
+    , openapi3
+    , pretty-simple
+    , random
+    , safe
+    , text
+    , time
+    , uuid
+  default-language: GHC2021
+
+executable html-template-mig-example-app
+  main-is: Main.hs
+  other-modules:
+      Api
+      Content
+      Init
+      Interface
+      Internal.State
+      Server
+      Types
+      View
+      Paths_mig_example_apps
+  hs-source-dirs:
+      HtmlTemplate/src
   default-extensions:
       ImportQualifiedPost
       OverloadedStrings

@@ -39,11 +39,6 @@ import Web.HttpApiData
 
 import Mig.Core
 
-{-| Infox synonym for pair. It can be useful to stack together
-many client functions in the output of @toClient@ function.
--}
-data (:|) a b = a :| b
-
 instance (ToClient a, ToClient b) => ToClient (a :| b) where
   toClient api = a :| b
     where

@@ -28,7 +28,7 @@ import Mig.Extra.Server.Common as X
 -- response
 
 newtype Resp a = Resp (Core.Resp Html a)
-  deriving newtype (IsResp)
+  deriving newtype (IsResp, Eq, Show, Functor)
 
 type RespOr err a = Either (Resp err) (Resp a)
 
