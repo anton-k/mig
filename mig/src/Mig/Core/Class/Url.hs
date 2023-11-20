@@ -110,6 +110,16 @@ instance (KnownSymbol sym, ToHttpApiData a, ToUrl b) => ToUrl (Optional sym a ->
 
   urlArity = urlArity @b
 
+-- query flag
+
+instance (KnownSymbol sym, ToUrl b) => ToUrl (QueryFlag sym -> b) where
+  toUrl server = \(QueryFlag val) ->
+    mapUrl (insertQuery (getName @sym) (toUrlPiece val)) (toUrl @b server)
+
+  mapUrl f a = \query -> mapUrl f (a query)
+
+  urlArity = urlArity @b
+
 -- capture
 
 instance (KnownSymbol sym, ToHttpApiData a, ToUrl b) => ToUrl (Capture sym a -> b) where
@@ -130,6 +140,57 @@ instance (ToUrl b) => ToUrl (Body media a -> b) where
 
   mapUrl f a = \body -> mapUrl f (a body)
 
+  urlArity = urlArity @b
+
+-- header
+
+instance (ToUrl b) => ToUrl (Header sym a -> b) where
+  toUrl server = const $ toUrl @b server
+
+  mapUrl f a = \header -> mapUrl f (a header)
+
+  urlArity = urlArity @b
+
+-- optional header
+
+instance (ToUrl b) => ToUrl (OptionalHeader sym a -> b) where
+  toUrl server = const $ toUrl @b server
+
+  mapUrl f a = \header -> mapUrl f (a header)
+
+  urlArity = urlArity @b
+
+-- cookie
+
+instance (ToUrl b) => ToUrl (Cookie a -> b) where
+  toUrl server = const $ toUrl @b server
+
+  mapUrl f a = \header -> mapUrl f (a header)
+
+  urlArity = urlArity @b
+
+-- path info
+instance (ToUrl b) => ToUrl (PathInfo -> b) where
+  toUrl server = const $ toUrl @b server
+  mapUrl f a = \input -> mapUrl f (a input)
+  urlArity = urlArity @b
+
+-- full path info
+instance (ToUrl b) => ToUrl (FullPathInfo -> b) where
+  toUrl server = const $ toUrl @b server
+  mapUrl f a = \input -> mapUrl f (a input)
+  urlArity = urlArity @b
+
+-- request
+instance (ToUrl b) => ToUrl (RawRequest -> b) where
+  toUrl server = const $ toUrl @b server
+  mapUrl f a = \input -> mapUrl f (a input)
+  urlArity = urlArity @b
+
+-- is secure
+instance (ToUrl b) => ToUrl (IsSecure -> b) where
+  toUrl server = const $ toUrl @b server
+  mapUrl f a = \input -> mapUrl f (a input)
   urlArity = urlArity @b
 
 -------------------------------------------------------------------------------------
