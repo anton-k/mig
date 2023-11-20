@@ -21,13 +21,20 @@ import Mig.Core.Types.Pair
 import Mig.Core.Types.Route
 import Web.HttpApiData
 
+-- | Url-template type.
 data Url = Url
   { path :: Path
+  -- ^ relative path
   , queries :: [(Text, Text)]
+  -- ^ queries in the URL
   , captures :: Map Text Text
+  -- ^ map of captures
   }
 
--- | TODO: use Text.Builder
+{-| Render URL to string-like value.
+
+TODO: use Text.Builder
+-}
 renderUrl :: (IsString a) => Url -> a
 renderUrl url =
   fromString $ Text.unpack $ appendQuery $ mappend "/" $ Text.intercalate "/" $ fmap fromPathItem url.path.unPath
@@ -56,7 +63,40 @@ type family UrlOf a :: Type where
   UrlOf (a, b, c, d, e) = (UrlOf a, UrlOf b, UrlOf c, UrlOf d, UrlOf e)
   UrlOf (a, b, c, d, e, f) = (UrlOf a, UrlOf b, UrlOf c, UrlOf d, UrlOf e, UrlOf f)
 
--- | Converts server to safe url
+{-| Converts server to safe url. We can use it to generate
+safe URL constructors to be used in HTML templates
+An example of how we can create safe URL's. Note
+that order of URL's should be the same as in server definition:
+
+> type GreetingRoute = Get Html
+> type BlogPostRoute = Optional "id" BlogPostId -> Get Html
+> type ListPostsRoute = Get Html
+>
+> data Routes = Routes
+>   { greeting :: GreetingRoute
+>   , blogPost :: BlogPostRoute
+>   , listPosts :: ListPostsRoute
+>   }
+>
+> -- URLs
+>
+> data Urls = Urls
+>   { greeting :: UrlOf GreetingRoute
+>   , blogPost :: UrlOf BlogPostRoute
+>   , listPosts :: UrlOf ListPostsRoute
+>   }
+>
+> {\-| Site URL's
+> URL's should be listed in the same order as they appear in the server
+> -\}
+> urls :: Urls
+> urls = Urls{..}
+>   where
+>     greeting
+>       :| blogPost
+>       :| listPosts
+>         toUrl (server undefined)
+-}
 class ToUrl a where
   toUrl :: Server m -> a
   mapUrl :: (Url -> Url) -> a -> a
@@ -75,7 +115,6 @@ instance (ToUrl a, ToUrl b) => ToUrl (a, b) where
       (apiA, apiB) = bimap fromFlatApi fromFlatApi $ Prelude.splitAt (urlArity @a) (flatApi api)
 
   mapUrl f (a, b) = (mapUrl f a, mapUrl f b)
-
   urlArity = urlArity @a + urlArity @b
 
 instance ToUrl Url where
@@ -84,7 +123,6 @@ instance ToUrl Url where
     _ -> Url mempty mempty mempty
 
   mapUrl f a = f a
-
   urlArity = 1
 
 -- query
@@ -94,7 +132,6 @@ instance (KnownSymbol sym, ToHttpApiData a, ToUrl b) => ToUrl (Query sym a -> b)
     mapUrl (insertQuery (getName @sym) (toUrlPiece val)) (toUrl @b server)
 
   mapUrl f a = \query -> mapUrl f (a query)
-
   urlArity = urlArity @b
 
 insertQuery :: Text -> Text -> Url -> Url
@@ -107,7 +144,6 @@ instance (KnownSymbol sym, ToHttpApiData a, ToUrl b) => ToUrl (Optional sym a ->
     mapUrl (maybe id (insertQuery (getName @sym) . toUrlPiece) mVal) (toUrl @b server)
 
   mapUrl f a = \query -> mapUrl f (a query)
-
   urlArity = urlArity @b
 
 -- query flag
@@ -117,7 +153,6 @@ instance (KnownSymbol sym, ToUrl b) => ToUrl (QueryFlag sym -> b) where
     mapUrl (insertQuery (getName @sym) (toUrlPiece val)) (toUrl @b server)
 
   mapUrl f a = \query -> mapUrl f (a query)
-
   urlArity = urlArity @b
 
 -- capture
@@ -127,7 +162,6 @@ instance (KnownSymbol sym, ToHttpApiData a, ToUrl b) => ToUrl (Capture sym a -> 
     mapUrl (insertCapture (getName @sym) (toUrlPiece val)) (toUrl @b server)
 
   mapUrl f a = \capture -> mapUrl f (a capture)
-
   urlArity = urlArity @b
 
 insertCapture :: Text -> Text -> Url -> Url
@@ -137,36 +171,28 @@ insertCapture name val url = url{captures = Map.insert name val url.captures}
 
 instance (ToUrl b) => ToUrl (Body media a -> b) where
   toUrl server = const $ toUrl @b server
-
   mapUrl f a = \body -> mapUrl f (a body)
-
   urlArity = urlArity @b
 
 -- header
 
 instance (ToUrl b) => ToUrl (Header sym a -> b) where
   toUrl server = const $ toUrl @b server
-
   mapUrl f a = \header -> mapUrl f (a header)
-
   urlArity = urlArity @b
 
 -- optional header
 
 instance (ToUrl b) => ToUrl (OptionalHeader sym a -> b) where
   toUrl server = const $ toUrl @b server
-
   mapUrl f a = \header -> mapUrl f (a header)
-
   urlArity = urlArity @b
 
 -- cookie
 
 instance (ToUrl b) => ToUrl (Cookie a -> b) where
   toUrl server = const $ toUrl @b server
-
   mapUrl f a = \header -> mapUrl f (a header)
-
   urlArity = urlArity @b
 
 -- path info
