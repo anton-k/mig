@@ -28,7 +28,7 @@ initServer site = logRoutes $ server (initRoutes site) <> staticServer
       addFavicon $ "static" /. staticFiles resourceFiles
 
     resourceFiles :: [(FilePath, ByteString)]
-    resourceFiles = $(embedRecursiveDir "Html/resources")
+    resourceFiles = $(embedRecursiveDir "HtmlTemplate/resources")
 
     addFavicon :: Server IO -> Server IO
     addFavicon = addPathLink "favicon.ico" "static/lambda-logo.png"
@@ -59,14 +59,14 @@ handleGreeting site =
 
 -- | Read blog post by id
 handleBlogPost :: Site -> BlogPostRoute
-handleBlogPost site (Optional mBlogId) = Send $
-  case mBlogId of
-    Nothing -> toPage . ViewBlogPost <$> randomBlogPost site
-    Just blogId ->
-      maybe
-        (toErrorPage notFound404 $ PostNotFound blogId)
-        (toPage . ViewBlogPost)
-        <$> site.readBlogPost blogId
+handleBlogPost site (Optional mBlogId) = Send $ do
+  blogId <- getId
+  maybe
+    (toErrorPage notFound404 $ PostNotFound blogId)
+    (toPage . ViewBlogPost)
+    <$> site.readBlogPost blogId
+  where
+    getId = maybe (randomBlogPost site) pure mBlogId
 
 -- | Read random quote
 handleQuote :: Site -> QuoteRoute
@@ -97,9 +97,9 @@ logRoute site route = do
   site.logInfo $ route <> " page visited"
 
 -- | Get random blog post
-randomBlogPost :: Site -> IO BlogPost
+randomBlogPost :: Site -> IO BlogPostId
 randomBlogPost site =
-  oneOf =<< site.listBlogPosts
+  fmap (.blogPostId) $ oneOf =<< site.listBlogPosts
 
 toPage :: (ToMarkup a) => a -> Resp Html
 toPage = ok . toMarkup . Page

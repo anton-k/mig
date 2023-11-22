@@ -14,6 +14,9 @@ module Mig.Extra.Server.Html.IO (
   Resp (..),
   RespOr,
 
+  -- * utils
+  Link (..),
+
   -- * re-exports
   Body (..),
   module X,
@@ -21,7 +24,7 @@ module Mig.Extra.Server.Html.IO (
 
 import Mig.Core (Body (..))
 import Mig.Extra.Server.Common as X
-import Mig.Extra.Server.Html (Resp (..), RespOr)
+import Mig.Extra.Server.Html (Link (..), Resp (..), RespOr)
 
 type Get a = Send GET IO (Resp a)
 type Post a = Send POST IO (Resp a)

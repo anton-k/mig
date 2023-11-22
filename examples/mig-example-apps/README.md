@@ -13,6 +13,8 @@ We can find out how to build various servers:
 
 * `Html` - simple blog post site that servers HTML.
 
+* `HtmlTemplate` - variation of `Html` example with safe URLs and HTML-templates
+
 Also we can build clients:
 
 * `HelloClient` - basic hello world client

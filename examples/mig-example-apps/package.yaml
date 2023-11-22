@@ -10,6 +10,7 @@ extra-source-files:
 - README.md
 - Html/resources/*
 - HtmlTemplate/resources/*
+- HtmlTemplate/templates/*
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -72,7 +73,8 @@ dependencies:
   - safe
   - containers
   - http-types
-  - derive-topdown
+  - stache
+  - blaze-markup
 
 executables:
   hello-world-mig-example-app:

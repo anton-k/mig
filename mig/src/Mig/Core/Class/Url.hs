@@ -5,6 +5,7 @@ module Mig.Core.Class.Url (
   ToUrl (..),
 ) where
 
+import Data.Aeson (ToJSON (..))
 import Data.Bifunctor
 import Data.Kind
 import Data.Map.Strict (Map)
@@ -31,6 +32,9 @@ data Url = Url
   -- ^ map of captures
   }
 
+instance ToJSON Url where
+  toJSON = toJSON . renderUrl @Text
+
 {-| Render URL to string-like value.
 
 TODO: use Text.Builder
@@ -56,7 +60,18 @@ renderUrl url =
 -- | Converts route type to URL function
 type family UrlOf a :: Type where
   UrlOf (Send method m a) = Url
-  UrlOf (a -> b) = (a -> UrlOf b)
+  UrlOf (Query name value -> b) = (Query name value -> UrlOf b)
+  UrlOf (Optional name value -> b) = (Optional name value -> UrlOf b)
+  UrlOf (Capture name value -> b) = (Capture name value -> UrlOf b)
+  UrlOf (QueryFlag name -> b) = (QueryFlag name -> UrlOf b)
+  UrlOf (Header name value -> b) = UrlOf b
+  UrlOf (OptionalHeader name value -> b) = UrlOf b
+  UrlOf (Body media value -> b) = UrlOf b
+  UrlOf (Cookie value -> b) = UrlOf b
+  UrlOf (PathInfo -> b) = UrlOf b
+  UrlOf (FullPathInfo -> b) = UrlOf b
+  UrlOf (RawRequest -> b) = UrlOf b
+  UrlOf (IsSecure -> b) = UrlOf b
   UrlOf (a, b) = (UrlOf a, UrlOf b)
   UrlOf (a, b, c) = (UrlOf a, UrlOf b, UrlOf c)
   UrlOf (a, b, c, d) = (UrlOf a, UrlOf b, UrlOf c, UrlOf d)
@@ -118,6 +133,22 @@ instance (ToUrl a, ToUrl b) => ToUrl (a, b) where
   mapUrl f (a, b) = (mapUrl f a, mapUrl f b)
   urlArity = urlArity @a + urlArity @b
 
+instance (ToUrl a, ToUrl b, ToUrl c) => ToUrl (a, b, c) where
+  toUrl server = fromPair $ toUrl @(a, (b, c)) server
+    where
+      fromPair (a, (b, c)) = (a, b, c)
+
+  mapUrl f (a, b, c) = (mapUrl f a, mapUrl f b, mapUrl f c)
+  urlArity = urlArity @a + urlArity @b + urlArity @c
+
+instance (ToUrl a, ToUrl b, ToUrl c, ToUrl d) => ToUrl (a, b, c, d) where
+  toUrl server = fromPair $ toUrl @(a, (b, c, d)) server
+    where
+      fromPair (a, (b, c, d)) = (a, b, c, d)
+
+  mapUrl f (a, b, c, d) = (mapUrl f a, mapUrl f b, mapUrl f c, mapUrl f d)
+  urlArity = urlArity @a + urlArity @b + urlArity @c + urlArity @d
+
 instance ToUrl Url where
   toUrl server = case getServerPaths server of
     url : _ -> Url url [] mempty
@@ -167,58 +198,6 @@ instance (KnownSymbol sym, ToHttpApiData a, ToUrl b) => ToUrl (Capture sym a -> 
 
 insertCapture :: Text -> Text -> Url -> Url
 insertCapture name val url = url{captures = Map.insert name val url.captures}
-
--- body
-
-instance (ToUrl b) => ToUrl (Body media a -> b) where
-  toUrl server = const $ toUrl @b server
-  mapUrl f a = \body -> mapUrl f (a body)
-  urlArity = urlArity @b
-
--- header
-
-instance (ToUrl b) => ToUrl (Header sym a -> b) where
-  toUrl server = const $ toUrl @b server
-  mapUrl f a = \header -> mapUrl f (a header)
-  urlArity = urlArity @b
-
--- optional header
-
-instance (ToUrl b) => ToUrl (OptionalHeader sym a -> b) where
-  toUrl server = const $ toUrl @b server
-  mapUrl f a = \header -> mapUrl f (a header)
-  urlArity = urlArity @b
-
--- cookie
-
-instance (ToUrl b) => ToUrl (Cookie a -> b) where
-  toUrl server = const $ toUrl @b server
-  mapUrl f a = \header -> mapUrl f (a header)
-  urlArity = urlArity @b
-
--- path info
-instance (ToUrl b) => ToUrl (PathInfo -> b) where
-  toUrl server = const $ toUrl @b server
-  mapUrl f a = \input -> mapUrl f (a input)
-  urlArity = urlArity @b
-
--- full path info
-instance (ToUrl b) => ToUrl (FullPathInfo -> b) where
-  toUrl server = const $ toUrl @b server
-  mapUrl f a = \input -> mapUrl f (a input)
-  urlArity = urlArity @b
-
--- request
-instance (ToUrl b) => ToUrl (RawRequest -> b) where
-  toUrl server = const $ toUrl @b server
-  mapUrl f a = \input -> mapUrl f (a input)
-  urlArity = urlArity @b
-
--- is secure
-instance (ToUrl b) => ToUrl (IsSecure -> b) where
-  toUrl server = const $ toUrl @b server
-  mapUrl f a = \input -> mapUrl f (a input)
-  urlArity = urlArity @b
 
 -------------------------------------------------------------------------------------
 -- utils

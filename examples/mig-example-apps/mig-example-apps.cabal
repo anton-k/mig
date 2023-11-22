@@ -23,6 +23,13 @@ extra-source-files:
     HtmlTemplate/resources/haskell-logo.png
     HtmlTemplate/resources/lambda-logo.png
     HtmlTemplate/resources/milligram.min.css
+    HtmlTemplate/templates/greeting.html
+    HtmlTemplate/templates/listPosts.html
+    HtmlTemplate/templates/main.html
+    HtmlTemplate/templates/post.html
+    HtmlTemplate/templates/postNotFound.html
+    HtmlTemplate/templates/quote.html
+    HtmlTemplate/templates/writeForm.html
 
 source-repository head
   type: git
@@ -59,9 +66,9 @@ executable counter-client-mig-example-app
       aeson
     , aeson-pretty
     , base >=4.7 && <5
+    , blaze-markup
     , bytestring
     , containers
-    , derive-topdown
     , http-client
     , http-types
     , mig
@@ -74,6 +81,7 @@ executable counter-client-mig-example-app
     , pretty-simple
     , random
     , safe
+    , stache
     , text
     , time
   default-language: GHC2021
@@ -106,9 +114,9 @@ executable counter-mig-example-app
       aeson
     , aeson-pretty
     , base >=4.7 && <5
+    , blaze-markup
     , bytestring
     , containers
-    , derive-topdown
     , http-types
     , mig
     , mig-client
@@ -120,6 +128,7 @@ executable counter-mig-example-app
     , pretty-simple
     , random
     , safe
+    , stache
     , text
     , time
   default-language: GHC2021
@@ -152,9 +161,9 @@ executable hello-world-client-mig-example-app
       aeson
     , aeson-pretty
     , base >=4.7 && <5
+    , blaze-markup
     , bytestring
     , containers
-    , derive-topdown
     , http-client
     , http-types
     , mig
@@ -166,6 +175,7 @@ executable hello-world-client-mig-example-app
     , pretty-simple
     , random
     , safe
+    , stache
     , text
     , time
   default-language: GHC2021
@@ -198,9 +208,9 @@ executable hello-world-mig-example-app
       aeson
     , aeson-pretty
     , base >=4.7 && <5
+    , blaze-markup
     , bytestring
     , containers
-    , derive-topdown
     , http-types
     , mig
     , mig-client
@@ -211,6 +221,7 @@ executable hello-world-mig-example-app
     , pretty-simple
     , random
     , safe
+    , stache
     , text
     , time
   default-language: GHC2021
@@ -251,9 +262,9 @@ executable html-mig-example-app
     , aeson-pretty
     , base >=4.7 && <5
     , blaze-html
+    , blaze-markup
     , bytestring
     , containers
-    , derive-topdown
     , fast-logger
     , file-embed-lzma
     , http-api-data
@@ -267,6 +278,7 @@ executable html-mig-example-app
     , pretty-simple
     , random
     , safe
+    , stache
     , text
     , time
     , uuid
@@ -309,9 +321,9 @@ executable html-template-mig-example-app
     , aeson-pretty
     , base >=4.7 && <5
     , blaze-html
+    , blaze-markup
     , bytestring
     , containers
-    , derive-topdown
     , fast-logger
     , file-embed-lzma
     , http-api-data
@@ -325,6 +337,7 @@ executable html-template-mig-example-app
     , pretty-simple
     , random
     , safe
+    , stache
     , text
     , time
     , uuid
@@ -364,9 +377,9 @@ executable json-api-mig-example-app
       aeson
     , aeson-pretty
     , base >=4.7 && <5
+    , blaze-markup
     , bytestring
     , containers
-    , derive-topdown
     , fast-logger
     , http-types
     , mig
@@ -378,6 +391,7 @@ executable json-api-mig-example-app
     , pretty-simple
     , random
     , safe
+    , stache
     , text
     , time
     , yaml
@@ -411,9 +425,9 @@ executable route-args-client-mig-example-app
       aeson
     , aeson-pretty
     , base >=4.7 && <5
+    , blaze-markup
     , bytestring
     , containers
-    , derive-topdown
     , http-client
     , http-types
     , mig
@@ -425,6 +439,7 @@ executable route-args-client-mig-example-app
     , pretty-simple
     , random
     , safe
+    , stache
     , text
     , time
   default-language: GHC2021
@@ -457,9 +472,9 @@ executable route-args-mig-example-app
       aeson
     , aeson-pretty
     , base >=4.7 && <5
+    , blaze-markup
     , bytestring
     , containers
-    , derive-topdown
     , http-types
     , mig
     , mig-client
@@ -470,6 +485,7 @@ executable route-args-mig-example-app
     , pretty-simple
     , random
     , safe
+    , stache
     , text
     , time
   default-language: GHC2021

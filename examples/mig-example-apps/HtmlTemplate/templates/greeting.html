@@ -1,0 +1,14 @@
+<div> 
+  <h2> Welcome to blog site example </h2>
+  <p> You can get random poem or random quote from menu bar </p>
+  <div> 
+    <h2> Posts: </h2>
+    <ul>
+      {{#posts}}
+      <li>
+        <a href="{{href}}"> {{name}} </a>
+      </li>
+      {{/posts}}
+    </ul>
+  </div>
+</div>

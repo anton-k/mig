@@ -38,7 +38,7 @@ initSite = do
     Site
       { readBlogPost = mockRead env
       , writeBlogPost = mockWriteBlogPost env
-      , listBlogPosts = readIORef env.blogPosts
+      , listBlogPosts = fmap toBlogPostLink <$> readIORef env.blogPosts
       , readQuote = Quote <$> randomQuote
       , logInfo = logInfo
       , cleanup = do
