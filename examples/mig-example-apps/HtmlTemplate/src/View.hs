@@ -20,6 +20,7 @@ renderMustacheHtml :: (ToJSON a) => Template -> a -> Html
 renderMustacheHtml template value =
   H.preEscapedLazyText $ renderMustache template (toJSON value)
 
+-- | Templates for the site
 data Templates = Templates
   { main :: Template
   , greeting :: Template
@@ -30,6 +31,7 @@ data Templates = Templates
   , postNotFound :: Template
   }
 
+-- | Loads templates with template haskell as pure values
 templates :: Templates
 templates =
   Templates

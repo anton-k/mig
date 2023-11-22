@@ -1,14 +1,13 @@
 name:                mig-example-apps
 version:             0.1.0.0
-github:              "githubuser/mig-example-apps"
+github:              "anton-k/mig"
 license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2023 Author name here"
+author:              "Anton Kholomiov"
+maintainer:          "anton.kholomiov@gmail.com"
+copyright:           "2023 Anton Kholomiov"
 
 extra-source-files:
 - README.md
-- Html/resources/*
 - HtmlTemplate/resources/*
 - HtmlTemplate/templates/*
 
@@ -73,8 +72,6 @@ dependencies:
   - safe
   - containers
   - http-types
-  - stache
-  - blaze-markup
 
 executables:
   hello-world-mig-example-app:
@@ -173,4 +170,6 @@ executables:
     - uuid
     - http-api-data
     - fast-logger
+    - stache
+    - blaze-markup
 
