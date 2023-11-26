@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.1
+
+Adds some HTML goodies:
+
+* cookies (new input `Cookie` and function to set the cookies)
+* type safe stable URLs from server definition
+* example `HtmlTemplate` on how to use template engine with library
+
+Adds stack template to create new hello-world server with stack.
+
 ## v2
 
 The servers are augmented with info on API structure. It allows us to 
