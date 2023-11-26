@@ -17,9 +17,12 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import GHC.TypeLits
 import Mig.Core.Api (Path (..), PathItem (..), flatApi, fromFlatApi)
+import Mig.Core.Class.Route (Route (..))
 import Mig.Core.Server (Server (..), getServerPaths)
+import Mig.Core.Types.Info (RouteInfo, routeHasCapture, routeHasOptionalQuery, routeHasQuery, routeHasQueryFlag)
 import Mig.Core.Types.Pair
 import Mig.Core.Types.Route
+import Safe (headMay)
 import Web.HttpApiData
 
 -- | Url-template type.
@@ -161,7 +164,10 @@ instance ToUrl Url where
 
 instance (KnownSymbol sym, ToHttpApiData a, ToUrl b) => ToUrl (Query sym a -> b) where
   toUrl server = \(Query val) ->
-    mapUrl (insertQuery (getName @sym) (toUrlPiece val)) (toUrl @b server)
+    whenOrError (hasQuery (getName @sym) server) noQuery $
+      mapUrl (insertQuery (getName @sym) (toUrlPiece val)) (toUrl @b server)
+    where
+      noQuery = noInputMessage ("query with name: " <> getName @sym) server
 
   mapUrl f a = \query -> mapUrl f (a query)
   urlArity = urlArity @b
@@ -169,29 +175,47 @@ instance (KnownSymbol sym, ToHttpApiData a, ToUrl b) => ToUrl (Query sym a -> b)
 insertQuery :: Text -> Text -> Url -> Url
 insertQuery name val url = url{queries = (name, val) : url.queries}
 
+hasQuery :: Text -> Server m -> Bool
+hasQuery name = hasInput (routeHasQuery name)
+
 -- optional query
 
 instance (KnownSymbol sym, ToHttpApiData a, ToUrl b) => ToUrl (Optional sym a -> b) where
   toUrl server = \(Optional mVal) ->
-    mapUrl (maybe id (insertQuery (getName @sym) . toUrlPiece) mVal) (toUrl @b server)
+    whenOrError (hasOptionalQuery (getName @sym) server) noOptionalQuery $
+      mapUrl (maybe id (insertQuery (getName @sym) . toUrlPiece) mVal) (toUrl @b server)
+    where
+      noOptionalQuery = noInputMessage ("optional query with name: " <> getName @sym) server
 
   mapUrl f a = \query -> mapUrl f (a query)
   urlArity = urlArity @b
+
+hasOptionalQuery :: Text -> Server m -> Bool
+hasOptionalQuery name = hasInput (routeHasOptionalQuery name)
 
 -- query flag
 
 instance (KnownSymbol sym, ToUrl b) => ToUrl (QueryFlag sym -> b) where
   toUrl server = \(QueryFlag val) ->
-    mapUrl (insertQuery (getName @sym) (toUrlPiece val)) (toUrl @b server)
+    whenOrError (hasQueryFlag (getName @sym) server) noQueryFlag $
+      mapUrl (insertQuery (getName @sym) (toUrlPiece val)) (toUrl @b server)
+    where
+      noQueryFlag = noInputMessage ("query flag with name: " <> getName @sym) server
 
   mapUrl f a = \query -> mapUrl f (a query)
   urlArity = urlArity @b
+
+hasQueryFlag :: Text -> Server m -> Bool
+hasQueryFlag name = hasInput (routeHasQueryFlag name)
 
 -- capture
 
 instance (KnownSymbol sym, ToHttpApiData a, ToUrl b) => ToUrl (Capture sym a -> b) where
   toUrl server = \(Capture val) ->
-    mapUrl (insertCapture (getName @sym) (toUrlPiece val)) (toUrl @b server)
+    whenOrError (hasCapture (getName @sym) server) noCapture $
+      mapUrl (insertCapture (getName @sym) (toUrlPiece val)) (toUrl @b server)
+    where
+      noCapture = noInputMessage ("Capture with name: " <> getName @sym) server
 
   mapUrl f a = \capture -> mapUrl f (a capture)
   urlArity = urlArity @b
@@ -199,8 +223,29 @@ instance (KnownSymbol sym, ToHttpApiData a, ToUrl b) => ToUrl (Capture sym a -> 
 insertCapture :: Text -> Text -> Url -> Url
 insertCapture name val url = url{captures = Map.insert name val url.captures}
 
+hasCapture :: Text -> Server m -> Bool
+hasCapture name = hasInput (routeHasCapture name)
+
 -------------------------------------------------------------------------------------
 -- utils
 
 getName :: forall sym a. (KnownSymbol sym, IsString a) => a
 getName = fromString (symbolVal (Proxy @sym))
+
+hasInput :: (RouteInfo -> Bool) -> Server m -> Bool
+hasInput check (Server api) =
+  maybe False (check . (.info) . snd) $ headMay $ flatApi api
+
+noInputMessage :: String -> Server m -> String
+noInputMessage item (Server api) =
+  unlines
+    [ unwords ["Server has no", item, "at route", route]
+    , "Check the order of routes on the left side of toUrl expression"
+    ]
+  where
+    route = maybe "unknown" (Text.unpack . toUrlPiece . fst) $ headMay (flatApi api)
+
+whenOrError :: Bool -> String -> a -> a
+whenOrError cond message a
+  | cond = a
+  | otherwise = error message

@@ -26,11 +26,17 @@ module Mig.Core.Types.Info (
   addQueryFlagInfo,
   addOptionalInfo,
   addCaptureInfo,
+
+  -- * checks
+  routeHasQuery,
+  routeHasOptionalQuery,
+  routeHasQueryFlag,
+  routeHasCapture,
 ) where
 
 import Data.List.Extra (firstJust)
 import Data.Map.Strict qualified as Map
-import Data.OpenApi
+import Data.OpenApi (Definitions, Referenced, Schema, ToParamSchema (..), ToSchema (..), declareSchemaRef)
 import Data.OpenApi.Declare (runDeclare)
 import Data.Proxy
 import Data.String
@@ -207,6 +213,45 @@ addQueryFlagInfo = addRouteInput (QueryFlagInput (getName @sym))
 -- | Adds request body to API schema
 addBodyInfo :: forall ty a. (ToMediaType ty, ToSchema a) => RouteInfo -> RouteInfo
 addBodyInfo = addRouteInput (ReqBodyInput (toMediaType @ty) (toSchemaDefs @a))
+
+---------------------------------------------
+-- checks
+
+-- | Check that route has query with given name
+routeHasQuery :: Text -> RouteInfo -> Bool
+routeHasQuery expectedName = routeHasInput isQuery
+  where
+    isQuery = \case
+      QueryInput (IsRequired True) name _ -> expectedName == name
+      _ -> False
+
+-- | Check that route has query with given name
+routeHasOptionalQuery :: Text -> RouteInfo -> Bool
+routeHasOptionalQuery expectedName = routeHasInput isOptionalQuery
+  where
+    isOptionalQuery = \case
+      QueryInput (IsRequired False) name _ -> expectedName == name
+      _ -> False
+
+-- | Check that route has query with given name
+routeHasQueryFlag :: Text -> RouteInfo -> Bool
+routeHasQueryFlag expectedName = routeHasInput isQueryFlag
+  where
+    isQueryFlag = \case
+      QueryFlagInput name -> expectedName == name
+      _ -> False
+
+-- | Check that route has query with given name
+routeHasCapture :: Text -> RouteInfo -> Bool
+routeHasCapture expectedName = routeHasInput isCapture
+  where
+    isCapture = \case
+      CaptureInput name _ -> expectedName == name
+      _ -> False
+
+-- | Check that route has certain input
+routeHasInput :: (RouteInput -> Bool) -> RouteInfo -> Bool
+routeHasInput check info = any (check . (.content)) info.inputs
 
 ---------------------------------------------
 -- utils
