@@ -176,20 +176,20 @@ data Urls = Urls
 ```
 
 It resembles the handlers code only we use prefix `UrlOf`. This is a type-level
-function that know which URL-creation function corresponds to handler.
+function that knows which URL-creation function corresponds to handler.
 
-For a static route with no arguments it will product just constant `Url`.
-But for a route with argument the result URL also is going to depend on those arguments
+For a static route with no arguments it will produce just constant `Url`.
+But for a route with arguments the result URL also is going to depend on those arguments
 in case that input is either `Query`, `Optional`, `QueryFlag` or `Capture`.
 All those inputs affect the look of the resulting URL.
 
-So for `ByeRoute` we get the type:
+For example for `ByeRoute` we get the type:
 
 ```haskell
 Query "user" Text -> Url
 ```
 
-So we have correct types let's link URL to the server definition:
+Let's link URLs to the server definition:
 
 ```haskell
 urls :: Urls
@@ -237,7 +237,7 @@ And the proper corresponding URL text will be generated from arguments.
 ## How to use HTML-templates
 
 In the previous examples we wrote HTML view code with `blaze-html` DSL. 
-All HTML construction is a Haskell function in this style. But often it is
+The HTML construction is a Haskell function in this style. But often it is
 desirable to write HTML with the *holes* in it. So that holes can be substituted
 with values at run-time. Those files are called templates. Often templates
 are written by Web-designers. 
@@ -462,7 +462,7 @@ We are not limited with `mustache` for templates. The Haskell has many
 great templating libraries which also can be used like [`shakespeare`](https://hackage.haskell.org/package/shakespeare)
 or [heist](https://hackage.haskell.org/package/heist) and many others.
 
-I've chose `stache` as it ports very widespread and simple solution.
+I've chosen `stache` as it ports very widespread and simple solution `mustache` to Haskell.
 But other template engines can be used in the same way. The `mig` library is not tied
 to any of those libraries. Although I've tried `stache` and highly recommend it.
 It's easy to use and versatile.
