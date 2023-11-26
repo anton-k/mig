@@ -45,7 +45,31 @@ bye :: Query "user" Text -> Get (Resp Text)
 bye (Query name) = pure $ ok ("Goodbye " <> name)
 ```
 
-## How to install library
+## How to start a new project
+
+If you are a Haskell beginner and interested to try out building servers with `mig` 
+the easiest way to start is to install [`stack`](https://docs.haskellstack.org/en/stable/).
+See the main page of the `stack` docs in the link on how to do it. After the `stack` is installed we can generate a 
+new `mig` project that contains hello world server with command:
+
+```bash
+> stack new my-project-name anton-k/hello-mig
+```
+
+It generates `my-project-name` directory that contains a code for our server.
+Let's navigate to it, build server code and start the server:
+
+```bash
+> cd my-project-name
+> make build
+> make run
+```
+
+After that we can query the server on port 8085 either by curl or by swagger-ui.
+The project contains a basic JSON API server with two routes. The code will be explained
+in detail in the next chapter of this tutorial.
+
+## How to use mig library in your project
 
 We can install it from hackage. 
 We need to use the library [mig-server](https://hackage.haskell.org/package/mig-server)
