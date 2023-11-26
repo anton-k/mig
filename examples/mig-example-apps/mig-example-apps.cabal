@@ -7,26 +7,30 @@ cabal-version: 1.12
 name:               mig-example-apps
 version:            0.1.0.0
 description:        Please see the README on GitHub at <https://github.com/anton-k/mig-example-apps#readme>
-homepage:           https://github.com/githubuser/mig-example-apps#readme
-bug-reports:        https://github.com/githubuser/mig-example-apps/issues
-author:             Author name here
-maintainer:         example@example.com
-copyright:          2023 Author name here
+homepage:           https://github.com/anton-k/mig#readme
+bug-reports:        https://github.com/anton-k/mig/issues
+author:             Anton Kholomiov
+maintainer:         anton.kholomiov@gmail.com
+copyright:          2023 Anton Kholomiov
 license:            BSD3
 license-file:       LICENSE
 build-type:         Simple
 extra-source-files:
     README.md
-    Html/resources/haskell-logo.png
-    Html/resources/lambda-logo.png
-    Html/resources/milligram.min.css
     HtmlTemplate/resources/haskell-logo.png
     HtmlTemplate/resources/lambda-logo.png
     HtmlTemplate/resources/milligram.min.css
+    HtmlTemplate/templates/greeting.html
+    HtmlTemplate/templates/listPosts.html
+    HtmlTemplate/templates/main.html
+    HtmlTemplate/templates/post.html
+    HtmlTemplate/templates/postNotFound.html
+    HtmlTemplate/templates/quote.html
+    HtmlTemplate/templates/writeForm.html
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/mig-example-apps
+  location: https://github.com/anton-k/mig
 
 executable counter-client-mig-example-app
   main-is: Main.hs
@@ -61,7 +65,6 @@ executable counter-client-mig-example-app
     , base >=4.7 && <5
     , bytestring
     , containers
-    , derive-topdown
     , http-client
     , http-types
     , mig
@@ -108,7 +111,6 @@ executable counter-mig-example-app
     , base >=4.7 && <5
     , bytestring
     , containers
-    , derive-topdown
     , http-types
     , mig
     , mig-client
@@ -154,7 +156,6 @@ executable hello-world-client-mig-example-app
     , base >=4.7 && <5
     , bytestring
     , containers
-    , derive-topdown
     , http-client
     , http-types
     , mig
@@ -200,7 +201,6 @@ executable hello-world-mig-example-app
     , base >=4.7 && <5
     , bytestring
     , containers
-    , derive-topdown
     , http-types
     , mig
     , mig-client
@@ -253,7 +253,6 @@ executable html-mig-example-app
     , blaze-html
     , bytestring
     , containers
-    , derive-topdown
     , fast-logger
     , file-embed-lzma
     , http-api-data
@@ -309,9 +308,9 @@ executable html-template-mig-example-app
     , aeson-pretty
     , base >=4.7 && <5
     , blaze-html
+    , blaze-markup
     , bytestring
     , containers
-    , derive-topdown
     , fast-logger
     , file-embed-lzma
     , http-api-data
@@ -325,6 +324,7 @@ executable html-template-mig-example-app
     , pretty-simple
     , random
     , safe
+    , stache
     , text
     , time
     , uuid
@@ -366,7 +366,6 @@ executable json-api-mig-example-app
     , base >=4.7 && <5
     , bytestring
     , containers
-    , derive-topdown
     , fast-logger
     , http-types
     , mig
@@ -413,7 +412,6 @@ executable route-args-client-mig-example-app
     , base >=4.7 && <5
     , bytestring
     , containers
-    , derive-topdown
     , http-client
     , http-types
     , mig
@@ -459,7 +457,6 @@ executable route-args-mig-example-app
     , base >=4.7 && <5
     , bytestring
     , containers
-    , derive-topdown
     , http-types
     , mig
     , mig-client

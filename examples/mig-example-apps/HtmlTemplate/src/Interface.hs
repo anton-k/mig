@@ -14,7 +14,7 @@ with outside world: DBs, logger.
 data Site = Site
   { readBlogPost :: BlogPostId -> IO (Maybe BlogPost)
   , writeBlogPost :: SubmitBlogPost -> IO BlogPostId
-  , listBlogPosts :: IO [BlogPost]
+  , listBlogPosts :: IO [BlogPostLink]
   , readQuote :: IO Quote
   , logInfo :: Text -> IO ()
   , cleanup :: IO ()

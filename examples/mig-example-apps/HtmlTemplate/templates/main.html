@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+  <link rel="stylesheet" href="/static/milligram.min.css">
+</head>
+
+<body>
+  <div style="margin-left:4%; margin-top: 3%; font-size: 110%">
+    <div class="container"> 
+      <div class="row">
+        <div class="column column-20"> 
+          <img src= "/static/haskell-logo.png" alt="blog logo" width="100pt" style="margin-bottom: 15pt">
+          <ul style="list-style: none">
+            {{#menuLinks}}
+            <li> <a href="{{href}}"> {{name}} </a></li>
+            {{/menuLinks}}
+          </ul>
+        </div>   
+        <div class="column column-75 column-offset-5"> 
+          {{{content}}}
+        </div>   
+      </div>
+    </div>    
+  </div>
+</body>
+
+</html>

@@ -7,6 +7,8 @@ module Types (
   BlogPostId (..),
   BlogPostView (..),
   BlogPost (..),
+  BlogPostLink (..),
+  toBlogPostLink,
   Quote (..),
   SubmitBlogPost (..),
 ) where
@@ -18,22 +20,38 @@ import Mig.Html.IO
 -- | Web-page for our site
 newtype Page a = Page a
 
--- | Greeting page
-newtype Greeting = Greeting [BlogPost]
-
 -- | Form to submit new post
 data WritePost = WritePost
 
--- | List all posts
-newtype ListPosts = ListPosts [BlogPost]
-
 -- | Blog post id
 newtype BlogPostId = BlogPostId {unBlogPostId :: UUID}
+
+mapDerive deriveNewtypeParam [''BlogPostId]
+
+data Link = Link
+  { href :: Text
+  , name :: Text
+  }
+  deriving (Generic, ToJSON)
 
 data BlogPostView
   = ViewBlogPost BlogPost
   | -- | error: post not found by id
     PostNotFound BlogPostId
+
+data BlogPostLink = BlogPostLink
+  { blogPostId :: BlogPostId
+  , title :: Text
+  }
+
+toBlogPostLink :: BlogPost -> BlogPostLink
+toBlogPostLink post = BlogPostLink post.id post.title
+
+-- | Greeting page
+newtype Greeting = Greeting [BlogPostLink]
+
+-- | List all posts
+newtype ListPosts = ListPosts [BlogPostLink]
 
 -- | Blog post
 data BlogPost = BlogPost
@@ -42,11 +60,13 @@ data BlogPost = BlogPost
   , createdAt :: UTCTime
   , content :: Text
   }
+  deriving (Generic, ToJSON)
 
 -- | A quote
 data Quote = Quote
   { content :: Text
   }
+  deriving (Generic, ToJSON)
 
 -- | Data to submit new blog post
 data SubmitBlogPost = SubmitBlogPost
@@ -57,5 +77,4 @@ data SubmitBlogPost = SubmitBlogPost
 --------------------------------------------
 -- derivings
 
-mapDerive deriveNewtypeParam [''BlogPostId]
 deriveForm ''SubmitBlogPost
