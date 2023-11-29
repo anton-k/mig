@@ -10,7 +10,7 @@ The main features of the mig library are:
 * lightweight library
 * easy to use. It has simple design on purpose
 * expressive DSL to compose servers
-* type-safe route handlers and conversions
+* type-safe route handlers, URLs and conversions
 * handlers are encoded with generic Haskell functions
 * built on top of WAI and warp server libraries.
 * provides Swagger to your server with one-line of code

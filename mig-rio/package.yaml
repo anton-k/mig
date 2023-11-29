@@ -5,18 +5,15 @@ license:             BSD3
 author:              "Anton Kholomiov"
 maintainer:          "anton.kholomiov@gmail.com"
 copyright:           "2023 Anton Kholomiov"
+license-file:        LICENSE
 
 extra-source-files:
 - README.md
 
 # Metadata used when publishing your package
 synopsis:            Utils to use RIO with mig library
+description:         Utils to use RIO with mig library. Provides instance for HasServer class.
 category:            Web
-
-# To avoid duplicated efforts in documentation and dealing with the
-# complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
-description:         Utils to use mig with rio library
 
 language: GHC2021
 
