@@ -7,3 +7,6 @@ To run use:
 ```
 > stack run json-api-mig-example-app
 ```
+
+After server start we can test it with [Swagger UI](http://localhost:8085/swagger-ui/index.html).
+
