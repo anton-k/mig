@@ -355,7 +355,6 @@ It turns types like:
 Query "a" Int -> Capture "b" Text -> Get Client (Resp Json Text)
 ```
 
-
 To types:
 
 ```haskell
@@ -378,6 +377,37 @@ getRespOrValue :: RespOr media BL.ByteString a -> Either BL.ByteString a
 To unwrap `Resp` from response.
 
 ## Other utilities
+
+### Type-safe URLs
+
+The type-level function `UrlOf` creates a type-safe `Url` for a given route handler type.
+With class `ToUrl` we can generate the URLs for a collection of handlers.
+
+```haskell
+class ToUrl a where
+  toUrl :: Server m -> a
+  mapUrl :: (Url -> Url) -> a -> a
+  urlArity :: Int
+```
+
+An example of usage.
+URL's should be listed in the same order as they appear in the server
+
+```haskell
+urls :: Urls
+urls = Urls{..}
+   where
+     greeting
+       :| blogPost
+       :| listPosts
+         toUrl (server undefined)
+```
+
+We can render `Url` to `String`-like type with function:
+
+```haskell
+renderUrl :: IsString a => Url -> a
+```
 
 ### deriving helpers
 
@@ -418,3 +448,17 @@ deriving instance (ToSchema a) => ToSchema (Timed a)
 The data type `Timed` has an argument and we have to define the instance 
 explicitly.
 
+### HTML Links
+
+For usage with template engines that expect JSON as argument for template
+there is the type `Link` in the module `Mig.Extra.Html` (also re-exported by all `Html`-related modules):
+
+```haskell
+data Link = Link
+  { href :: Url
+  , name :: Text
+  }
+  deriving (Generic, ToJSON)
+```
+
+Also it has `ToMarkup` instance and rendered as `a`-element link.

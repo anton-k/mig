@@ -7,7 +7,7 @@ cabal-version: 1.12
 name:               mig-rio
 version:            0.1.0.1
 synopsis:           Utils to use RIO with mig library
-description:        Utils to use mig with rio library
+description:        Utils to use RIO with mig library. Provides instance for HasServer class.
 category:           Web
 homepage:           https://github.com/anton-k/mig#readme
 bug-reports:        https://github.com/anton-k/mig/issues
@@ -15,6 +15,7 @@ author:             Anton Kholomiov
 maintainer:         anton.kholomiov@gmail.com
 copyright:          2023 Anton Kholomiov
 license:            BSD3
+license-file:       LICENSE
 build-type:         Simple
 extra-source-files:
     README.md
