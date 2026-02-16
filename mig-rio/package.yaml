@@ -22,7 +22,7 @@ default-extensions:
 
 dependencies:
 - base >= 4.7 && < 5
-- mig-server >= 0.1.0.1
+- mig-server >= 0.2.2.0
 - rio
 
 ghc-options:

@@ -1,5 +1,5 @@
 name:                mig-server
-version:             0.2.1.0
+version:             0.2.2.0
 github:              "anton-k/mig"
 license:             BSD3
 author:              "Anton Kholomiov"
@@ -94,7 +94,7 @@ dependencies:
 - openapi3
 - blaze-html
 - warp
-- mig-swagger-ui >= 0.1
+- mig-swagger-ui >= 0.1.1
 - data-default
 - transformers
 

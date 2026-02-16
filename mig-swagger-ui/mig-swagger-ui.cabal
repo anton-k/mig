@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name: mig-swagger-ui
-version: 0.1.0.1
+version: 0.1.1.0
 synopsis: Swagger servers for mig library
 description: Appends swagger servers for mig servers.
              Example of the usage. This code adds swagger server which is serverd on path "swagger-ui" to our server
