@@ -122,7 +122,7 @@ randomBlogPost site =
 -- static files
 
 resourceFiles :: [(FilePath, ByteString)]
-resourceFiles = $(embedRecursiveDir "Html/resources")
+resourceFiles = $$(embedRecursiveDir "Html/resources")
 
 -------------------------------------------------------------------------------------
 -- utils

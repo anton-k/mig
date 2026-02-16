@@ -28,7 +28,7 @@ initServer site = logRoutes $ server (initRoutes site) <> staticServer
       addFavicon $ "static" /. staticFiles resourceFiles
 
     resourceFiles :: [(FilePath, ByteString)]
-    resourceFiles = $(embedRecursiveDir "HtmlTemplate/resources")
+    resourceFiles = $$(embedRecursiveDir "HtmlTemplate/resources")
 
     addFavicon :: Server IO -> Server IO
     addFavicon = addPathLink "favicon.ico" "static/lambda-logo.png"

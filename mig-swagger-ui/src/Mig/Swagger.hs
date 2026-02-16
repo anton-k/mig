@@ -114,7 +114,7 @@ swagger config getOpenApi =
                 indexTemplate
 
 swaggerFiles :: [(FilePath, ByteString)]
-swaggerFiles = $(embedRecursiveDir "swagger-ui-dist-5.0.0")
+swaggerFiles = $$(embedRecursiveDir "swagger-ui-dist-5.0.0")
 
 indexTemplate :: Text
-indexTemplate = $(embedText "index.html.tmpl")
+indexTemplate = $$(embedText "index.html.tmpl")

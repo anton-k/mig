@@ -36,7 +36,7 @@ dependencies:
 - text
 - lens
 - mig >= 0.2.0.1
-- file-embed-lzma
+- file-embed-lzma >= 0.1
 - blaze-html
 - blaze-markup
 - openapi3

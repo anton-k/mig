@@ -12,6 +12,8 @@ import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Time
 import System.Random
+import Data.Maybe (fromMaybe)
+import Safe (headMay)
 
 -- | Site mutable state
 data Env = Env
@@ -34,7 +36,7 @@ poemToBlogPost poem = do
       , createdAt = time
       , title =
           let ls = Text.lines poem
-           in mconcat [last ls, ": ", head ls]
+           in mconcat [last ls, ": ", fromMaybe "" (headMay ls)]
       , content = poem
       }
 

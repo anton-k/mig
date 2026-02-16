@@ -152,7 +152,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - blaze-html
-    - file-embed-lzma
+    - file-embed-lzma >= 0.1
     - uuid
     - http-api-data
     - fast-logger
@@ -166,7 +166,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - blaze-html
-    - file-embed-lzma
+    - file-embed-lzma >= 0.1
     - uuid
     - http-api-data
     - fast-logger

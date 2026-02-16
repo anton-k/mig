@@ -7,6 +7,8 @@ module Internal.State (
 import Content
 import Types
 
+import Safe (headMay)
+import Data.Maybe (fromMaybe)
 import Data.IORef
 import Data.Text (Text)
 import Data.Text qualified as Text
@@ -34,7 +36,7 @@ poemToBlogPost poem = do
       , createdAt = time
       , title =
           let ls = Text.lines poem
-           in mconcat [last ls, ": ", head ls]
+           in mconcat [last ls, ": ", fromMaybe "" (headMay ls)]
       , content = poem
       }
 

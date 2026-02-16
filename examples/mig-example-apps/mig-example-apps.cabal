@@ -1,32 +1,32 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.39.1.
 --
 -- see: https://github.com/sol/hpack
 
-name:               mig-example-apps
-version:            0.1.0.0
-description:        Please see the README on GitHub at <https://github.com/anton-k/mig-example-apps#readme>
-homepage:           https://github.com/anton-k/mig#readme
-bug-reports:        https://github.com/anton-k/mig/issues
-author:             Anton Kholomiov
-maintainer:         anton.kholomiov@gmail.com
-copyright:          2023 Anton Kholomiov
-license:            BSD3
-license-file:       LICENSE
-build-type:         Simple
+name: mig-example-apps
+version: 0.1.0.0
+description: Please see the README on GitHub at <https://github.com/anton-k/mig-example-apps#readme>
+homepage: https://github.com/anton-k/mig#readme
+bug-reports: https://github.com/anton-k/mig/issues
+author: Anton Kholomiov
+maintainer: anton.kholomiov@gmail.com
+copyright: 2023 Anton Kholomiov
+license: BSD3
+license-file: LICENSE
+build-type: Simple
 extra-source-files:
-    README.md
-    HtmlTemplate/resources/haskell-logo.png
-    HtmlTemplate/resources/lambda-logo.png
-    HtmlTemplate/resources/milligram.min.css
-    HtmlTemplate/templates/greeting.html
-    HtmlTemplate/templates/listPosts.html
-    HtmlTemplate/templates/main.html
-    HtmlTemplate/templates/post.html
-    HtmlTemplate/templates/postNotFound.html
-    HtmlTemplate/templates/quote.html
-    HtmlTemplate/templates/writeForm.html
+  README.md
+  HtmlTemplate/resources/haskell-logo.png
+  HtmlTemplate/resources/lambda-logo.png
+  HtmlTemplate/resources/milligram.min.css
+  HtmlTemplate/templates/greeting.html
+  HtmlTemplate/templates/listPosts.html
+  HtmlTemplate/templates/main.html
+  HtmlTemplate/templates/post.html
+  HtmlTemplate/templates/postNotFound.html
+  HtmlTemplate/templates/quote.html
+  HtmlTemplate/templates/writeForm.html
 
 source-repository head
   type: git
@@ -35,438 +35,438 @@ source-repository head
 executable counter-client-mig-example-app
   main-is: Main.hs
   other-modules:
-      Api
-      Client
-      Server
-      Paths_mig_example_apps
+    Api
+    Client
+    Server
+    Paths_mig_example_apps
   hs-source-dirs:
-      CounterClient
+    CounterClient
   default-extensions:
-      ImportQualifiedPost
-      OverloadedStrings
-      TypeFamilies
-      OverloadedRecordDot
-      DuplicateRecordFields
-      LambdaCase
-      DerivingStrategies
-      DataKinds
-      StrictData
-      DeriveAnyClass
-      RecordWildCards
-      TemplateHaskell
-      StandaloneDeriving
-      DeriveGeneric
-      DeriveDataTypeable
-      GeneralizedNewtypeDeriving
+    ImportQualifiedPost
+    OverloadedStrings
+    TypeFamilies
+    OverloadedRecordDot
+    DuplicateRecordFields
+    LambdaCase
+    DerivingStrategies
+    DataKinds
+    StrictData
+    DeriveAnyClass
+    RecordWildCards
+    TemplateHaskell
+    StandaloneDeriving
+    DeriveGeneric
+    DeriveDataTypeable
+    GeneralizedNewtypeDeriving
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
-    , aeson-pretty
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , http-client
-    , http-types
-    , mig
-    , mig-client
-    , mig-extra
-    , mig-server
-    , mig-swagger-ui
-    , mtl
-    , openapi3
-    , pretty-simple
-    , random
-    , safe
-    , text
-    , time
+    aeson,
+    aeson-pretty,
+    base >=4.7 && <5,
+    bytestring,
+    containers,
+    http-client,
+    http-types,
+    mig,
+    mig-client,
+    mig-extra,
+    mig-server,
+    mig-swagger-ui,
+    mtl,
+    openapi3,
+    pretty-simple,
+    random,
+    safe,
+    text,
+    time
   default-language: GHC2021
 
 executable counter-mig-example-app
   main-is: Main.hs
   other-modules:
-      Paths_mig_example_apps
+    Paths_mig_example_apps
   hs-source-dirs:
-      Counter
+    Counter
   default-extensions:
-      ImportQualifiedPost
-      OverloadedStrings
-      TypeFamilies
-      OverloadedRecordDot
-      DuplicateRecordFields
-      LambdaCase
-      DerivingStrategies
-      DataKinds
-      StrictData
-      DeriveAnyClass
-      RecordWildCards
-      TemplateHaskell
-      StandaloneDeriving
-      DeriveGeneric
-      DeriveDataTypeable
-      GeneralizedNewtypeDeriving
+    ImportQualifiedPost
+    OverloadedStrings
+    TypeFamilies
+    OverloadedRecordDot
+    DuplicateRecordFields
+    LambdaCase
+    DerivingStrategies
+    DataKinds
+    StrictData
+    DeriveAnyClass
+    RecordWildCards
+    TemplateHaskell
+    StandaloneDeriving
+    DeriveGeneric
+    DeriveDataTypeable
+    GeneralizedNewtypeDeriving
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
-    , aeson-pretty
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , http-types
-    , mig
-    , mig-client
-    , mig-extra
-    , mig-server
-    , mig-swagger-ui
-    , mtl
-    , openapi3
-    , pretty-simple
-    , random
-    , safe
-    , text
-    , time
+    aeson,
+    aeson-pretty,
+    base >=4.7 && <5,
+    bytestring,
+    containers,
+    http-types,
+    mig,
+    mig-client,
+    mig-extra,
+    mig-server,
+    mig-swagger-ui,
+    mtl,
+    openapi3,
+    pretty-simple,
+    random,
+    safe,
+    text,
+    time
   default-language: GHC2021
 
 executable hello-world-client-mig-example-app
   main-is: Main.hs
   other-modules:
-      Paths_mig_example_apps
+    Paths_mig_example_apps
   hs-source-dirs:
-      HelloClient
+    HelloClient
   default-extensions:
-      ImportQualifiedPost
-      OverloadedStrings
-      TypeFamilies
-      OverloadedRecordDot
-      DuplicateRecordFields
-      LambdaCase
-      DerivingStrategies
-      DataKinds
-      StrictData
-      DeriveAnyClass
-      RecordWildCards
-      TemplateHaskell
-      StandaloneDeriving
-      DeriveGeneric
-      DeriveDataTypeable
-      GeneralizedNewtypeDeriving
+    ImportQualifiedPost
+    OverloadedStrings
+    TypeFamilies
+    OverloadedRecordDot
+    DuplicateRecordFields
+    LambdaCase
+    DerivingStrategies
+    DataKinds
+    StrictData
+    DeriveAnyClass
+    RecordWildCards
+    TemplateHaskell
+    StandaloneDeriving
+    DeriveGeneric
+    DeriveDataTypeable
+    GeneralizedNewtypeDeriving
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
-    , aeson-pretty
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , http-client
-    , http-types
-    , mig
-    , mig-client
-    , mig-extra
-    , mig-server
-    , mig-swagger-ui
-    , openapi3
-    , pretty-simple
-    , random
-    , safe
-    , text
-    , time
+    aeson,
+    aeson-pretty,
+    base >=4.7 && <5,
+    bytestring,
+    containers,
+    http-client,
+    http-types,
+    mig,
+    mig-client,
+    mig-extra,
+    mig-server,
+    mig-swagger-ui,
+    openapi3,
+    pretty-simple,
+    random,
+    safe,
+    text,
+    time
   default-language: GHC2021
 
 executable hello-world-mig-example-app
   main-is: Main.hs
   other-modules:
-      Paths_mig_example_apps
+    Paths_mig_example_apps
   hs-source-dirs:
-      HelloWorld
+    HelloWorld
   default-extensions:
-      ImportQualifiedPost
-      OverloadedStrings
-      TypeFamilies
-      OverloadedRecordDot
-      DuplicateRecordFields
-      LambdaCase
-      DerivingStrategies
-      DataKinds
-      StrictData
-      DeriveAnyClass
-      RecordWildCards
-      TemplateHaskell
-      StandaloneDeriving
-      DeriveGeneric
-      DeriveDataTypeable
-      GeneralizedNewtypeDeriving
+    ImportQualifiedPost
+    OverloadedStrings
+    TypeFamilies
+    OverloadedRecordDot
+    DuplicateRecordFields
+    LambdaCase
+    DerivingStrategies
+    DataKinds
+    StrictData
+    DeriveAnyClass
+    RecordWildCards
+    TemplateHaskell
+    StandaloneDeriving
+    DeriveGeneric
+    DeriveDataTypeable
+    GeneralizedNewtypeDeriving
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
-    , aeson-pretty
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , http-types
-    , mig
-    , mig-client
-    , mig-extra
-    , mig-server
-    , mig-swagger-ui
-    , openapi3
-    , pretty-simple
-    , random
-    , safe
-    , text
-    , time
+    aeson,
+    aeson-pretty,
+    base >=4.7 && <5,
+    bytestring,
+    containers,
+    http-types,
+    mig,
+    mig-client,
+    mig-extra,
+    mig-server,
+    mig-swagger-ui,
+    openapi3,
+    pretty-simple,
+    random,
+    safe,
+    text,
+    time
   default-language: GHC2021
 
 executable html-mig-example-app
   main-is: Main.hs
   other-modules:
-      Content
-      Init
-      Interface
-      Internal.State
-      Server
-      Types
-      View
-      Paths_mig_example_apps
+    Content
+    Init
+    Interface
+    Internal.State
+    Server
+    Types
+    View
+    Paths_mig_example_apps
   hs-source-dirs:
-      Html/src
+    Html/src
   default-extensions:
-      ImportQualifiedPost
-      OverloadedStrings
-      TypeFamilies
-      OverloadedRecordDot
-      DuplicateRecordFields
-      LambdaCase
-      DerivingStrategies
-      DataKinds
-      StrictData
-      DeriveAnyClass
-      RecordWildCards
-      TemplateHaskell
-      StandaloneDeriving
-      DeriveGeneric
-      DeriveDataTypeable
-      GeneralizedNewtypeDeriving
+    ImportQualifiedPost
+    OverloadedStrings
+    TypeFamilies
+    OverloadedRecordDot
+    DuplicateRecordFields
+    LambdaCase
+    DerivingStrategies
+    DataKinds
+    StrictData
+    DeriveAnyClass
+    RecordWildCards
+    TemplateHaskell
+    StandaloneDeriving
+    DeriveGeneric
+    DeriveDataTypeable
+    GeneralizedNewtypeDeriving
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
-    , aeson-pretty
-    , base >=4.7 && <5
-    , blaze-html
-    , bytestring
-    , containers
-    , fast-logger
-    , file-embed-lzma
-    , http-api-data
-    , http-types
-    , mig
-    , mig-client
-    , mig-extra
-    , mig-server
-    , mig-swagger-ui
-    , openapi3
-    , pretty-simple
-    , random
-    , safe
-    , text
-    , time
-    , uuid
+    aeson,
+    aeson-pretty,
+    base >=4.7 && <5,
+    blaze-html,
+    bytestring,
+    containers,
+    fast-logger,
+    file-embed-lzma >=0.1,
+    http-api-data,
+    http-types,
+    mig,
+    mig-client,
+    mig-extra,
+    mig-server,
+    mig-swagger-ui,
+    openapi3,
+    pretty-simple,
+    random,
+    safe,
+    text,
+    time,
+    uuid
   default-language: GHC2021
 
 executable html-template-mig-example-app
   main-is: Main.hs
   other-modules:
-      Api
-      Content
-      Init
-      Interface
-      Internal.State
-      Server
-      Types
-      View
-      Paths_mig_example_apps
+    Api
+    Content
+    Init
+    Interface
+    Internal.State
+    Server
+    Types
+    View
+    Paths_mig_example_apps
   hs-source-dirs:
-      HtmlTemplate/src
+    HtmlTemplate/src
   default-extensions:
-      ImportQualifiedPost
-      OverloadedStrings
-      TypeFamilies
-      OverloadedRecordDot
-      DuplicateRecordFields
-      LambdaCase
-      DerivingStrategies
-      DataKinds
-      StrictData
-      DeriveAnyClass
-      RecordWildCards
-      TemplateHaskell
-      StandaloneDeriving
-      DeriveGeneric
-      DeriveDataTypeable
-      GeneralizedNewtypeDeriving
+    ImportQualifiedPost
+    OverloadedStrings
+    TypeFamilies
+    OverloadedRecordDot
+    DuplicateRecordFields
+    LambdaCase
+    DerivingStrategies
+    DataKinds
+    StrictData
+    DeriveAnyClass
+    RecordWildCards
+    TemplateHaskell
+    StandaloneDeriving
+    DeriveGeneric
+    DeriveDataTypeable
+    GeneralizedNewtypeDeriving
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
-    , aeson-pretty
-    , base >=4.7 && <5
-    , blaze-html
-    , blaze-markup
-    , bytestring
-    , containers
-    , fast-logger
-    , file-embed-lzma
-    , http-api-data
-    , http-types
-    , mig
-    , mig-client
-    , mig-extra
-    , mig-server
-    , mig-swagger-ui
-    , openapi3
-    , pretty-simple
-    , random
-    , safe
-    , stache
-    , text
-    , time
-    , uuid
+    aeson,
+    aeson-pretty,
+    base >=4.7 && <5,
+    blaze-html,
+    blaze-markup,
+    bytestring,
+    containers,
+    fast-logger,
+    file-embed-lzma >=0.1,
+    http-api-data,
+    http-types,
+    mig,
+    mig-client,
+    mig-extra,
+    mig-server,
+    mig-swagger-ui,
+    openapi3,
+    pretty-simple,
+    random,
+    safe,
+    stache,
+    text,
+    time,
+    uuid
   default-language: GHC2021
 
 executable json-api-mig-example-app
   main-is: Main.hs
   other-modules:
-      Init
-      Interface
-      Internal.State
-      Server
-      Server.Swagger
-      Types
-      Paths_mig_example_apps
+    Init
+    Interface
+    Internal.State
+    Server
+    Server.Swagger
+    Types
+    Paths_mig_example_apps
   hs-source-dirs:
-      JsonApi
+    JsonApi
   default-extensions:
-      ImportQualifiedPost
-      OverloadedStrings
-      TypeFamilies
-      OverloadedRecordDot
-      DuplicateRecordFields
-      LambdaCase
-      DerivingStrategies
-      DataKinds
-      StrictData
-      DeriveAnyClass
-      RecordWildCards
-      TemplateHaskell
-      StandaloneDeriving
-      DeriveGeneric
-      DeriveDataTypeable
-      GeneralizedNewtypeDeriving
+    ImportQualifiedPost
+    OverloadedStrings
+    TypeFamilies
+    OverloadedRecordDot
+    DuplicateRecordFields
+    LambdaCase
+    DerivingStrategies
+    DataKinds
+    StrictData
+    DeriveAnyClass
+    RecordWildCards
+    TemplateHaskell
+    StandaloneDeriving
+    DeriveGeneric
+    DeriveDataTypeable
+    GeneralizedNewtypeDeriving
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
-    , aeson-pretty
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , fast-logger
-    , http-types
-    , mig
-    , mig-client
-    , mig-extra
-    , mig-server
-    , mig-swagger-ui
-    , openapi3
-    , pretty-simple
-    , random
-    , safe
-    , text
-    , time
-    , yaml
+    aeson,
+    aeson-pretty,
+    base >=4.7 && <5,
+    bytestring,
+    containers,
+    fast-logger,
+    http-types,
+    mig,
+    mig-client,
+    mig-extra,
+    mig-server,
+    mig-swagger-ui,
+    openapi3,
+    pretty-simple,
+    random,
+    safe,
+    text,
+    time,
+    yaml
   default-language: GHC2021
 
 executable route-args-client-mig-example-app
   main-is: Main.hs
   other-modules:
-      Paths_mig_example_apps
+    Paths_mig_example_apps
   hs-source-dirs:
-      RouteArgsClient
+    RouteArgsClient
   default-extensions:
-      ImportQualifiedPost
-      OverloadedStrings
-      TypeFamilies
-      OverloadedRecordDot
-      DuplicateRecordFields
-      LambdaCase
-      DerivingStrategies
-      DataKinds
-      StrictData
-      DeriveAnyClass
-      RecordWildCards
-      TemplateHaskell
-      StandaloneDeriving
-      DeriveGeneric
-      DeriveDataTypeable
-      GeneralizedNewtypeDeriving
+    ImportQualifiedPost
+    OverloadedStrings
+    TypeFamilies
+    OverloadedRecordDot
+    DuplicateRecordFields
+    LambdaCase
+    DerivingStrategies
+    DataKinds
+    StrictData
+    DeriveAnyClass
+    RecordWildCards
+    TemplateHaskell
+    StandaloneDeriving
+    DeriveGeneric
+    DeriveDataTypeable
+    GeneralizedNewtypeDeriving
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
-    , aeson-pretty
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , http-client
-    , http-types
-    , mig
-    , mig-client
-    , mig-extra
-    , mig-server
-    , mig-swagger-ui
-    , openapi3
-    , pretty-simple
-    , random
-    , safe
-    , text
-    , time
+    aeson,
+    aeson-pretty,
+    base >=4.7 && <5,
+    bytestring,
+    containers,
+    http-client,
+    http-types,
+    mig,
+    mig-client,
+    mig-extra,
+    mig-server,
+    mig-swagger-ui,
+    openapi3,
+    pretty-simple,
+    random,
+    safe,
+    text,
+    time
   default-language: GHC2021
 
 executable route-args-mig-example-app
   main-is: Main.hs
   other-modules:
-      Paths_mig_example_apps
+    Paths_mig_example_apps
   hs-source-dirs:
-      RouteArgs
+    RouteArgs
   default-extensions:
-      ImportQualifiedPost
-      OverloadedStrings
-      TypeFamilies
-      OverloadedRecordDot
-      DuplicateRecordFields
-      LambdaCase
-      DerivingStrategies
-      DataKinds
-      StrictData
-      DeriveAnyClass
-      RecordWildCards
-      TemplateHaskell
-      StandaloneDeriving
-      DeriveGeneric
-      DeriveDataTypeable
-      GeneralizedNewtypeDeriving
+    ImportQualifiedPost
+    OverloadedStrings
+    TypeFamilies
+    OverloadedRecordDot
+    DuplicateRecordFields
+    LambdaCase
+    DerivingStrategies
+    DataKinds
+    StrictData
+    DeriveAnyClass
+    RecordWildCards
+    TemplateHaskell
+    StandaloneDeriving
+    DeriveGeneric
+    DeriveDataTypeable
+    GeneralizedNewtypeDeriving
   ghc-options: -Wall -Werror -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      aeson
-    , aeson-pretty
-    , base >=4.7 && <5
-    , bytestring
-    , containers
-    , http-types
-    , mig
-    , mig-client
-    , mig-extra
-    , mig-server
-    , mig-swagger-ui
-    , openapi3
-    , pretty-simple
-    , random
-    , safe
-    , text
-    , time
+    aeson,
+    aeson-pretty,
+    base >=4.7 && <5,
+    bytestring,
+    containers,
+    http-types,
+    mig,
+    mig-client,
+    mig-extra,
+    mig-server,
+    mig-swagger-ui,
+    openapi3,
+    pretty-simple,
+    random,
+    safe,
+    text,
+    time
   default-language: GHC2021
