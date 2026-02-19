@@ -1,71 +1,107 @@
-module Mig.Vm.Types where
+module Mig.Vm.Types
+  ( Val (..)
+  , Op (..)
+  , Ops (..)
+  , Ctx (..)
+  , FunIndex (..)
+  , emptyCtx 
+  , ctxInsertFun 
+  , ctxIndex 
+  , ctxGetFuns
+  , Memory (..)
+  , Fun
+  , Method (..)
+  , Get
+  , Post 
+  , Put
+  , Api (..)
+  , Path (..)
+  , PathItem
+  , pathToText 
+  , Send (..)
+  , Server (..)
+  ) where
 
-import Data.IORef
 import Data.Text (Text)
+import Data.Text qualified as Text
 import Data.ByteString (ByteString)
+import Data.Kind
+import Queue (Queue)
+import Queue qualified as Queue
 
-newtype Stack = Stack [Val]
+data Ctx = Ctx
+  { funs :: Queue Fun
+  , index :: !Int
+  }
+
+type Fun = Memory -> IO ()
+
+emptyCtx :: Ctx
+emptyCtx = Ctx
+  { funs = Queue.empty
+  , index = 0
+  }
+
+ctxIndex :: Ctx -> FunIndex
+ctxIndex ctx = FunIndex ctx.index
+
+ctxInsertFun :: Fun -> Ctx -> Ctx
+ctxInsertFun f ctx = ctx
+  { funs = Queue.enqueue f ctx.funs
+  , index = ctx.index + 1
+  }
+
+ctxGetFuns :: Ctx -> [Fun]
+ctxGetFuns ctx = Queue.toList ctx.funs
 
 data Val 
   = TVal Text
   | BVal ByteString
   | MVal Method
+  deriving (Show, Eq)
 
 data Method = Get | Post | Put
-  deriving (Eq)
+  deriving (Show, Eq)
 
 newtype Ops = Ops [Op]
+  deriving (Show, Eq)
 
-newtype StackRef = StackRef (IORef Stack)
-newtype OpsRef = OpsRef (IORef Ops)
+data Memory = Memory
+  { readStack :: IO (Maybe Val)
+  , writeStack :: Val -> IO ()
+  , putOps :: Ops -> IO ()
+  }
 
-readStack :: StackRef -> IO Val
-readStack = undefined
-
-writeStack :: StackRef -> Val -> IO ()
-writeStack = undefined
-
-putOps :: OpsRef -> Ops -> IO ()
-putOps = undefined
-
+-- | Operators, all commands that VM supports
 data Op 
-  = GetUri 
+  -- request
+  = GetUri   
   | GetUriPart Int
-  | SaveCapture Text Text 
-  | GetMethod
-  | GetParam Text
+  | SaveCapture Text
   | GetCapture Text
+  | GetMethod
+  | GetQuery Text
   | GetBody 
   | GetHeader Text
-  | SetHeader Text Text
+  | SetHeader Text ByteString
   | SetBody ByteString
   | SetCode Int
-  | SetError Text
+  -- handler
+  | Fun FunIndex
+  -- response
   | SendResp
-  | Fun Fun
+  | SendText Text
+  | SendByteString ByteString
+  | SendError Text
+  -- switch
+  | WhenMethod Method Int
+  | Case Val Int
+  deriving (Show, Eq)
 
-type Fun = StackRef -> OpsRef -> IO ()
+newtype FunIndex = FunIndex Int
+  deriving (Show, Eq)
 
-newtype Path = Path {unPath :: [PathItem]}
-  deriving newtype (Show, Eq, Ord, Semigroup, Monoid)
-
--- | Path can be a static item or capture with a name
-data PathItem
-  = StaticPath Text
-  | CapturePath Text
-  deriving (Show, Eq, Ord)
-
-instance Monoid (Api a) where
-  mempty = Empty
-
-instance Semigroup (Api a) where
-  (<>) = Append
-
-newtype Send method m a = Send (m a)
-
-data Get
-data Post
-data Put
+newtype Server m = Server (Api (ServerFun m))
 
 -- | HTTP API container
 data Api a
@@ -79,6 +115,18 @@ data Api a
     HandleRoute a
   deriving (Functor, Foldable, Traversable, Show, Eq)
 
+newtype Path = Path {unPath :: [PathItem]}
+  deriving stock (Show, Eq)
+
+pathToText :: Path -> Text
+pathToText (Path items) = Text.intercalate "/" items
+
+type PathItem = Text
+
 type ServerFun m = m Ops
 
-newtype Server m = Server (Api (ServerFun m))
+newtype Send (method :: Type) m a = Send (m a)
+
+data Get
+data Post
+data Put

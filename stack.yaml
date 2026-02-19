@@ -9,3 +9,6 @@ packages:
 - mig-wai
 - mig-rio
 - mig-vm
+
+extra-deps:
+- HList-0.5.4.0@sha256:0cc3758d6191aaf3e0e8525419172a6ee085928a5d3801ecaca57eceeafb852b,7523

@@ -1,18 +1,16 @@
 module Mig.Vm.Server where
 
 import Mig.Vm.Types
-
-renderServer :: Server m -> m Ops
-renderServer = undefined
+import Mig.Vm.Render
 
 data VmOptions = VmOptions
   { port :: Int
   }
 
-vmEval :: VmOptions -> Ops -> IO ()
+vmEval :: VmOptions -> Ops -> Ctx -> IO ()
 vmEval = undefined
 
 runServer :: VmOptions -> Server IO -> IO ()
 runServer opts server = do
-  vmEval opts =<< renderServer server
+  uncurry (vmEval opts) =<< renderServer server
   

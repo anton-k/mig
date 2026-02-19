@@ -4,7 +4,7 @@ build:
 	stack build mig-vm
 
 test:
-	stack test
+	stack test mig-vm
 
 run:
 	stack run

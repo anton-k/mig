@@ -26,6 +26,7 @@ library
       Mig.Vm.Types
       Mig.Vm.Class
       Mig.Vm.Server
+      Mig.Vm.Render
   other-modules:
       Paths_mig_vm
   hs-source-dirs:
@@ -47,4 +48,40 @@ library
     , text
     , unliftio-core
     , http-api-data
+    , HList
+    , queues
+    , mtl
   default-language: GHC2021
+
+test-suite mig-vm-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Test.Mig.Vm.Eval
+      Test.Mig.Vm.Eval.Types
+      Test.Mig.Vm.Test
+      Paths_mig_vm
+  hs-source-dirs:
+      test
+  default-extensions:
+      OverloadedStrings
+      TypeFamilies
+      OverloadedRecordDot
+      DuplicateRecordFields
+      LambdaCase
+      DerivingStrategies
+      StrictData
+      AllowAmbiguousTypes
+      DataKinds
+      RecordWildCards
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , mig-vm
+    , hspec
+    , text
+    , containers
+    , mtl
+  default-language: GHC2021
+

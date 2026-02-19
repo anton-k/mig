@@ -26,6 +26,7 @@ default-extensions:
   - StrictData
   - AllowAmbiguousTypes
   - DataKinds
+  - RecordWildCards
 
 language: GHC2021
 
@@ -50,3 +51,23 @@ library:
   - text
   - unliftio-core
   - http-api-data
+  - HList
+  - queues
+  - mtl
+
+
+tests:
+  mig-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - mig-vm
+    - base >= 4.7 && < 5
+    - containers
+    - mtl
+    - bytestring
+
