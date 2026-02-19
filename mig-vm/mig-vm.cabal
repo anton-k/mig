@@ -1,0 +1,50 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.39.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           mig-vm
+version:        0.2.1.0
+synopsis:       Server VM
+description:    Virtual machine for server handlers
+category:       Web
+homepage:       https://github.com/anton-k/mig#readme
+bug-reports:    https://github.com/anton-k/mig/issues
+author:         Anton Kholomiov
+maintainer:     anton.kholomiov@gmail.com
+copyright:      2023 Anton Kholomiov
+license:        BSD3
+build-type:     Simple
+
+source-repository head
+  type: git
+  location: https://github.com/anton-k/mig
+
+library
+  exposed-modules:
+      Mig.Vm.Types
+      Mig.Vm.Class
+      Mig.Vm.Server
+  other-modules:
+      Paths_mig_vm
+  hs-source-dirs:
+      src
+  default-extensions:
+      OverloadedStrings
+      TypeFamilies
+      OverloadedRecordDot
+      DuplicateRecordFields
+      LambdaCase
+      DerivingStrategies
+      StrictData
+      AllowAmbiguousTypes
+      DataKinds
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wunused-packages
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , text
+    , unliftio-core
+    , http-api-data
+  default-language: GHC2021

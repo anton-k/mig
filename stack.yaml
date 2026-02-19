@@ -8,3 +8,4 @@ packages:
 - mig-swagger-ui
 - mig-wai
 - mig-rio
+- mig-vm
