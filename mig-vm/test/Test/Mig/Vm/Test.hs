@@ -9,25 +9,25 @@ import Test.Mig.Vm.Eval
 import Data.Text (Text)
 import Data.Text qualified as Text
 
-handlerA :: Send Get IO Text
+handlerA :: Send GET IO Text
 handlerA = Send (pure "Hello world")
 
-handlerB :: Query "arg" Int -> Send Get IO Int
+handlerB :: Query "arg" Int -> Send GET IO Int
 handlerB (Query arg) = Send (pure (arg + 1))
 
 handlerB2 :: 
-  Query "a" Text -> Query "b" Text -> Query "c" Text -> Send Get IO Text
+  Query "a" Text -> Query "b" Text -> Query "c" Text -> Send GET IO Text
 handlerB2 (Query a) (Query b) (Query c) = Send (pure (mconcat [a,b,c]))
 
-handlerC :: Query "a" Int -> Query "b" Int -> Send Get IO Int
+handlerC :: Query "a" Int -> Query "b" Int -> Send GET IO Int
 handlerC (Query a) (Query b) = Send (pure (a + b))
 
-handlerC2 :: Query "a" Int -> Query "b" Int -> Send Get IO Int
+handlerC2 :: Query "a" Int -> Query "b" Int -> Send GET IO Int
 handlerC2 (Query a) (Query b) = Send (pure (a - b))
 
 handlerD :: 
   Mig.Header "greet" Text -> Query "a" Int -> Query "b" Int -> 
-  Send Get IO Text
+  Send GET IO Text
 handlerD (Mig.Header greet) (Query a) (Query b) = Send (pure $ toResp (a + b))
   where
     toResp n = greet <> ": " <> Text.show n

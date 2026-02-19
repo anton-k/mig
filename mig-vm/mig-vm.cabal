@@ -25,6 +25,7 @@ library
   exposed-modules:
       Mig.Vm.Types
       Mig.Vm.Class
+      Mig.Vm.Class.Types
       Mig.Vm.Server
       Mig.Vm.Render
   other-modules:

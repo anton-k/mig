@@ -1,12 +1,10 @@
 {-# Language UndecidableInstances #-}
 module Mig.Vm.Class
-  ( Send (..)
-  , Query (..)
-  , Header (..)
-  , IsMethod (..)
+  ( IsMethod (..)
   , IsOutput (..)
   , IsHandler
   , toRoute
+  , module X
   ) where
 
 import Control.Monad.IO.Class
@@ -22,6 +20,7 @@ import Data.HList.HList
 import Control.Monad (forM, join)
 import Mig.Vm.Types
 import Control.Monad.State.Strict (StateT (..))
+import Mig.Vm.Class.Types as X
 
 getName :: forall sym a. (KnownSymbol sym, IsString a) => a
 getName = fromString (symbolVal (Proxy @sym))
@@ -29,13 +28,13 @@ getName = fromString (symbolVal (Proxy @sym))
 class IsMethod a where
   toMethod :: Method
 
-instance IsMethod Get where
+instance IsMethod GET where
   toMethod = Get
 
-instance IsMethod Post where
+instance IsMethod POST where
   toMethod = Post
 
-instance IsMethod Put where
+instance IsMethod PUT where
   toMethod = Put
 
 class IsOutput a where
@@ -68,8 +67,6 @@ instance (IsMethod method, IsOutput a, MonadUnliftIO m) => IsHandler (Send metho
   readArg = const (pure (Right HNil))
   toArgOps = []
   toArity = 0
-
-newtype Query (sym :: Symbol) a = Query a 
 
 instance (KnownSymbol sym, FromHttpApiData param, IsHandler a) => 
   IsHandler (Query sym param -> a) where
@@ -105,8 +102,6 @@ readQueryParam errorMsg memory = do
         Right param -> Right param
         Left msg -> Left (errorMsg  <> ", " <> msg) 
     _ -> Left errorMsg 
-
-newtype Header (sym :: Symbol) a = Header a 
 
 instance (KnownSymbol sym, FromHttpApiData param, IsHandler a) => 
   IsHandler (Header sym param -> a) where

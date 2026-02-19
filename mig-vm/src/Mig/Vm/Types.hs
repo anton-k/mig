@@ -11,21 +11,16 @@ module Mig.Vm.Types
   , Memory (..)
   , Fun
   , Method (..)
-  , Get
-  , Post 
-  , Put
   , Api (..)
   , Path (..)
   , PathItem
   , pathToText 
-  , Send (..)
   , Server (..)
   ) where
 
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.ByteString (ByteString)
-import Data.Kind
 import Queue (Queue)
 import Queue qualified as Queue
 
@@ -125,8 +120,3 @@ type PathItem = Text
 
 type ServerFun m = m Ops
 
-newtype Send (method :: Type) m a = Send (m a)
-
-data Get
-data Post
-data Put
