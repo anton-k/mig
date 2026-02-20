@@ -96,7 +96,10 @@ apiToOps = renderApiIf . toApiIf
       , SendResp
       ]
 
-    ifHandle method media th el = ifBy (IfMethodMediaEq method media) th el
+    -- TODO: check media
+    ifHandle method _media th el =
+      ifOp (MVal method) (Ops [GetMethod]) th el
+
     ifPath path th el = ifBy (IfPathEq (pathToText path)) th el
 
 ifBy :: MonadState Ctx m => (CodeLabel -> Op) -> Ops -> Ops -> m Ops
@@ -110,3 +113,19 @@ ifBy cond th el = do
     , el
     , Ops [ Label trueLabel ]
     ]
+
+
+
+ifOp :: MonadState Ctx m => Val -> Ops -> Ops -> Ops -> m Ops
+ifOp val cond th el = do
+  trueLabel <- freshLabel
+  falseLabel <- freshLabel
+  pure $ mconcat
+    [ cond
+    , Ops [Ifeq val falseLabel]
+    , th
+    , Ops [ Goto trueLabel, Label falseLabel ]
+    , el
+    , Ops [ Label trueLabel ]
+    ]
+

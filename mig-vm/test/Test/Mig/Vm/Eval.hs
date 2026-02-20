@@ -157,7 +157,6 @@ eval' ctx req = do
         Goto label -> goto label
         Ifeq val label -> ifeq val label
         IfPathEq path label -> ifPathEq path label
-        IfMethodMediaEq method media label -> ifMethodMediaEq method media label
         -- generic stack
         Push val -> push val
         Pop -> pop
@@ -261,13 +260,6 @@ eval' ctx req = do
             then next
             else goto label
         Nothing -> emptyStackError
-
-    -- TODO: check media
-    ifMethodMediaEq method _media label = do
-      isPathEmpty <- checkPathEmpty ctx
-      if (isPathEmpty && method == req.method )
-        then next
-        else goto label
 
     -- TODO: check media
     ifPathEq path label = do
