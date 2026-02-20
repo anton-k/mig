@@ -48,14 +48,7 @@ checkA =
     eResp <- eval ctx ops req
     eResp `shouldBe` Right resp
   where
-    req = Req
-      { uri = Path []
-      , method = Get 
-      , headers = []
-      , body = Nothing
-      , queries = []
-      }
-
+    req = emptyReq
     resp = okText "Hello world"
 
 checkB :: Spec
@@ -65,13 +58,7 @@ checkB =
     eResp <- eval ctx ops req
     eResp `shouldBe` Right resp
   where
-    req = Req
-      { uri = Path []
-      , method = Get 
-      , headers = []
-      , body = Nothing
-      , queries = [QueryParam "arg" "1"]
-      }
+    req = emptyReq { queries = [QueryParam "arg" "1"]}
 
     resp = okText "2"
 
@@ -82,12 +69,8 @@ checkB2 =
     eResp <- eval ctx ops req
     eResp `shouldBe` Right resp
   where
-    req = Req
-      { uri = Path []
-      , method = Get 
-      , headers = []
-      , body = Nothing
-      , queries = [QueryParam "a" "A", QueryParam "b" "B", QueryParam "c" "C"]
+    req = emptyReq
+      { queries = [QueryParam "a" "A", QueryParam "b" "B", QueryParam "c" "C"]
       }
 
     resp = okText "ABC"
@@ -99,12 +82,8 @@ checkC =
     eResp <- eval ctx ops req
     eResp `shouldBe` Right resp
   where
-    req = Req
-      { uri = Path []
-      , method = Get 
-      , headers = []
-      , body = Nothing
-      , queries = [QueryParam "a" "2", QueryParam "b" "2"]
+    req = emptyReq
+      { queries = [QueryParam "a" "2", QueryParam "b" "2"]
       }
 
     resp = okText "4"
@@ -116,12 +95,8 @@ checkC2 =
     eResp <- eval ctx ops req
     eResp `shouldBe` Right resp
   where
-    req = Req
-      { uri = Path []
-      , method = Get 
-      , headers = []
-      , body = Nothing
-      , queries = [QueryParam "a" "7", QueryParam "b" "2"]
+    req = emptyReq
+      { queries = [QueryParam "a" "7", QueryParam "b" "2"]
       }
 
     resp = okText "5"
@@ -134,11 +109,8 @@ checkD =
     eResp <- eval ctx ops req
     eResp `shouldBe` Right resp
   where
-    req = Req
-      { uri = Path []
-      , method = Get 
-      , headers = [Header "greet" "Result is"]
-      , body = Nothing
+    req = emptyReq 
+      { headers = [Header "greet" "Result is"]
       , queries = [QueryParam "a" "2", QueryParam "b" "2"]
       }
 
@@ -151,4 +123,11 @@ okText msg = Resp
       , body = Just (TVal msg)
       }
 
-
+emptyReq :: Req
+emptyReq = Req
+  { uri = Path []
+  , method = Get 
+  , headers = []
+  , body = Nothing
+  , queries = []
+  }
