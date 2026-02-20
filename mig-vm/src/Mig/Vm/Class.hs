@@ -21,6 +21,7 @@ import Control.Monad (forM, join)
 import Mig.Vm.Types
 import Control.Monad.State.Strict (StateT (..))
 import Mig.Vm.Class.Types as X
+import Data.Text.Encoding qualified as Text
 
 getName :: forall sym a. (KnownSymbol sym, IsString a) => a
 getName = fromString (symbolVal (Proxy @sym))
@@ -38,13 +39,24 @@ instance IsMethod PUT where
   toMethod = Put
 
 class IsOutput a where
-  toOutput :: a -> Ops
+  toOutput :: a -> Resp
 
 instance IsOutput Text where
-  toOutput val = Ops [SendText val]
+  toOutput = textResp
 
 instance IsOutput Int where
-  toOutput val = Ops [SendText (Text.show val)]
+  toOutput val = textResp (Text.show val)
+
+errorResp :: Int -> Text -> Resp
+errorResp code txt = 
+  (textResp txt) { status = code }
+
+textResp :: Text -> Resp
+textResp txt = Resp
+    { status = 200
+    , headers = [("Content-Type", "text/plain")]
+    , body = Just (Text.encodeUtf8 txt)
+    }  
 
 class (IsMethod (MethodOf a), MonadUnliftIO (MonadOf a), IsOutput (ResOf a)) => IsHandler a where
   type MonadOf a :: Type -> Type 
@@ -151,7 +163,7 @@ toRoute f = StateT $ \ctx -> withRunInIO $ \run ->
       ( Ops $ concat
           [ [ WhenMethod (toMethod @(MethodOf a)) (toArity @a + 1)]
           , toArgOps @a
-          , [Fun index]
+          , [Fun index, SendResp]
           ]
       , ctxInsertFun (run . handler) ctx
       )
@@ -160,93 +172,5 @@ toRoute f = StateT $ \ctx -> withRunInIO $ \run ->
     handler memory = do
       eArg <- liftIO (readArg @a memory)
       case eArg of
-        Right arg -> liftIO . memory.putOps . toOutput @(ResOf a) =<< ((toHandler @a f) memory arg)
-        Left errorMsg -> liftIO $ memory.putOps (Ops [SendError errorMsg])
-
-{-
-instance (IsMethod method, MonadUnliftIO m) => ToServer (Send method m Text) where
-  type MonadOf (Send method m Text) = m
-
-  toServer (Send readVal) = 
-    withRunInIO $ \run -> 
-      pure $ Ops
-        [ GetMethod
-        , whenMethod @method (run handler)
-        ]
-    where
-      handler :: m Ops 
-      handler = do
-        val <- readVal
-        pure $ Ops 
-          [ SetBody (Text.encodeUtf8 val)
-          , SetCode 200
-          , SetHeader "Content-Type" "text/plain"
-          , SendResp
-          ]
-
-instance (IsMethod method, MonadUnliftIO m) => ToServer (Send method m Int) where
-  type MonadOf (Send method m Int) = m
-  toServer (Send readVal) = 
-    withRunInIO $ \run ->
-      pure $ Ops
-        [ GetMethod 
-        , whenMethod @method (run handler)
-        ]
-    where
-      handler :: m Ops
-      handler = do
-        val <- readVal
-        pure $ Ops 
-          [ SetBody (Text.encodeUtf8 $ Text.show val)
-          , SetCode 200
-          , SetHeader "Content-Type" "text/plain"
-          , SendResp
-          ]
-
-whenMethod :: forall method . IsMethod method => IO Ops -> Op
-whenMethod nextOps = Fun $ \stack ops -> do
-  val <- readStack stack
-  case val of
-    MVal m | m == toMethod @method -> putOps ops =<< nextOps
-    _ -> writeStack stack val
-
-
-instance (KnownSymbol sym, FromHttpApiData param, ToServer a, MonadUnliftIO (MonadOf a)) => 
-  ToServer (Query sym param -> a) where
-  type MonadOf (Query sym param -> a) = MonadOf a
-
-  toServer f = withRunInIO (\run -> pure $ Ops
-    [ GetParam (getName @sym)
-    , Fun (\stack ops -> run $ handler stack ops)
-    ])
-    where
-      handler :: StackRef -> OpsRef -> (MonadOf a) ()
-      handler stack ops = do
-        arg <- liftIO $ readStack stack
-        case arg of
-          TVal txt -> 
-            case parseQueryParam txt of
-              Right p -> liftIO . putOps ops =<< toServer (f (Query p))
-              Left msg -> liftIO $ putOps ops (Ops [SetError $ "Failed to parse param: " <> msg])
-          _ -> liftIO $ writeStack stack arg
-
-
-instance (KnownSymbol sym, FromHttpApiData header, ToServer a, MonadUnliftIO (MonadOf a)) => 
-  ToServer (Header sym header -> a) where
-  type MonadOf (Header sym header -> a) = MonadOf a
-
-  toServer f = withRunInIO (\run -> pure $ Ops
-    [ GetHeader (getName @sym)
-    , Fun (\stack ops -> run $ handler stack ops)
-    ])
-    where
-      handler :: StackRef -> OpsRef -> (MonadOf a) ()
-      handler stack ops = do
-        arg <- liftIO $ readStack stack
-        case arg of
-          BVal bs -> 
-            case parseHeader bs of
-              Right h -> liftIO . putOps ops =<< toServer (f (Header h))
-              Left msg -> liftIO $ putOps ops (Ops [SetError $ "Failed to parse header: " <> msg])
-          _ -> liftIO $ writeStack stack arg
--}
+        Right arg -> liftIO . memory.writeStack . RespVal . toOutput @(ResOf a) =<< ((toHandler @a f) memory arg)
+        Left errorMsg -> liftIO $ memory.writeStack (RespVal (errorResp 500 errorMsg))

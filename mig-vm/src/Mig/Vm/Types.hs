@@ -1,5 +1,6 @@
 module Mig.Vm.Types
   ( Val (..)
+  , Resp (..)
   , Op (..)
   , Ops (..)
   , Ctx (..)
@@ -53,6 +54,14 @@ data Val
   = TVal Text
   | BVal ByteString
   | MVal Method
+  | RespVal Resp
+  deriving (Show, Eq)
+
+data Resp = Resp
+  { status :: Int
+  , headers :: [(ByteString, ByteString)]
+  , body :: Maybe ByteString
+  }
   deriving (Show, Eq)
 
 data Method = Get | Post | Put
@@ -64,7 +73,6 @@ newtype Ops = Ops [Op]
 data Memory = Memory
   { readStack :: IO (Maybe Val)
   , writeStack :: Val -> IO ()
-  , putOps :: Ops -> IO ()
   }
 
 -- | Operators, all commands that VM supports
@@ -78,20 +86,19 @@ data Op
   | GetQuery Text
   | GetBody 
   | GetHeader Text
-  | SetHeader Text ByteString
-  | SetBody ByteString
-  | SetCode Int
   -- handler
   | Fun FunIndex
   -- response
   | SendResp
-  | SendText Text
-  | SendByteString ByteString
-  | SendError Text
   -- switch
   | WhenMethod Method Int
   | Case Val Int
+  | Goto CodeLabel 
+  | Ifeq Val CodeLabel 
+  | SetLabel CodeLabel Op
   deriving (Show, Eq)
+
+type CodeLabel = Int
 
 newtype FunIndex = FunIndex Int
   deriving (Show, Eq)

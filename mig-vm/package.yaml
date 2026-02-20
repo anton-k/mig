@@ -70,4 +70,5 @@ tests:
     - containers
     - mtl
     - bytestring
+    - vector
 

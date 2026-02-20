@@ -84,5 +84,6 @@ test-suite mig-vm-test
     , text
     , containers
     , mtl
+    , vector
   default-language: GHC2021
 

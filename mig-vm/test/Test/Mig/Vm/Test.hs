@@ -1,4 +1,4 @@
-module Test.Mig.Vm.Test where
+module Test.Mig.Vm.Test (spec) where
 
 import Mig.Vm.Class hiding (Header)
 import Mig.Vm.Class qualified as Mig
@@ -117,11 +117,7 @@ checkD =
     resp = okText "Result is: 4"
 
 okText :: Text -> Resp 
-okText msg = Resp
-      { code = 200
-      , headers = [Header "Content-Type" "text/plain"]
-      , body = Just (TVal msg)
-      }
+okText msg = toOutput msg
 
 emptyReq :: Req
 emptyReq = Req

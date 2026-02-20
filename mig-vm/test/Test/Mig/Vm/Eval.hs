@@ -16,9 +16,10 @@ import Data.IntMap qualified as IntMap
 import Data.Map.Strict qualified as Map
 import Data.Text qualified as Text
 import Data.List qualified as List
+import Data.Vector (Vector)
+import Data.Vector qualified as Vector
 
 import Test.Mig.Vm.Eval.Types
-import Test.Mig.Vm.Eval.Types qualified as Resp (Resp (..))
 
 newtype Funs = Funs (IntMap Fun)
 
@@ -33,9 +34,7 @@ type Stack = [Val]
 
 data Refs = Refs 
   { stack :: StackRef 
-  , ops :: OpsRef 
   , uri :: UriRef
-  , resp :: RespRef
   , captures :: CaptureRef
   }
 
@@ -53,32 +52,10 @@ writeCapture :: CaptureRef -> Text -> Text -> IO ()
 writeCapture (CaptureRef ref) key val = 
   modifyIORef' ref $ Map.insert key val
 
-newtype RespRef = RespRef { unRespRef :: IORef Resp}
-
-newRespRef :: IO RespRef 
-newRespRef = RespRef <$> newIORef 
-  (Resp { code = 200, headers = [], body = Nothing })
-
-setRespCode :: RespRef -> Int -> IO ()
-setRespCode (RespRef ref) code = modifyIORef' ref $ \resp ->
-  resp { Resp.code = code }
-
-setRespBody :: RespRef -> Val -> IO ()
-setRespBody (RespRef ref) body = modifyIORef' ref $ \resp ->
-  resp { Resp.body = Just body }
-
-setRespHeader :: RespRef -> Header -> IO ()
-setRespHeader (RespRef ref) header = modifyIORef'  ref $ \resp ->
-  resp { Resp.headers = update resp.headers }
-  where
-    update hs = header : (List.filter (\h -> h.name /= header.name) hs)
-
-newRefs :: Ops -> Req -> IO Refs
-newRefs operators req = do
+newRefs :: Req -> IO Refs
+newRefs req = do
   stack <- newStackRef
-  ops <- newOpsRef operators
   uri <- newUriRef req.uri
-  resp <- newRespRef 
   captures <- newCaptureRef 
   pure Refs{..}
 
@@ -88,16 +65,12 @@ newUriRef :: Path -> IO UriRef
 newUriRef path = UriRef <$> newIORef path
 
 newtype StackRef = StackRef (IORef Stack)
-newtype OpsRef = OpsRef (IORef Ops)
 
 newStackRef :: IO StackRef 
 newStackRef = StackRef <$> newIORef [] 
 
-newOpsRef :: Ops -> IO OpsRef
-newOpsRef ops = OpsRef <$> newIORef ops
-
-initMemory :: StackRef -> OpsRef -> Memory
-initMemory (StackRef stackRef) (OpsRef opsRef) = Memory
+initMemory :: StackRef -> Memory
+initMemory (StackRef stackRef) = Memory
   { readStack = do
       stack <- readIORef stackRef
       case stack of
@@ -108,38 +81,26 @@ initMemory (StackRef stackRef) (OpsRef opsRef) = Memory
 
   , writeStack = \val -> 
       modifyIORef' stackRef (val : )
-
-  , putOps = \(Ops val) ->
-      modifyIORef' opsRef (\(Ops ops) -> Ops (val <> ops))
   }
-
-readOp :: OpsRef -> IO (Maybe Op)
-readOp (OpsRef opsRef) = do
-  Ops ops <- readIORef opsRef
-  case ops of
-    v:vs -> do
-      writeIORef opsRef (Ops vs)
-      pure (Just v)
-    [] -> pure Nothing
-  
-eval :: Ctx -> Ops -> Req -> IO (Either Text Resp)
-eval ctx operators req = do
-  evalCtx <- newEvalCtx ctx operators req
-  eval' evalCtx req 
 
 data EvalCtx = EvalCtx
   { memory :: Memory
+  , ops :: Vector Op
   , funs :: Funs
   , refs :: Refs
+  , codeIndex :: IORef Int
   }
 
 newEvalCtx :: Ctx -> Ops -> Req -> IO EvalCtx
-newEvalCtx ctx operators req = do
-  refs <- newRefs operators req
+newEvalCtx ctx (Ops operations) req = do
+  refs <- newRefs req
+  codeIndex <- newIORef 0
   pure $ EvalCtx
-    { memory = initMemory refs.stack refs.ops
+    { memory = initMemory refs.stack
     , funs = initFuns ctx
+    , ops = Vector.fromList operations
     , refs 
+    , codeIndex
     }
 
 splitUri :: Int -> Text -> (Text, Text)
@@ -149,9 +110,20 @@ splitUri size uri =
     parts = Text.split (== '/') uri
     (pre, post) = List.splitAt size parts
 
+readOp :: EvalCtx -> IO (Maybe Op)
+readOp ctx = do
+  index <- readIORef ctx.codeIndex
+  writeIORef ctx.codeIndex (index + 1)
+  pure (ctx.ops Vector.!? index)
+
+eval :: Ctx -> Ops -> Req -> IO (Either Text Resp)
+eval ctx ops req = do
+  evalCtx <- newEvalCtx ctx ops req
+  eval' evalCtx req
+
 eval' :: EvalCtx -> Req -> IO (Either Text Resp)
 eval' ctx req = do
-  mOp <- readOp ctx.refs.ops  
+  mOp <- readOp ctx
   case mOp of
     Nothing -> pure (Left "no operators left")
     Just op -> do
@@ -164,15 +136,9 @@ eval' ctx req = do
         GetBody -> getBody
         GetHeader name -> getHeader name
         GetCapture name -> getCapture name
-        SetHeader name val -> setHeader name val
-        SetBody bytes -> setBody bytes
-        SetCode code -> setCode code
         -- handler
         Fun n -> fun n
         -- response
-        SendError msg -> sendError msg
-        SendText val -> sendText val
-        SendByteString bytes -> sendByteString bytes
         SendResp -> sendResp
         -- switch
         WhenMethod method arity -> whenMethod method arity
@@ -185,13 +151,8 @@ eval' ctx req = do
     noHeaderError name = pure $ Left $ "No value for header: " <> name
     noFunError index = pure $ Left $ "No function by the index: " <> Text.show index
     noCaptureError name = pure $ Left $ "No capture by the name: " <> name
+    noResponseError = pure $ Left $ "No response sent"
     wrongCaptureArgError name = pure $ Left $ "Wrong capture state: " <> name
-
-    ok hs val = Resp 
-      { code = 200
-      , headers = hs
-      , body = val
-      }
 
     -- puts full URI on stack
     getUri = do 
@@ -258,10 +219,6 @@ eval' ctx req = do
           next
         Nothing -> noHeaderError name 
 
-    setHeader name val = setRespHeader ctx.refs.resp (Header name val) >> next
-    setBody val = setRespBody  ctx.refs.resp (BVal val) >> next
-    setCode code = setRespCode ctx.refs.resp code >> next
-
     fun index = do
       case lookupFun index ctx.funs of
         Just f -> do
@@ -269,18 +226,16 @@ eval' ctx req = do
           next
         Nothing -> noFunError index
 
-    sendError msg = pure $ Left msg
-
-    sendText txt = pure $ Right $ ok [Header "Content-Type" "text/plain"] (Just (TVal txt))
-
-    sendByteString bytes = pure $ Right $ ok [Header "Content-Type" "text/plain"] (Just (BVal bytes))
-
-    sendResp = Right <$> readIORef ctx.refs.resp.unRespRef
+    sendResp = do
+      eResp <- ctx.memory.readStack 
+      case eResp of
+        Just (RespVal resp) -> pure (Right resp)
+        _ -> noResponseError
 
     whenMethod method size 
       | req.method == method = next
       | otherwise = do
-          dropOps ctx.refs.ops size 
+          dropOps ctx size 
           next
 
     onCase expectedVal size = do
@@ -291,12 +246,17 @@ eval' ctx req = do
             then next 
             else do
               ctx.memory.writeStack val
-              dropOps ctx.refs.ops size
+              dropOps ctx size
               next
               
         Nothing -> emptyStackError
       
 
-dropOps :: OpsRef -> Int -> IO ()
-dropOps (OpsRef opsRef) size = 
-  modifyIORef' opsRef $ \(Ops ops) -> Ops (List.drop size ops)
+dropOps :: EvalCtx -> Int -> IO ()
+dropOps ctx size = 
+  modifyIORef' ctx.codeIndex (+ size)
+
+
+  
+
+

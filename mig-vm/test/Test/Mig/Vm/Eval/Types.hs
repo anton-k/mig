@@ -4,13 +4,6 @@ import Data.ByteString (ByteString)
 import Data.Text (Text)
 import Mig.Vm.Types 
 
-data Resp = Resp
-  { code :: Int
-  , headers :: [Header]
-  , body :: Maybe Val
-  }
-  deriving (Show, Eq)
-
 data Req = Req
   { uri :: Path
   , method :: Method
