@@ -1,5 +1,5 @@
 -- | Simple interpreter for VM commands
-module Test.Mig.Vm.Eval 
+module Test.Mig.Vm.Eval
   ( Req (..)
   , Resp (..)
   , Header (..)
@@ -7,7 +7,7 @@ module Test.Mig.Vm.Eval
   , eval
   ) where
 
-import Mig.Vm.Types 
+import Mig.Vm.Types
 import Data.Text (Text)
 import Data.IORef
 import Data.IntMap (IntMap)
@@ -32,8 +32,8 @@ initFuns ctx = Funs $ IntMap.fromList $ zip [0..] (ctxGetFuns ctx)
 
 type Stack = [Val]
 
-data Refs = Refs 
-  { stack :: StackRef 
+data Refs = Refs
+  { stack :: StackRef
   , uri :: UriRef
   , captures :: CaptureRef
   }
@@ -41,22 +41,22 @@ data Refs = Refs
 newtype CaptureRef = CaptureRef (IORef (Map Text Text))
 
 newCaptureRef :: IO CaptureRef
-newCaptureRef = 
+newCaptureRef =
   CaptureRef <$> newIORef Map.empty
 
 readCapture :: CaptureRef -> Text -> IO (Maybe Text)
-readCapture (CaptureRef ref) name = 
+readCapture (CaptureRef ref) name =
   Map.lookup name <$> readIORef ref
 
 writeCapture :: CaptureRef -> Text -> Text -> IO ()
-writeCapture (CaptureRef ref) key val = 
+writeCapture (CaptureRef ref) key val =
   modifyIORef' ref $ Map.insert key val
 
 newRefs :: Req -> IO Refs
 newRefs req = do
   stack <- newStackRef
   uri <- newUriRef req.uri
-  captures <- newCaptureRef 
+  captures <- newCaptureRef
   pure Refs{..}
 
 newtype UriRef = UriRef (IORef Path)
@@ -66,8 +66,8 @@ newUriRef path = UriRef <$> newIORef path
 
 newtype StackRef = StackRef (IORef Stack)
 
-newStackRef :: IO StackRef 
-newStackRef = StackRef <$> newIORef [] 
+newStackRef :: IO StackRef
+newStackRef = StackRef <$> newIORef []
 
 initMemory :: StackRef -> Memory
 initMemory (StackRef stackRef) = Memory
@@ -79,7 +79,7 @@ initMemory (StackRef stackRef) = Memory
           pure (Just v)
         [] -> pure Nothing
 
-  , writeStack = \val -> 
+  , writeStack = \val ->
       modifyIORef' stackRef (val : )
   }
 
@@ -91,6 +91,14 @@ data EvalCtx = EvalCtx
   , codeIndex :: IORef Int
   }
 
+checkPathEmpty :: EvalCtx -> IO Bool
+checkPathEmpty ctx = (null . unPath) <$> readIORef ref
+  where
+    UriRef ref = ctx.refs.uri
+
+matchPath :: EvalCtx -> Text -> IO Bool
+matchPath = error "TODO"
+
 newEvalCtx :: Ctx -> Ops -> Req -> IO EvalCtx
 newEvalCtx ctx (Ops operations) req = do
   refs <- newRefs req
@@ -99,12 +107,12 @@ newEvalCtx ctx (Ops operations) req = do
     { memory = initMemory refs.stack
     , funs = initFuns ctx
     , ops = Vector.fromList operations
-    , refs 
+    , refs
     , codeIndex
     }
 
 splitUri :: Int -> Text -> (Text, Text)
-splitUri size uri = 
+splitUri size uri =
   (Text.intercalate "/" pre, Text.intercalate "/" post)
   where
     parts = Text.split (== '/') uri
@@ -117,7 +125,7 @@ readOp ctx = do
   pure (ctx.ops Vector.!? index)
 
 moveCodePointerToLabel :: EvalCtx -> CodeLabel -> IO ()
-moveCodePointerToLabel ctx (CodeLabel index) = 
+moveCodePointerToLabel ctx (CodeLabel index) =
   writeIORef ctx.codeIndex index
 
 eval :: Ctx -> Ops -> Req -> IO (Either Text Resp)
@@ -148,12 +156,14 @@ eval' ctx req = do
         Label _ -> next
         Goto label -> goto label
         Ifeq val label -> ifeq val label
+        IfPathEq path label -> ifPathEq path label
+        IfMethodMediaEq method media label -> ifMethodMediaEq method media label
         -- generic stack
         Push val -> push val
         Pop -> pop
         Dup -> dup
   where
-    next = eval' ctx req 
+    next = eval' ctx req
     emptyStackError = pure $ Left $ "Stack is empty"
     noBodyError = pure $ Left "No body in request"
     noQueryError name = pure $ Left $ "No value for query: " <> name
@@ -164,13 +174,13 @@ eval' ctx req = do
     wrongCaptureArgError name = pure $ Left $ "Wrong capture state: " <> name
 
     -- puts full URI on stack
-    getUri = do 
+    getUri = do
       ctx.memory.writeStack (TVal $ pathToText req.uri)
       next
 
     -- reads from stack part of URI
-    -- splits it and puts parts on the stack 
-    getUriPart n = do 
+    -- splits it and puts parts on the stack
+    getUriPart n = do
       mVal <- ctx.memory.readStack
       case mVal of
         Just (TVal uri) -> do
@@ -194,15 +204,15 @@ eval' ctx req = do
       case mCapture of
         Just capture -> do
           ctx.memory.writeStack (TVal capture)
-          next 
-        Nothing -> noCaptureError name 
+          next
+        Nothing -> noCaptureError name
 
     saveCapture name = do
       mVal <- ctx.memory.readStack
       case mVal of
         Just (TVal pathItem) -> do
           writeCapture ctx.refs.captures name pathItem
-          next 
+          next
         _ -> wrongCaptureArgError name
 
     getMethod = do
@@ -217,7 +227,7 @@ eval' ctx req = do
         Just val -> do
           ctx.memory.writeStack (TVal val)
           next
-        Nothing -> noQueryError name 
+        Nothing -> noQueryError name
 
     getHeader name = do
       let
@@ -226,17 +236,17 @@ eval' ctx req = do
         Just val -> do
           ctx.memory.writeStack (BVal val)
           next
-        Nothing -> noHeaderError name 
+        Nothing -> noHeaderError name
 
     fun index = do
       case lookupFun index ctx.funs of
         Just f -> do
-          f ctx.memory 
+          f ctx.memory
           next
         Nothing -> noFunError index
 
     sendResp = do
-      eResp <- ctx.memory.readStack 
+      eResp <- ctx.memory.readStack
       case eResp of
         Just (RespVal resp) -> pure (Right resp)
         _ -> noResponseError
@@ -246,18 +256,32 @@ eval' ctx req = do
     ifeq expectedVal label = do
       mVal <- ctx.memory.readStack
       case mVal of
-        Just val -> 
+        Just val ->
           if (val == expectedVal)
             then next
-            else goto label          
+            else goto label
         Nothing -> emptyStackError
+
+    -- TODO: check media
+    ifMethodMediaEq method _media label = do
+      isPathEmpty <- checkPathEmpty ctx
+      if (isPathEmpty && method == req.method )
+        then next
+        else goto label
+
+    -- TODO: check media
+    ifPathEq path label = do
+      ok <- matchPath ctx path
+      if ok
+        then next
+        else goto label
 
     push val = ctx.memory.writeStack val >> next
 
     pop = do
       _ <- ctx.memory.readStack
       next
-    
+
     dup = do
       mVal <- ctx.memory.readStack
       case mVal of

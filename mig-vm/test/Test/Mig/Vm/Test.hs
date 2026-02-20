@@ -4,7 +4,6 @@ import Mig.Vm.Class hiding (Header)
 import Mig.Vm.Class qualified as Mig
 import Mig.Vm.Types
 import Mig.Vm.Render
-import Control.Monad.State.Strict
 import Test.Hspec
 import Test.Mig.Vm.Eval
 import Data.Text (Text)
