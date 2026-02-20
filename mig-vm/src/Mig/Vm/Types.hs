@@ -2,13 +2,16 @@ module Mig.Vm.Types
   ( Val (..)
   , Resp (..)
   , Op (..)
+  , CodeLabel (..)
   , Ops (..)
   , Ctx (..)
   , FunIndex (..)
   , emptyCtx 
   , ctxInsertFun 
   , ctxIndex 
+  , ctxLabel 
   , ctxGetFuns
+  , ctxBumpLabel
   , Memory (..)
   , Fun
   , Method (..)
@@ -17,6 +20,7 @@ module Mig.Vm.Types
   , PathItem
   , pathToText 
   , Server (..)
+  , substCodeLabelsForCodeIndex 
   ) where
 
 import Data.Text (Text)
@@ -24,10 +28,13 @@ import Data.Text qualified as Text
 import Data.ByteString (ByteString)
 import Queue (Queue)
 import Queue qualified as Queue
+import Data.IntMap (IntMap)
+import Data.IntMap qualified as IntMap
 
 data Ctx = Ctx
   { funs :: Queue Fun
   , index :: !Int
+  , label :: !Int
   }
 
 type Fun = Memory -> IO ()
@@ -36,10 +43,14 @@ emptyCtx :: Ctx
 emptyCtx = Ctx
   { funs = Queue.empty
   , index = 0
+  , label = 0
   }
 
 ctxIndex :: Ctx -> FunIndex
 ctxIndex ctx = FunIndex ctx.index
+
+ctxLabel :: Ctx -> CodeLabel
+ctxLabel ctx = CodeLabel ctx.label
 
 ctxInsertFun :: Fun -> Ctx -> Ctx
 ctxInsertFun f ctx = ctx
@@ -49,6 +60,9 @@ ctxInsertFun f ctx = ctx
 
 ctxGetFuns :: Ctx -> [Fun]
 ctxGetFuns ctx = Queue.toList ctx.funs
+
+ctxBumpLabel :: Ctx -> Ctx
+ctxBumpLabel ctx = ctx { label = ctx.label + 1 }
 
 data Val 
   = TVal Text
@@ -76,7 +90,7 @@ data Memory = Memory
   }
 
 -- | Operators, all commands that VM supports
-data Op 
+data Op
   -- request
   = GetUri   
   | GetUriPart Int
@@ -91,14 +105,41 @@ data Op
   -- response
   | SendResp
   -- switch
-  | WhenMethod Method Int
-  | Case Val Int
   | Goto CodeLabel 
   | Ifeq Val CodeLabel 
-  | SetLabel CodeLabel Op
+  | Label CodeLabel
+  -- generic stack
+  | Push Val
+  | Pop
+  | Dup
   deriving (Show, Eq)
 
-type CodeLabel = Int
+newtype CodeLabel = CodeLabel Int
+  deriving (Show, Eq)
+
+substCodeLabelsForCodeIndex :: [Op] -> [Op]
+substCodeLabelsForCodeIndex ops = 
+  fmap substLabel ops
+  where
+    labelMap :: IntMap CodeLabel 
+    labelMap = 
+      foldl' accumLabel IntMap.empty (zip [0..] ops)
+    
+    accumLabel :: IntMap CodeLabel -> (Int, Op) -> IntMap CodeLabel
+    accumLabel res = \case
+      (index, Label (CodeLabel label)) -> IntMap.insert label (CodeLabel index) res
+      _ -> res
+
+  
+    getCodeIndex :: CodeLabel -> CodeLabel
+    getCodeIndex (CodeLabel x) = labelMap IntMap.! x
+
+    substLabel :: Op -> Op
+    substLabel = \case
+      Goto label -> Goto (getCodeIndex label)
+      Ifeq val label -> Ifeq val (getCodeIndex label)
+      Label label -> Label (getCodeIndex label)
+      x -> x 
 
 newtype FunIndex = FunIndex Int
   deriving (Show, Eq)

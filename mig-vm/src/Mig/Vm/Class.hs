@@ -158,14 +158,20 @@ toRoute :: forall a. IsHandler a => a -> StateT Ctx (MonadOf a) Ops
 toRoute f = StateT $ \ctx -> withRunInIO $ \run -> 
   let 
     index = ctxIndex ctx
+    label = ctxLabel ctx
   in 
     pure 
       ( Ops $ concat
-          [ [ WhenMethod (toMethod @(MethodOf a)) (toArity @a + 1)]
+          [ [ GetMethod
+            , Ifeq (MVal $ toMethod @(MethodOf a)) label
+            ]
           , toArgOps @a
-          , [Fun index, SendResp]
+          , [ Fun index
+            , SendResp
+            , Label label
+            ]
           ]
-      , ctxInsertFun (run . handler) ctx
+      , ctxBumpLabel $ ctxInsertFun (run . handler) ctx
       )
   where
     handler :: Memory -> MonadOf a ()

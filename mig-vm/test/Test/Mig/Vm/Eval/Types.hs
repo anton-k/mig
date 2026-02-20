@@ -1,4 +1,8 @@
-module Test.Mig.Vm.Eval.Types where
+module Test.Mig.Vm.Eval.Types 
+  ( Req (..)
+  , Header (..)
+  , QueryParam (..)
+  ) where
 
 import Data.ByteString (ByteString)
 import Data.Text (Text)

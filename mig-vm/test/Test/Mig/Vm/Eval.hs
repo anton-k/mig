@@ -116,6 +116,10 @@ readOp ctx = do
   writeIORef ctx.codeIndex (index + 1)
   pure (ctx.ops Vector.!? index)
 
+moveCodePointerToLabel :: EvalCtx -> CodeLabel -> IO ()
+moveCodePointerToLabel ctx (CodeLabel index) = 
+  writeIORef ctx.codeIndex index
+
 eval :: Ctx -> Ops -> Req -> IO (Either Text Resp)
 eval ctx ops req = do
   evalCtx <- newEvalCtx ctx ops req
@@ -141,8 +145,13 @@ eval' ctx req = do
         -- response
         SendResp -> sendResp
         -- switch
-        WhenMethod method arity -> whenMethod method arity
-        Case val arity -> onCase val arity
+        Label _ -> next
+        Goto label -> goto label
+        Ifeq val label -> ifeq val label
+        -- generic stack
+        Push val -> push val
+        Pop -> pop
+        Dup -> dup
   where
     next = eval' ctx req 
     emptyStackError = pure $ Left $ "Stack is empty"
@@ -232,31 +241,28 @@ eval' ctx req = do
         Just (RespVal resp) -> pure (Right resp)
         _ -> noResponseError
 
-    whenMethod method size 
-      | req.method == method = next
-      | otherwise = do
-          dropOps ctx size 
-          next
+    goto label = moveCodePointerToLabel ctx label >> next
 
-    onCase expectedVal size = do
-      mVal <- ctx.memory.readStack 
+    ifeq expectedVal label = do
+      mVal <- ctx.memory.readStack
+      case mVal of
+        Just val -> 
+          if (val == expectedVal)
+            then next
+            else goto label          
+        Nothing -> emptyStackError
+
+    push val = ctx.memory.writeStack val >> next
+
+    pop = do
+      _ <- ctx.memory.readStack
+      next
+    
+    dup = do
+      mVal <- ctx.memory.readStack
       case mVal of
         Just val -> do
-          if (expectedVal == val)
-            then next 
-            else do
-              ctx.memory.writeStack val
-              dropOps ctx size
-              next
-              
+          ctx.memory.writeStack val
+          ctx.memory.writeStack val
+          next
         Nothing -> emptyStackError
-      
-
-dropOps :: EvalCtx -> Int -> IO ()
-dropOps ctx size = 
-  modifyIORef' ctx.codeIndex (+ size)
-
-
-  
-
-
