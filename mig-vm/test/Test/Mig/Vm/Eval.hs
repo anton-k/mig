@@ -96,9 +96,6 @@ checkPathEmpty ctx = (null . unPath) <$> readIORef ref
   where
     UriRef ref = ctx.refs.uri
 
-matchPath :: EvalCtx -> Text -> IO Bool
-matchPath = error "TODO"
-
 newEvalCtx :: Ctx -> Ops -> Req -> IO EvalCtx
 newEvalCtx ctx (Ops operations) req = do
   refs <- newRefs req
@@ -156,7 +153,6 @@ eval' ctx req = do
         Label _ -> next
         Goto label -> goto label
         Ifeq val label -> ifeq val label
-        IfPathEq path label -> ifPathEq path label
         -- generic stack
         Push val -> push val
         Pop -> pop
@@ -260,13 +256,6 @@ eval' ctx req = do
             then next
             else goto label
         Nothing -> emptyStackError
-
-    -- TODO: check media
-    ifPathEq path label = do
-      ok <- matchPath ctx path
-      if ok
-        then next
-        else goto label
 
     push val = ctx.memory.writeStack val >> next
 

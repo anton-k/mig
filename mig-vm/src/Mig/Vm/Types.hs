@@ -85,7 +85,7 @@ apiToOps :: forall m . MonadState Ctx m => Api Ops -> m Ops
 apiToOps = renderApiIf . toApiIf
   where
     renderApiIf :: ApiIf Ops -> m Ops
-    renderApiIf = \case
+    renderApiIf = fmap (Ops [GetUri] <> ) . \case
       EmptyApi -> pure emptyOps
       IfHandle method media th el -> ifHandle method media th =<< renderApiIf el
       IfPath path th el ->
@@ -97,32 +97,32 @@ apiToOps = renderApiIf . toApiIf
       ]
 
     -- TODO: check media
-    ifHandle method _media th el =
-      ifOp (MVal method) (Ops [GetMethod]) th el
+    ifHandle method _media th el = do
+      trueLabel <- freshLabel
+      falseLabel <- freshLabel
+      pure $ mconcat
+        [ Ops
+          [ MatchPath ""
+          , Ifeq (BoolVal True) falseLabel
+          , GetMethod
+          , Ifeq (MVal method) falseLabel
+          ]
+        , th
+        , Ops [ Goto trueLabel, Label falseLabel ]
+        , el
+        , Ops [ Label trueLabel ]
+        ]
 
-    ifPath path th el = ifBy (IfPathEq (pathToText path)) th el
+    ifPath path th el =
+      ifOp [BoolVal True] (Ops [Dup, MatchPath (pathToText path)]) th (Ops [Pop] <> el)
 
-ifBy :: MonadState Ctx m => (CodeLabel -> Op) -> Ops -> Ops -> m Ops
-ifBy cond th el = do
-  trueLabel <- freshLabel
-  falseLabel <- freshLabel
-  pure $ mconcat
-    [ Ops [cond falseLabel]
-    , th
-    , Ops [ Goto trueLabel, Label falseLabel ]
-    , el
-    , Ops [ Label trueLabel ]
-    ]
-
-
-
-ifOp :: MonadState Ctx m => Val -> Ops -> Ops -> Ops -> m Ops
-ifOp val cond th el = do
+ifOp :: MonadState Ctx m => [Val] -> Ops -> Ops -> Ops -> m Ops
+ifOp vals cond th el = do
   trueLabel <- freshLabel
   falseLabel <- freshLabel
   pure $ mconcat
     [ cond
-    , Ops [Ifeq val falseLabel]
+    , Ops $ fmap (\val -> Ifeq val falseLabel) vals
     , th
     , Ops [ Goto trueLabel, Label falseLabel ]
     , el
