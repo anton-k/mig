@@ -1,10 +1,10 @@
-module Mig.Vm.Class.Types 
+module Mig.Vm.Class.Types
   ( Send (..)
   , Query (..)
   , Header (..)
   , GET
-  , POST 
-  , PUT 
+  , POST
+  , PUT
   ) where
 
 import Data.Kind
@@ -14,6 +14,6 @@ data GET
 data POST
 data PUT
 
-newtype Query (sym :: Symbol) a = Query a 
-newtype Header (sym :: Symbol) a = Header a 
-newtype Send (method :: Type) m a = Send (m a)
+newtype Query (sym :: Symbol) a = Query a
+newtype Header (sym :: Symbol) a = Header a
+newtype Send (method :: Type) (m :: Type -> Type) a = Send (m a)

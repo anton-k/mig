@@ -3,9 +3,16 @@ module Mig.Vm.Render
   ) where
 
 import Mig.Vm.Types
+import Mig.Vm.Class
 import Control.Monad.State.Strict (runStateT)
 
-renderServer :: Server m -> m (Ops, Ctx)
-renderServer _server = runStateT go emptyCtx
-  where
-    go = undefined
+renderServer ::
+  forall a .
+  (ToServer a, Monad (MonadOf a)) =>
+  a -> MonadOf a (Ops, Ctx)
+renderServer val = do
+  let
+    (Server api) = toServer val
+  (ops, ctx) <- runStateT (apiToOps =<< sequenceA api) emptyCtx
+  pure (ops, ctx)
+

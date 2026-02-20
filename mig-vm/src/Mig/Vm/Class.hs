@@ -1,9 +1,11 @@
 {-# Language UndecidableInstances #-}
 module Mig.Vm.Class
-  ( IsMethod (..)
+  ( HasMonad (..)
+  , IsMethod (..)
   , IsOutput (..)
   , IsHandler
-  , toRoute
+  , ToServer (..)
+  , (/.)
   , module X
   ) where
 
@@ -25,6 +27,15 @@ import Data.Text.Encoding qualified as Text
 
 getName :: forall sym a. (KnownSymbol sym, IsString a) => a
 getName = fromString (symbolVal (Proxy @sym))
+
+class HasMonad m where
+  type MonadOf m :: Type -> Type
+
+instance HasMonad (Server m) where
+  type MonadOf (Server m) = m
+
+instance HasMonad [a] where
+  type MonadOf [a] = MonadOf a
 
 class IsMethod a where
   toMethod :: Method
@@ -48,7 +59,7 @@ instance IsOutput Int where
   toOutput val = textResp (Text.show val)
 
 errorResp :: Int -> Text -> Resp
-errorResp code txt = 
+errorResp code txt =
   (textResp txt) { status = code }
 
 textResp :: Text -> Resp
@@ -56,10 +67,9 @@ textResp txt = Resp
     { status = 200
     , headers = [("Content-Type", "text/plain")]
     , body = Just (Text.encodeUtf8 txt)
-    }  
+    }
 
-class (IsMethod (MethodOf a), MonadUnliftIO (MonadOf a), IsOutput (ResOf a)) => IsHandler a where
-  type MonadOf a :: Type -> Type 
+class (HasMonad a, IsMethod (MethodOf a), MonadUnliftIO (MonadOf a), IsOutput (ResOf a)) => IsHandler a where
   type MethodOf a :: Type
   type ArgOf a :: [Type]
   type ResOf a :: Type
@@ -69,10 +79,12 @@ class (IsMethod (MethodOf a), MonadUnliftIO (MonadOf a), IsOutput (ResOf a)) => 
   toArgOps :: [Op]
   toArity :: Int
 
-instance (IsMethod method, IsOutput a, MonadUnliftIO m) => IsHandler (Send method m a) where
+instance HasMonad (Send method m a) where
   type MonadOf (Send method m a) = m
+
+instance (IsMethod method, IsOutput a, MonadUnliftIO m) => IsHandler (Send method m a) where
   type MethodOf (Send method m a) = method
-  type ArgOf (Send method m a) = '[] 
+  type ArgOf (Send method m a) = '[]
   type ResOf (Send method m a) = a
 
   toHandler (Send getVal) _ = const getVal
@@ -80,9 +92,11 @@ instance (IsMethod method, IsOutput a, MonadUnliftIO m) => IsHandler (Send metho
   toArgOps = []
   toArity = 0
 
-instance (KnownSymbol sym, FromHttpApiData param, IsHandler a) => 
+instance HasMonad (a -> b) where
+  type MonadOf (a -> b) = MonadOf b
+
+instance (KnownSymbol sym, FromHttpApiData param, IsHandler a) =>
   IsHandler (Query sym param -> a) where
-  type MonadOf (Query sym param -> a) = MonadOf a
   type MethodOf (Query sym param -> a) = MethodOf a
   type ArgOf (Query sym param -> a) = param ': ArgOf a
   type ResOf (Query sym param -> a) = ResOf a
@@ -91,10 +105,10 @@ instance (KnownSymbol sym, FromHttpApiData param, IsHandler a) =>
     eArgs <- readArg @a memory
     fmap join $ forM eArgs $ \args -> do
       eParam <- readQueryParam @param failedToParse memory
-      pure $ 
+      pure $
         case eParam of
           Right param -> Right (HCons param args)
-          Left msg -> Left (failedToParse <> ", " <> msg) 
+          Left msg -> Left (failedToParse <> ", " <> msg)
     where
       failedToParse = "Failed to parse query: " <> getName @sym
 
@@ -109,15 +123,14 @@ readQueryParam :: forall a. FromHttpApiData a => Text -> Memory -> IO (Either Te
 readQueryParam errorMsg memory = do
   val <- memory.readStack
   pure $ case val of
-    Just (TVal txt) -> 
+    Just (TVal txt) ->
       case parseQueryParam txt of
         Right param -> Right param
-        Left msg -> Left (errorMsg  <> ", " <> msg) 
-    _ -> Left errorMsg 
+        Left msg -> Left (errorMsg  <> ", " <> msg)
+    _ -> Left errorMsg
 
-instance (KnownSymbol sym, FromHttpApiData param, IsHandler a) => 
+instance (KnownSymbol sym, FromHttpApiData param, IsHandler a) =>
   IsHandler (Header sym param -> a) where
-  type MonadOf (Header sym param -> a) = MonadOf a
   type MethodOf (Header sym param -> a) = MethodOf a
   type ArgOf (Header sym param -> a) = param ': ArgOf a
   type ResOf (Header sym param -> a) = ResOf a
@@ -126,10 +139,10 @@ instance (KnownSymbol sym, FromHttpApiData param, IsHandler a) =>
     eArgs <- readArg @a memory
     fmap join $ forM eArgs $ \args -> do
       eParam <- readHeaderParam @param failedToParse memory
-      pure $ 
+      pure $
         case eParam of
           Right param -> Right (HCons param args)
-          Left msg -> Left (failedToParse <> ", " <> msg) 
+          Left msg -> Left (failedToParse <> ", " <> msg)
     where
       failedToParse = "Failed to parse header: " <> getName @sym
 
@@ -141,26 +154,26 @@ instance (KnownSymbol sym, FromHttpApiData param, IsHandler a) =>
   toArity = 1 + toArity @a
 
 
-readHeaderParam :: forall a. FromHttpApiData a => 
+readHeaderParam :: forall a. FromHttpApiData a =>
   Text -> Memory -> IO (Either Text a)
 readHeaderParam errorMsg memory = do
   val <- memory.readStack
   pure $ case val of
-    Just (BVal bytes) -> 
+    Just (BVal bytes) ->
       case parseHeader bytes of
         Right param -> Right param
-        Left msg -> Left (errorMsg  <> ", " <> msg) 
-    _ -> Left errorMsg 
+        Left msg -> Left (errorMsg  <> ", " <> msg)
+    _ -> Left errorMsg
 
 
 
 toRoute :: forall a. IsHandler a => a -> StateT Ctx (MonadOf a) Ops
-toRoute f = StateT $ \ctx -> withRunInIO $ \run -> 
-  let 
+toRoute f = StateT $ \ctx -> withRunInIO $ \run ->
+  let
     index = ctxIndex ctx
     label = ctxLabel ctx
-  in 
-    pure 
+  in
+    pure
       ( Ops $ concat
           [ [ GetMethod
             , Ifeq (MVal $ toMethod @(MethodOf a)) label
@@ -180,3 +193,19 @@ toRoute f = StateT $ \ctx -> withRunInIO $ \run ->
       case eArg of
         Right arg -> liftIO . memory.writeStack . RespVal . toOutput @(ResOf a) =<< ((toHandler @a f) memory arg)
         Left errorMsg -> liftIO $ memory.writeStack (RespVal (errorResp 500 errorMsg))
+
+(/.) :: ToServer a => Path -> a -> Server (MonadOf a)
+(/.) path api = Server $ WithPath path (toServer api).unServer
+
+class ToServer a where
+  toServer :: a -> Server (MonadOf a)
+
+instance ToServer (Server m) where
+  toServer = id
+
+instance ToServer [Server m] where
+  toServer = Server . mconcat . fmap unServer
+
+instance {-# OVERLAPPABLE #-} IsHandler a => ToServer a where
+  toServer a = Server $
+    HandleRoute (toMethod @(MethodOf a)) (MediaType "TODO") (toRoute a)

@@ -24,6 +24,8 @@ source-repository head
 library
   exposed-modules:
       Mig.Vm.Types
+      Mig.Vm.Types.Api
+      Mig.Vm.Types.Cmd
       Mig.Vm.Class
       Mig.Vm.Class.Types
       Mig.Vm.Server

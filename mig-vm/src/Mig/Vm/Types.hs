@@ -6,30 +6,31 @@ module Mig.Vm.Types
   , Ops (..)
   , Ctx (..)
   , FunIndex (..)
-  , emptyCtx 
-  , ctxInsertFun 
-  , ctxIndex 
-  , ctxLabel 
+  , emptyCtx
+  , ctxInsertFun
+  , ctxIndex
+  , ctxLabel
   , ctxGetFuns
   , ctxBumpLabel
   , Memory (..)
   , Fun
   , Method (..)
+  , MediaType (..)
   , Api (..)
   , Path (..)
-  , PathItem
-  , pathToText 
+  , PathItem (..)
+  , pathToText
   , Server (..)
-  , substCodeLabelsForCodeIndex 
+  , substCodeLabelsForCodeIndex
+  , apiToOps
   ) where
 
-import Data.Text (Text)
-import Data.Text qualified as Text
-import Data.ByteString (ByteString)
+import Control.Monad (join)
 import Queue (Queue)
 import Queue qualified as Queue
-import Data.IntMap (IntMap)
-import Data.IntMap qualified as IntMap
+import Mig.Vm.Types.Api
+import Mig.Vm.Types.Cmd
+import Control.Monad.State.Strict
 
 data Ctx = Ctx
   { funs :: Queue Fun
@@ -64,107 +65,48 @@ ctxGetFuns ctx = Queue.toList ctx.funs
 ctxBumpLabel :: Ctx -> Ctx
 ctxBumpLabel ctx = ctx { label = ctx.label + 1 }
 
-data Val 
-  = TVal Text
-  | BVal ByteString
-  | MVal Method
-  | RespVal Resp
-  deriving (Show, Eq)
-
-data Resp = Resp
-  { status :: Int
-  , headers :: [(ByteString, ByteString)]
-  , body :: Maybe ByteString
-  }
-  deriving (Show, Eq)
-
-data Method = Get | Post | Put
-  deriving (Show, Eq)
-
-newtype Ops = Ops [Op]
-  deriving (Show, Eq)
+freshLabel :: MonadState Ctx m => m CodeLabel
+freshLabel = do
+  ctx <- get
+  put (ctxBumpLabel ctx)
+  pure (CodeLabel ctx.label)
 
 data Memory = Memory
   { readStack :: IO (Maybe Val)
   , writeStack :: Val -> IO ()
   }
 
--- | Operators, all commands that VM supports
-data Op
-  -- request
-  = GetUri   
-  | GetUriPart Int
-  | SaveCapture Text
-  | GetCapture Text
-  | GetMethod
-  | GetQuery Text
-  | GetBody 
-  | GetHeader Text
-  -- handler
-  | Fun FunIndex
-  -- response
-  | SendResp
-  -- switch
-  | Goto CodeLabel 
-  | Ifeq Val CodeLabel 
-  | Label CodeLabel
-  -- generic stack
-  | Push Val
-  | Pop
-  | Dup
-  deriving (Show, Eq)
+newtype Server m = Server { unServer :: (Api (ServerFun m)) }
+  deriving newtype (Semigroup, Monoid)
 
-newtype CodeLabel = CodeLabel Int
-  deriving (Show, Eq)
+type ServerFun m = StateT Ctx m Ops
 
-substCodeLabelsForCodeIndex :: [Op] -> [Op]
-substCodeLabelsForCodeIndex ops = 
-  fmap substLabel ops
+apiToOps :: forall m . MonadState Ctx m => Api Ops -> m Ops
+apiToOps = renderApiIf . toApiIf
   where
-    labelMap :: IntMap CodeLabel 
-    labelMap = 
-      foldl' accumLabel IntMap.empty (zip [0..] ops)
-    
-    accumLabel :: IntMap CodeLabel -> (Int, Op) -> IntMap CodeLabel
-    accumLabel res = \case
-      (index, Label (CodeLabel label)) -> IntMap.insert label (CodeLabel index) res
-      _ -> res
+    renderApiIf :: ApiIf Ops -> m Ops
+    renderApiIf = \case
+      EmptyApi -> pure emptyOps
+      IfHandle method media th el -> ifHandle method media th =<< renderApiIf el
+      IfPath path th el ->
+        join $ liftA2 (ifPath path) (renderApiIf th) (renderApiIf el)
 
-  
-    getCodeIndex :: CodeLabel -> CodeLabel
-    getCodeIndex (CodeLabel x) = labelMap IntMap.! x
+    emptyOps = Ops
+      [ Push (RespVal $ Resp { status = 500, headers = [], body = Just "Not found" })
+      , SendResp
+      ]
 
-    substLabel :: Op -> Op
-    substLabel = \case
-      Goto label -> Goto (getCodeIndex label)
-      Ifeq val label -> Ifeq val (getCodeIndex label)
-      Label label -> Label (getCodeIndex label)
-      x -> x 
+    ifHandle method media th el = ifBy (IfMethodMediaEq method media) th el
+    ifPath path th el = ifBy (IfPathEq (pathToText path)) th el
 
-newtype FunIndex = FunIndex Int
-  deriving (Show, Eq)
-
-newtype Server m = Server (Api (ServerFun m))
-
--- | HTTP API container
-data Api a
-  = -- | alternative between two API's
-    Append (Api a) (Api a)
-  | -- | an empty API that does nothing
-    Empty
-  | -- | path prefix for an API
-    WithPath Path (Api a)
-  | -- | handle route
-    HandleRoute a
-  deriving (Functor, Foldable, Traversable, Show, Eq)
-
-newtype Path = Path {unPath :: [PathItem]}
-  deriving stock (Show, Eq)
-
-pathToText :: Path -> Text
-pathToText (Path items) = Text.intercalate "/" items
-
-type PathItem = Text
-
-type ServerFun m = m Ops
-
+ifBy :: MonadState Ctx m => (CodeLabel -> Op) -> Ops -> Ops -> m Ops
+ifBy cond th el = do
+  trueLabel <- freshLabel
+  falseLabel <- freshLabel
+  pure $ mconcat
+    [ Ops [cond falseLabel]
+    , th
+    , Ops [ Goto trueLabel, Label falseLabel ]
+    , el
+    , Ops [ Label trueLabel ]
+    ]

@@ -3,6 +3,7 @@ module Test.Mig.Vm.Test (spec) where
 import Mig.Vm.Class hiding (Header)
 import Mig.Vm.Class qualified as Mig
 import Mig.Vm.Types
+import Mig.Vm.Render
 import Control.Monad.State.Strict
 import Test.Hspec
 import Test.Mig.Vm.Eval
@@ -15,7 +16,7 @@ handlerA = Send (pure "Hello world")
 handlerB :: Query "arg" Int -> Send GET IO Int
 handlerB (Query arg) = Send (pure (arg + 1))
 
-handlerB2 :: 
+handlerB2 ::
   Query "a" Text -> Query "b" Text -> Query "c" Text -> Send GET IO Text
 handlerB2 (Query a) (Query b) (Query c) = Send (pure (mconcat [a,b,c]))
 
@@ -25,8 +26,8 @@ handlerC (Query a) (Query b) = Send (pure (a + b))
 handlerC2 :: Query "a" Int -> Query "b" Int -> Send GET IO Int
 handlerC2 (Query a) (Query b) = Send (pure (a - b))
 
-handlerD :: 
-  Mig.Header "greet" Text -> Query "a" Int -> Query "b" Int -> 
+handlerD ::
+  Mig.Header "greet" Text -> Query "a" Int -> Query "b" Int ->
   Send GET IO Text
 handlerD (Mig.Header greet) (Query a) (Query b) = Send (pure $ toResp (a + b))
   where
@@ -42,9 +43,9 @@ spec = describe "Simple handlers" $ do
   checkD
 
 checkA :: Spec
-checkA = 
+checkA =
   it "hello world handler" $ do
-    (ops, ctx) <- runStateT (toRoute handlerA:: StateT Ctx IO Ops) emptyCtx 
+    (ops, ctx) <- renderServer handlerA
     eResp <- eval ctx ops req
     eResp `shouldBe` Right resp
   where
@@ -52,9 +53,9 @@ checkA =
     resp = okText "Hello world"
 
 checkB :: Spec
-checkB = 
+checkB =
   it "increment handler" $ do
-    (ops, ctx) <- runStateT (toRoute handlerB:: StateT Ctx IO Ops) emptyCtx 
+    (ops, ctx) <- renderServer handlerB
     eResp <- eval ctx ops req
     eResp `shouldBe` Right resp
   where
@@ -63,9 +64,9 @@ checkB =
     resp = okText "2"
 
 checkB2 :: Spec
-checkB2 = 
+checkB2 =
   it "concat handler" $ do
-    (ops, ctx) <- runStateT (toRoute handlerB2 :: StateT Ctx IO Ops) emptyCtx 
+    (ops, ctx) <- renderServer handlerB2
     eResp <- eval ctx ops req
     eResp `shouldBe` Right resp
   where
@@ -76,9 +77,9 @@ checkB2 =
     resp = okText "ABC"
 
 checkC :: Spec
-checkC = 
+checkC =
   it "addition handler" $ do
-    (ops, ctx) <- runStateT (toRoute handlerC :: StateT Ctx IO Ops) emptyCtx 
+    (ops, ctx) <- renderServer handlerC
     eResp <- eval ctx ops req
     eResp `shouldBe` Right resp
   where
@@ -89,9 +90,9 @@ checkC =
     resp = okText "4"
 
 checkC2 :: Spec
-checkC2 = 
+checkC2 =
   it "subtraction handler" $ do
-    (ops, ctx) <- runStateT (toRoute handlerC2 :: StateT Ctx IO Ops) emptyCtx 
+    (ops, ctx) <- renderServer handlerC2
     eResp <- eval ctx ops req
     eResp `shouldBe` Right resp
   where
@@ -103,26 +104,26 @@ checkC2 =
 
 
 checkD :: Spec
-checkD = 
+checkD =
   it "addition handler with greeting" $ do
-    (ops, ctx) <- runStateT (toRoute handlerD :: StateT Ctx IO Ops) emptyCtx 
+    (ops, ctx) <- renderServer handlerD
     eResp <- eval ctx ops req
     eResp `shouldBe` Right resp
   where
-    req = emptyReq 
+    req = emptyReq
       { headers = [Header "greet" "Result is"]
       , queries = [QueryParam "a" "2", QueryParam "b" "2"]
       }
 
     resp = okText "Result is: 4"
 
-okText :: Text -> Resp 
+okText :: Text -> Resp
 okText msg = toOutput msg
 
 emptyReq :: Req
 emptyReq = Req
   { uri = Path []
-  , method = Get 
+  , method = Get
   , headers = []
   , body = Nothing
   , queries = []
