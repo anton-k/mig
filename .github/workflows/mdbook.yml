@@ -39,5 +39,3 @@ jobs:
           version: ${{ inputs.version || github.ref_name }}
           docs-dir: ${{ inputs.docs-dir || 'docs' }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          additional-paths: |
-            target/doc=api
