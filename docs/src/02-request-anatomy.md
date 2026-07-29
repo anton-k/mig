@@ -184,7 +184,7 @@ server = "api/v1/add" /. add
 
 The server expects strings with template:
 
-```
+```bash
 api/v1/add/{int}/{int}
 ```
 
@@ -203,7 +203,7 @@ server = "api/v1/*/*/add-me" /. add
 
 The server expects strings with template as path:
 
-```
+```bash
 api/v1/{int}/{int}/add-me
 ```
 
@@ -349,7 +349,7 @@ handleAddJson (Body (AddInput a b)) =
 
 Curls to test the routes:
 
-```
+```bash
 curl http://localhost:8085/api/hello/world
 
 curl -X 'GET' \

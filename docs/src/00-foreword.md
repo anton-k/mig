@@ -76,7 +76,7 @@ We need to use the library [mig-server](https://hackage.haskell.org/package/mig-
 
 With cabal we can install it from Hackage:
 
-```
+```bash
 cabal install mig-server --lib
 ```
 

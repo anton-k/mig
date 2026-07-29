@@ -212,7 +212,7 @@ hello = pure $ ok "Hello World!"
 
 If we run the code we can test it with `curl` in command line:
 
-```
+```bash
 > curl http://localhost:8085/api/v1/hello
 
 "Hello World!"
@@ -359,14 +359,14 @@ But capture is wild-card which is going to be used as input to the handler.
 
 To construct only rigid paths we can use strings:
 
-```
+```bash
 "ap1/v1/get/blog/post"
 "foo/bar"
 ```
 
 To specify captures we use `*`-wildcard:
 
-```
+```bash
 api/v2/*/get
 ```
 

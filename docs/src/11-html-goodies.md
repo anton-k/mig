@@ -254,7 +254,7 @@ I recommend to read the [tutorial](https://www.stackbuilders.com/blog/mustache-t
 The main idea of the templates is very simple. The arguments are marked with
 double curly braces:
 
-```
+```bash
 Hello {{name}}!
 Nice to meet you in the {{place}}.
 ```
@@ -271,7 +271,7 @@ This template expects a `JSON` input to be completed with two fields:
 Also we can render lists of things with special syntax:
 
 
-```
+```bash
 Items:
 
 {{#items}}
@@ -293,7 +293,7 @@ As we can see it's format-agnostic and can work for any text.
 For HTML there are special marks that let us prevent escaping
 of HTML special symbols:
 
-```
+```bash
 {{{content}}}
 ```
 
@@ -321,7 +321,7 @@ mainTemplate = $(TH.compileMustacheFile "HtmlTemplate/templates/main.html")
 We need `TemplateHaskell` language extension activated for that.
 Also we include the directory with templates in our cabal file as extra-source-files:
 
-```
+```bash
 extra-source-files:
     HtmlTemplate/templates/main.html
     HtmlTemplate/templates/post.html
