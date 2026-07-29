@@ -10,13 +10,14 @@ jobs:
         include:
           - os: ubuntu-latest
             stack-args: "--system-ghc"
-          - os: macos-latest
-            stack-args: "--system-ghc"
+#          - os: macos-latest
+#            stack-args: "--system-ghc"
 #          - os: windows-latest
 #            stack-args: ""
     steps:
       - name: Install dependencies
         run: sudo apt-get install -y liblzma-dev
+
       - name: Cache Stack dependencies
         uses: actions/cache@v4
         with:
