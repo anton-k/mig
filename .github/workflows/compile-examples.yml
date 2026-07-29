@@ -4,7 +4,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: freckle/stack-action@v4
+      - uses: actions/checkout@v4
+      - uses: freckle/stack-action@v5
         with:
           working-directory: ./examples/mig-example-apps
