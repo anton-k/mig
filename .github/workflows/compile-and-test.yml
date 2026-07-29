@@ -1,41 +1,11 @@
 on: [push]
 name: build
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        stack-version: ['3.9.3']
-        include:
-          - os: ubuntu-latest
-            stack-args: "--system-ghc"
-#          - os: macos-latest
-#            stack-args: "--system-ghc"
-#          - os: windows-latest
-#            stack-args: ""
+  test:
+    runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
         run: sudo apt-get install -y liblzma-dev
 
       - uses: actions/checkout@v4
-      - name: Setup Haskell
-        id: setup
-        uses: haskell-actions/setup@v2
-        with:
-          ghc-version: '9.10.3'
-          cabal-version: 'latest'
-          enable-stack: true
-          stack-version: ${{ matrix.stack-version }}
-          stack-setup-ghc: false
-
-      - name: Cache Stack dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.setup.outputs.stack-root }}
-          key: ${{ runner.os }}-stack-${{ hashFiles('stack.yaml', 'package.yaml') }}
-          restore-keys: ${{ runner.os }}-stack-
-
-      - name: Build and test
-        run: |
-          stack build --test ${{ matrix.stack-args }}
+      - uses: freckle/stack-action@v5
