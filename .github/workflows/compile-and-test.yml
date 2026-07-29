@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        stack-version: ['latest', '2.9.3']
+        stack-version: ['3.9.3']
         include:
           - os: ubuntu-latest
             stack-args: "--system-ghc"
