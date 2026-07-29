@@ -1,4 +1,4 @@
-resolver: lts-24.30
+resolver: lts-24.52
 
 packages:
 - mig

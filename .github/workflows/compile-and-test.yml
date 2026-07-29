@@ -1,8 +1,38 @@
 on: [push]
 name: build
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        stack-version: ['latest', '2.9.3']
+        include:
+          - os: ubuntu-latest
+            stack-args: "--system-ghc"
+          - os: macos-latest
+            stack-args: "--system-ghc"
+          - os: windows-latest
+            stack-args: ""
     steps:
       - uses: actions/checkout@v4
-      - uses: freckle/stack-action@v5
+      - name: Setup Haskell
+        id: setup
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.4.7'
+          cabal-version: 'latest'
+          enable-stack: true
+          stack-version: ${{ matrix.stack-version }}
+          stack-setup-ghc: false
+
+      - name: Cache Stack dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.setup.outputs.stack-root }}
+          key: ${{ runner.os }}-stack-${{ hashFiles('stack.yaml', 'package.yaml') }}
+          restore-keys: ${{ runner.os }}-stack-
+
+      - name: Build and test
+        run: |
+          stack build --test ${{ matrix.stack-args }}
