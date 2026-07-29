@@ -17,7 +17,7 @@ The main features of the mig library are:
 * relies on standard classes to compose servers. The server is a monoid 
 * we can build HTTP-clients from the server definition
 
-Example of hello world server:
+Example of the "hello world" server:
 
 ```haskell
 {-# Language OverloadedStrings #-}
