@@ -18,6 +18,17 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get install -y liblzma-dev
 
+      - uses: actions/checkout@v4
+      - name: Setup Haskell
+        id: setup
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.10.3'
+          cabal-version: 'latest'
+          enable-stack: true
+          stack-version: ${{ matrix.stack-version }}
+          stack-setup-ghc: false
+
       - name: Cache Stack dependencies
         uses: actions/cache@v4
         with:
