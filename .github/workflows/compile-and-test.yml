@@ -20,7 +20,7 @@ jobs:
         id: setup
         uses: haskell-actions/setup@v2
         with:
-          ghc-version: '9.4.7'
+          ghc-version: '9.10.3'
           cabal-version: 'latest'
           enable-stack: true
           stack-version: ${{ matrix.stack-version }}
