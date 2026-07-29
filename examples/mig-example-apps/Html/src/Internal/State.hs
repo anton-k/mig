@@ -8,12 +8,12 @@ import Content
 import Types
 
 import Data.IORef
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Time
-import System.Random
-import Data.Maybe (fromMaybe)
 import Safe (headMay)
+import System.Random
 
 -- | Site mutable state
 data Env = Env

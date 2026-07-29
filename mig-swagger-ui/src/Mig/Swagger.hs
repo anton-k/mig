@@ -60,9 +60,9 @@ addDefaultInfo :: DefaultInfo -> OpenApi -> OpenApi
 addDefaultInfo appInfo =
   OA.info
     .~ ( mempty
-          & OA.title .~ appInfo.title
-          & OA.description ?~ appInfo.description
-          & OA.version .~ appInfo.version
+           & OA.title .~ appInfo.title
+           & OA.description ?~ appInfo.description
+           & OA.version .~ appInfo.version
        )
 
 instance Default DefaultInfo where
@@ -75,9 +75,10 @@ data SwaggerConfig m = SwaggerConfig
   , swaggerFile :: Path
   -- ^ swagger file name (default is "swaggger.json")
   , mapSchema :: OpenApi -> m OpenApi
-  -- ^ apply transformation to OpenApi schema on serving OpenApi schema.
-  -- it is useful to add additional info or set current date in the examples
-  -- or apply any real-time transformation.
+  {- ^ apply transformation to OpenApi schema on serving OpenApi schema.
+  it is useful to add additional info or set current date in the examples
+  or apply any real-time transformation.
+  -}
   }
 
 instance (Applicative m) => Default (SwaggerConfig m) where

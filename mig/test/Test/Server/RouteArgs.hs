@@ -29,11 +29,11 @@ server :: Server IO
 server =
   "api"
     /. [ "succ"
-          /. [ "query" /. handleSuccQuery
-             , "header" /. handleSuccHeader
-             , "optional" /. handleSuccOpt
-             , "optional-header" /. handleSuccHeaderOpt
-             ]
+           /. [ "query" /. handleSuccQuery
+              , "header" /. handleSuccHeader
+              , "optional" /. handleSuccOpt
+              , "optional-header" /. handleSuccHeaderOpt
+              ]
        , -- several query params
          "add" /. handleAdd
        , -- query flag
@@ -45,11 +45,11 @@ server =
        , -- return error
          "square-root" /. handleSquareRoot
        , "response"
-          /. [ "status" /. handleStatus
-             , "header" /. handleHeader
-             , "error1" /. handleError1
-             , "error2" /. handleError2
-             ]
+           /. [ "status" /. handleStatus
+              , "header" /. handleHeader
+              , "error1" /. handleError1
+              , "error2" /. handleError2
+              ]
        ]
 
 {-| Using several inputs: header argument and required query

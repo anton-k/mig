@@ -50,8 +50,9 @@ module Mig.Extra.Server.Common (
 
   -- ** path and query
 
-  -- | Build API for routes with queries and captures.
-  -- Use monoid to combine several routes together.
+  {-| Build API for routes with queries and captures.
+  Use monoid to combine several routes together.
+  -}
   (/.),
   Capture (..),
   Query (..),

@@ -7,12 +7,12 @@ module Internal.State (
 import Content
 import Types
 
-import Safe (headMay)
-import Data.Maybe (fromMaybe)
 import Data.IORef
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import Data.Text qualified as Text
 import Data.Time
+import Safe (headMay)
 import System.Random
 
 -- | Site mutable state

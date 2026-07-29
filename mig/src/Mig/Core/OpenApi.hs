@@ -53,20 +53,20 @@ fromRouteOutput routeInfo =
     & components . schemas .~ defs
     & paths . at "/"
       ?~ ( mempty
-            & method
-              ?~ ( mempty
-                    & at code
-                      ?~ Inline
-                        ( mempty
-                            & content
-                              .~ InsOrdHashMap.fromList
-                                [(t, mempty & schema .~ mref) | t <- responseContentTypes]
-                            & headers .~ responseHeaders
-                        )
-                    & tags .~ Set.fromList routeInfo.tags
-                    & summary .~ nonEmptyText routeInfo.summary
-                    & description .~ nonEmptyText routeInfo.description
-                 )
+             & method
+               ?~ ( mempty
+                      & at code
+                        ?~ Inline
+                          ( mempty
+                              & content
+                                .~ InsOrdHashMap.fromList
+                                  [(t, mempty & schema .~ mref) | t <- responseContentTypes]
+                              & headers .~ responseHeaders
+                          )
+                      & tags .~ Set.fromList routeInfo.tags
+                      & summary .~ nonEmptyText routeInfo.summary
+                      & description .~ nonEmptyText routeInfo.description
+                  )
          )
   where
     method = case routeInfo.method of
@@ -142,8 +142,8 @@ fromRouteInput descInput base = case descInput.content of
             & allowEmptyValue ?~ True
             & schema
               ?~ ( Inline $
-                    (toParamSchema (Proxy :: Proxy Bool))
-                      & default_ ?~ toJSON False
+                     (toParamSchema (Proxy :: Proxy Bool))
+                       & default_ ?~ toJSON False
                  )
 
 -------------------------------------------------------------------------------------
