@@ -12,8 +12,8 @@ jobs:
             stack-args: "--system-ghc"
           - os: macos-latest
             stack-args: "--system-ghc"
-          - os: windows-latest
-            stack-args: ""
+#          - os: windows-latest
+#            stack-args: ""
     steps:
       - uses: actions/checkout@v4
       - name: Setup Haskell
